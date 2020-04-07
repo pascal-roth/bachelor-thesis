@@ -10,7 +10,7 @@
 
 # Import Packages
 import cantera as ct
-import sys
+import numpy as np
 import os
 import csv
 
@@ -53,6 +53,9 @@ for n in range(n_steps):
     states1.append(r1.thermo.state, t=time, V=r1.volume)
     csvfile.writerow([time, r1.thermo.T, r1.thermo.P, r1.volume])
 
+# heat release rate [W/m^3]
+Q = - np.sum(states1.net_production_rates * states1.partial_molar_enthalpies, axis=1)
+
 outfile.close()
 print('Output written to file reactor.csv')
 print('Directory: ' + os.getcwd())
@@ -82,6 +85,12 @@ if plot_res is True:
     plt.xlabel('Time (s)')
     plt.ylabel('Volume (m$^3$)')
 
-    plt.figlegend(h, ['Reactor 1'], loc='lower right')
+    plt.subplot(2, 2, 4)
+    plt.plot(states1.t, Q, 'b-')
+    # plt.legend(['Reactor 1'])
+    plt.xlabel('Time (s)')
+    plt.ylabel('Heat release [W/m$^3$]')
+
+    plt.figlegend(h, ['Reactor 1']) #, loc='lower right')
     plt.tight_layout()
     plt.show()
