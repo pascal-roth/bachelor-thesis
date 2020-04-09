@@ -24,13 +24,14 @@ air = gas
 reactorTemperature = [1800, 1600, 1400, 1200, 1000, 950, 925, 900, 850, 825, 800,
      750, 700, 675, 650, 625, 600, 550, 500]
 reactorPressure = ct.one_atm
-equivalence_ratio = 0.75
+equivalence_ratio = 1.0
 
 # Ignition Delay
-estimatedIgnitionDelayTime = 1.0
+estimatedIgnitionDelayTime = 2.0
 ignitionDelays = pd.DataFrame(data={'T': reactorTemperature})
 
 def ignitionDelay(df, species):
+    # definition of ignition delay as the first maximum in the CH4 curve
     return df[species].idxmax()
 
 for i in range(0, len(reactorTemperature), 1):
