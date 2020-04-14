@@ -17,7 +17,7 @@ Gedanken über das erste NN
 - LSTM model, da Zeitabhängigkeit
 	- Optimierungsfunktionen gerade mit Ignition Delay geht damit über eine Summe von Outputs, Idee diese teilweise etwas umzugestalten
 	- eventuell auch eine Kombination aus CNN und RNN denkbar, da einige Eingangsgrößen nicht Spezien darstellen, sondern Beschreibungen des Grundzustandes (bspw. Theta)
-	- Teilung in Training, Test and Validation Set über Herausnahme einzelner Zeitpunkte, dabei dürfen die anderen Zeiten nicht random neu geordernet werden
-		- Zeitabstand sollte dabei so klein sein, dass diese unterschiede keinen Einfluss auf das Training haben
+	- Teilung in Training, Test and Validation Set über Herausnahme einzelner Zeitpunkte, dabei vorher noch Zuordnung von x und y, damit dies nicht durcheinanderkommt
+		- Zeitabstand sollte dabei so klein sein, dass entstehender Unterschiede in den Trainingsdaten keinen Einfluss hat
 	- Eingangsgrößen tricky, da verschiedenen Startbedingungen und somit "mehrdimensionaler" Zeitstrahl
 
