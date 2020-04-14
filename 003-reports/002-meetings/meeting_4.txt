@@ -2,11 +2,22 @@ Fragen
 
 - beim Testen meines Model mit Parametern \theta= 1.0, p=10 bar O2:N2 = 1:15 kommt es zwischen 655K und 730K zu keiner Ignition, warum?
 - habe ich Spezies vergessen, die ich noch aufzeichen und dann vorhersagen soll?
+- im detailierten Mechanismus habe ich nur POME1 gefunden, habe ich da POME3 übersehen?
 - habe Verlinken von dem Data Ordner zu dem entsprechenden Code gemacht, entspricht dies den Erwartungen?
 - die Fortschrittsvariable aus der Tabulated Chemistry habe ich mal implementiert, finde sie aber wenig sinnvoll
+
+
+weitere Punkte
+
+- Zeitplan noch so in Ordnung?
+
 
 Gedanken über das erste NN
 
 - LSTM model, da Zeitabhängigkeit
-	- Optimierungsfunktionen gerade mit Ignition Delay geht damit über eine Summe von Outputs
-	- 
+	- Optimierungsfunktionen gerade mit Ignition Delay geht damit über eine Summe von Outputs, Idee diese teilweise etwas umzugestalten
+	- eventuell auch eine Kombination aus CNN und RNN denkbar, da einige Eingangsgrößen nicht Spezien darstellen, sondern Beschreibungen des Grundzustandes (bspw. Theta)
+	- Teilung in Training, Test and Validation Set über Herausnahme einzelner Zeitpunkte, dabei dürfen die anderen Zeiten nicht random neu geordernet werden
+		- Zeitabstand sollte dabei so klein sein, dass diese unterschiede keinen Einfluss auf das Training haben
+	- Eingangsgrößen tricky, da verschiedenen Startbedingungen und somit "mehrdimensionaler" Zeitstrahl
+

@@ -1,0 +1,53 @@
+Agenda:
+- Zeitplan
+- Literatur
+- Homogenen Reaktor
+- Data erzeugen
+- Linux Kurs
+
+Zeitplan:
+- wie ist das Program? zufrieden, Änderungswünsche
+- Einschätzung vom Zeitplan
+
+Literatur
+- habt ihr mit der Software ChemiKin Erfahrung? --> genaue Auflösung der Reaktion möglich --> Cantera
+- globaler Reaktionsmechanismus mit Sprayverbrennung genaues Thema von Philip?
+	- Weiterenticklung von He et al, da diese Spraymodelle ausgelassen haben
+	- Vereinfachung der aufgestellten Mechanismen mit vielen Reaktionsgleichungen durch Limitierung der Nummer von Spezien, Radikals usw. 
+	- damit geringer computational effort und besser geeignet für CFD Simulation 
+		- gibt es die Möglichkeit bei euch als HiWi bei solchen CFD Simulationen mitzuarbeiten, da sehr spannend angehört
+- OME3 als best geeignester Kraftstoff, da richtige Viskosität und Auto-Ignition im richtigen Bereich
+	- auch unser Fokus auf OME3 oder wie andere Paper, start mit OME1 und dann Transfer zu OME3
+
+Homogener Reaktor:
+- was genau an Literatur noch lesen? Turns ab 182
+- meine Vorstellung (siehe Buch) soweit korrekt?
+
+Daten erzeugen?
+- wie genau wird das jetzt ablaufen?
+- Stichwort: Clusterzugang, wenns soweit ist, dann geht das ja ganz schnell
+
+Linux Kurs:
+- mir sind ein paar Dinge aufgefallen, was in meiner Shell so nicht funktioniert hat. Vlt muss ich dazu noch was installieren?
+- Vorlesung 3: Folie 6: cat > text1.txt
+- Vorlesung 3: Folie 6: Dummy in Anführungszeichen 'dummy'
+- Vorlesung 5: Folie 26: was genau soll mit dem Programm passieren?
+- Vorlesung 5: Folie 31: da stimmt was nicht mit der Funktion
+- Vorlesung 7: Folie 22: <stdio.h> und er nicht 1e+% nicht an
+- Vorlesung 7: Folie 28: was genau soll passieren, bei mir nur Fehlermeldungen
+- Vorlesung 9: Folie 25: unrecognised plot type --> Plot scheint so nicht verfügbar
+
+To-Do:
+- Chemische Daten nur aus Tabellenabruf
+- Canteras Conda Environment 
+- Homogenen Reaktor aufsetzen
+- sobald der fertig, melden
+- vandersickel. paper, Optimierunggrößen 
+- Udacity Kurs von Git
+- git einlogen von TU Darmstadt
+- Email MechCenter wegen Anmeldung
+- Homogener Reaktor
+	- warum, welche Vorteile?
+	- Vergleich zu anderen Modellen
+- 10 min Präsentation vor dem Thema 
+

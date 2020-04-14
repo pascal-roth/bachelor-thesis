@@ -746,22 +746,44 @@ By making the assumption of an ideal gas $\rho$ can be replaced in the following
 	\item{$T_{start}$ and $p_{start}$}
 	\end{itemize}
 
-\item{parameters, which value has to be captured at any point}
+\item{model parameters, which are used/ generated within the model}
 
 	\begin{itemize}
 	\item{educts: $POME_n$; $O_2$}
 	\item{products: $CO$, $CO_2$, $H_2O$}
 	\item{intermediates: $OH$, $H_2O_2$}
+	
+			\begin{itemize}
+			\item{reactor model keeps track of the species}
+			\end{itemize}
+			
 	\item{Temperature and pressure}
+	
+			\begin{itemize}
+		\item{the cantera solver generates those thermo properities}
+		\end{itemize}
+		
 	\item{heat release of all reactions at each time step}
+	
+		\begin{itemize}
+		\item{the product of the production rate of a species and the corresponding partial molar enthalpie results in the free/ consumed enthalpie. This summed up for all species is the heat release at time t}
+		\end{itemize}
+		
 	\end{itemize}
 
+\item{parameters for optimization functions}
+
+	\begin{itemize}
+	\item{the iginition delays can be calculated by taking the first and the global maximum of monitored heat release over the time t}
+	\item{as mentioned above the cantera reactor model keeps track of the development of the pressure and the species: $H_2O_2$}
+	\end{itemize}
+	
 \end{itemize}
 
 \newpage %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Neural Network}
-
+ 
 
 \label{EndOfText}
 \fancyfoot[C]{Page \thepage\ of \pageref{EndOfText}}

@@ -1,0 +1,13 @@
+Meeting 2
+
+To-DO:
+- welche Größen muss ich im Modell messen
+- welche Größen brauche ich am Ende 
+- Mechanismus bekomme ich und muss ihn konvertieren
+- in den Paper nachschauen, ob Wand bzw. Wärmeverlust
+- genau anschauen, warum zweistufiges Verbrennungsverfahren
+- autoignition curve --> wie man die erzeugen kann
+- selbst nach Paper schauen, was gibts neues? OME neue Modelle? 
+- Python script
+	- Readme Datei mikt kleiner Datei dazu
+	- Conda Environment exportieren
