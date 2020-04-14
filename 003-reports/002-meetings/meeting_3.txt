@@ -1,0 +1,16 @@
+- Nick ansprechen, dass er die Paper schickt
+
+- tabellierte Chemie
+	- erkundigen, drüber lesen
+	- Flamelet generated manifold
+	- tabellierten Chemie nutzen
+
+- detailierter Mechanismus
+	- damit homogener Reaktor rechnen mit verschiedenen Zuständen
+	- was wird extrahiert für Optimierungsfunktionen
+	- alles experimentelle muss aus der detailierten Simulation rausgezogen werden, wie?
+
+- git hochladen
+	- Latex doc
+
+- Mittwoch 11 Uhr nächster Termin
