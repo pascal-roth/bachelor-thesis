@@ -1,3 +1,7 @@
+Link to wiki:
+
+[Wiki](https://git.rwth-aachen.de/pascal.roth.18/ba-pascal-roth/-/wikis/home)
+
 | ID  | creator     | code               | location                   | decription                      | start date | end date |
 |-----|-------------|--------------------|----------------------------|---------------------------------|------------|----------|
 | 000 | Pascal Roth | Cantera Python API | local, (STFS, GSC Cluster) | homogenous reaction simulations | 07.04.20   | ...      |
