@@ -71,6 +71,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
                      r1.Y[pome.species_index('OH')], r1.Y[pome.species_index('H2O2')])
 
         # Calculate tabulated chemistry variables
+        # In the literature two different definitions (with and without dividing through the molecular mass
 #        RPV[n] = r1.Y[pome.species_index(RPV_param[0])] / pome.molecular_weights[pome.species_index(RPV_param[0])] + \
 #                 r1.Y[pome.species_index(RPV_param[1])] / pome.molecular_weights[pome.species_index(RPV_param[1])] + \
 #                 r1.Y[pome.species_index(RPV_param[2])] / pome.molecular_weights[pome.species_index(RPV_param[2])] + \
@@ -87,12 +88,12 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
     # add Q to values vector
-
-    peaks, _ = find_peaks(values[:, 2], height=np.amax(values[:, 2]) / 2000)  # define minimum height prevent showing delays if no ignition
+    max_Q = np.argmax(values[:, 2])
+    peaks, _ = find_peaks(values[:, 2], prominence=values[max_Q, 2] / 100)  # define minimum height
 
     if peaks.any():
         first_ignition_delay = peaks[0] * t_step * 1.e+3
-        main_ignition_delay = np.argmax(values[:, 2]) * t_step * 1.e+3
+        main_ignition_delay = max_Q * t_step * 1.e+3
 
         if information_print is True:
             print('The first stage ignition delay is {:.3f} ms'.format(first_ignition_delay))

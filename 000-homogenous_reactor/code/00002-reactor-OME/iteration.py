@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 
 # %% Run homogeneous reactor model
-iteration = True
+iteration = False
 information_print = True
 
 # create an array for the different samples/ the ignition delays and decide if to save them
@@ -64,7 +64,7 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
 
         for reactorTemperature in range(reactorTemperature_start, reactorTemperature_end, reactorTemperature_step):
             # start homogeneous reactor model with defined settings
-            # values vector: 'time (s)', 'equivalence_ratio', 'Q', 'T1 (K)', 'P1 (Bar)', 'V1 (m3)', 'YPOME', 'YCO2',
+            # values vector: 'time (s)', 'equivalence_ratio', 'Q', 'T1r (K)', 'P1 (Bar)', 'V1 (m3)', 'YPOME', 'YCO2',
             # 'YO2', 'Y_CO', 'Y_H2O', 'Y_OH', 'Y_H2O2'
             values, first_ignition_delay, main_ignition_delay, RPV = homogeneous_reactor(mechanism,
                                                                                          equivalence_ratio_run,
@@ -85,7 +85,7 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
                 np.save(path, values)
 
             # saving ignition delays for the parameter setting
-            if save_delays is True and 0 < main_ignition_delay < t_end*1.e+3:
+            if save_delays is True and 0 < main_ignition_delay < t_end*1.e+3*0.99:
                 ign_delay_run[n] = (equivalence_ratio_run, reactorPressure_run, reactorTemperature,
                                     first_ignition_delay, main_ignition_delay)
                 n += 1
@@ -96,12 +96,12 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
             # print information about parameter setting and ignition
             if information_print is True and 0 < main_ignition_delay < t_end*1.e+3:
                 print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.3f}ms, '
-                      'main{:.3f}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                      'main {:.3f}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
                                             reactorTemperature, first_ignition_delay, main_ignition_delay))
             elif information_print is True and main_ignition_delay is 0:
                 print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K no ignition will happen in engine relevant '
                       'time'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature))
-            elif information_print is True and main_ignition_delay is t_end*1.e+3:
+            elif information_print is True and main_ignition_delay is t_end*1.e+3*0.99:
                 print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K ignition happens after the end of the '
                       'interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature,
                                              t_end*1.e+3))

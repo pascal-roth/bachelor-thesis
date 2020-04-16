@@ -9,15 +9,17 @@ from scipy.signal import find_peaks
 def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, process_plot, equivalence_ratio,
                    reactorPressure, reactorTemperature, time, pRPV):
     # find plot interval
-    peaks, _ = find_peaks(values[:, 2], height=np.amax(values[:, 2]) / 1000)  # define minimum height
+
+    max_Q = np.argmax(values[:, 2])
+    peaks, _ = find_peaks(values[:, 2], prominence=values[max_Q, 2]/100)  # define minimum height
 
     if peaks.any():
-        if np.argmax(values[:, 2]) > 100:
+        if max_Q > 100:
             x1 = int(round(0.999 * peaks[0], 0))
-            x2 = int(round(1.001 * np.argmax(values[:, 2]), 0))
+            x2 = int(round(1.001 * max_Q, 0))
         else:
             x1 = int(round(0.8 * peaks[0], 0))
-            x2 = int(round(1.2 * np.argmax(values[:, 2]), 0))
+            x2 = int(round(1.2 * max_Q, 0))
     else:
         x1 = 0
         x2 = values.shape[0]
@@ -114,7 +116,7 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.ylabel('Heat release [W/m$^3$]')
 
         textstr = '$t_1$={:.3f} ms\n$t_2$={:.3f} ms'.format(first_ignition_delay, main_ignition_delay)
-        plt.text(values[x1, 0], 0.95 * np.amax(values[:, 2]), textstr, fontsize=14, verticalalignment='top')
+        plt.text(values[x1, 0] * 1.e+3, 0.95 * values[max_Q, 2], textstr, fontsize=14, verticalalignment='top')
 
         plt.title(title_plot)
         plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_heat_time.png'.format
@@ -127,8 +129,8 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.xlabel('RPV')
         plt.ylabel('Heat release [W/m$^3$]')
 
-        textstr = '$t_1$={:.3f} ms\n$t_2$={:.3f} ms'.format(first_ignition_delay, main_ignition_delay)
-        plt.text(RPV[x1], 0.95 * np.amax(values[:, 2]), textstr, fontsize=14, verticalalignment='top')
+        textstr = '$RPV_1$={:.3f} \n$RPV_2$={:.3f} '.format(RPV[peaks[0]], RPV[max_Q])
+        plt.text(RPV[x1], 0.95 * values[max_Q, 2], textstr, fontsize=14, verticalalignment='top')
 
         plt.title(title_plot)
         plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_heat_pRPV.png'.format
