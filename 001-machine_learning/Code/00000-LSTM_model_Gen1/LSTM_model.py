@@ -10,14 +10,25 @@ import torch.nn.functional as F
 
 # %% Load Data
 
-samples = np.load('reactor_samples.npy')
-heat_release = np.load('heat_release.npy')
+samples = np.load('/home/pascal/ba-pascal-roth/000-homogenous_reactor/data/00002-reactor-OME/reactor_samples.npy')
+ignition_delay = np.load('/home/pascal/ba-pascal-roth/000-homogenous_reactor/data/00002-reactor-OME/ignition_delays.npy')
 
+samples = np.transpose(samples)
+labels = np.concatenate((samples[:, 1:], samples[:, 0].reshape((samples[:, 0].shape[0], 1))), axis=1)
 
 # %% Separate Data in train, test and validation Data
+# Validation split can probably be performed by pytorch later in the NN
+# the use of this random separation in train and test split has the idea that in this way the NN trains randomly for
+# all the different settings and that it is not necessary that the time order has to be kept logical
+from sklearn.model_selection import train_test_split
 
+x_train, y_train, x_test, y_test = train_test_split(samples, labels, test_size=0.2)
 
 # %% transform data
+x_train = torch.from_numpy(x_train)
+y_train = torch.from_numpy(y_train)
+x_test = torch.from_numpy(x_test)
+y_test = torch.from_numpy(y_test)
 
 # %% decide if model testing with CPU or training with cluster
 # train_on_gpu = torch.cuda.is_available()
@@ -26,11 +37,12 @@ train_on_gpu = False
 # %% Network implementation
 class pome_RNN(nn.Module):
 
-    def __init__(self, output_size,n_hidden=256, n_layers=2, drop_prob=0.5, lr=0.001):
+    def __init__(self, n_output,n_hidden=256, n_layers=2, drop_prob=0.5, lr=0.001):
         super().__init__()
         self.drop_prob = drop_prob
         self.n_layers = n_layers
         self.n_hidden = n_hidden
+        self.n_output = n_output
         self.lr = lr
 
         self.lstm = nn.LSTM(len(self.chars), n_hidden, n_layers,
@@ -70,7 +82,7 @@ def train(net, data, epochs=10, batch_size=10, seq_length=50, lr=0.001, clip=5, 
         ---------
 
         net: pome_RNN network
-        data:
+        data: reactor simulation of POME
         epochs: Number of epochs to train
         batch_size: Number of mini-sequences per mini-batch, aka batch size
         seq_length: Number of character steps per mini-batch

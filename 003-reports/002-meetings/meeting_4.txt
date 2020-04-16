@@ -1,15 +1,24 @@
 Fragen
 
 - beim Testen meines Model mit Parametern \theta= 1.0, p=10 bar O2:N2 = 1:15 kommt es zwischen 655K und 730K zu keiner Ignition, warum?
+	- Wahrscheinlich Fehler im Modell, Änderungen im Code durchführen und dann schaunen, ob es auch weiterhin zu dieser Anomalie kommt
 - habe ich Spezies vergessen, die ich noch aufzeichen und dann vorhersagen soll?
+	- Überprüfen anhand von Tabulated Chemistry Literature, was genau ist notwendig in einer 3D CFD Simulation, um den Zustand eindeutig wiederzugeben
 - im detailierten Mechanismus habe ich nur POME1 gefunden, habe ich da POME3 übersehen?
+	- dummer Fehler, POME3 heißt bei He DMM3
 - habe Verlinken von dem Data Ordner zu dem entsprechenden Code gemacht, entspricht dies den Erwartungen?
+	- nein, relative Links müssen benutzt werden, damit die Links unabhängig von der Ordnerstruktur sind
 - die Fortschrittsvariable aus der Tabulated Chemistry habe ich mal implementiert, finde sie aber wenig sinnvoll
+	- ist sinnvoll, die Variable soll als einheitenlose Zeit dienen und somit die einzelnen Zustände charakterisieren
+	- hier Parametersetting finden, welches einen möglich linearen Anstieg besitzt
 
 
 weitere Punkte
 
 - Zeitplan noch so in Ordnung?
+	- ja passt soweit
+-Präsentation
+	- planen wir erst, wenn es wirklich an das NN geht
 
 
 Gedanken über das erste NN
@@ -20,4 +29,38 @@ Gedanken über das erste NN
 	- Teilung in Training, Test and Validation Set über Herausnahme einzelner Zeitpunkte, dabei dürfen die anderen Zeiten nicht random neu geordernet werden
 		- Zeitabstand sollte dabei so klein sein, dass diese unterschiede keinen Einfluss auf das Training haben
 	- Eingangsgrößen tricky, da verschiedenen Startbedingungen und somit "mehrdimensionaler" Zeitstrahl
+	- darüber nachdenken, ob time entry in samples gerechtfertigt oder lieber zu entfernen (würde dies mal in 2 Trainingsläufen evaluieren)
+- LSTM Modell verwerfen, klappt hier nicht!
+
+
+Notizen Code:
+- O2: 0.21, N2: 0.79, Verhältnis immer gleich
+- relative Links zu den einzelnen Plots
+- He Mechanismus DMM3
+- Cai Mechanismus am besten, dort heißt es OME3
+- pychache kann ich über gitignore 
+	- google sinnvolles gitignore
+
+
+TO-DOs:
+- Meeting Notizen ins Wiki laden
+- Luftobject mit gleichem Mechanismus
+- Mechanismus auch an Function übergeben
+- python format --> https://mkaz.blog/code/python-string-format-cookbook/ 
+- slack beitreten
+- t_end übergeben, Zeitschritt mit e-9, und dann schrittanzahl berechnen
+- append function raus, lieber mit values über alles --> plots ändern
+- Constant Pressure Reactor raus aus der Beschreibung
+
+TO-DO von Philip und Julian:
+- Mechanismen vergleichen
+- meine Ergebnisse mit den Ergebnissen aus der Literatur vergleichen
+- C O CO2, als Vorschrittsvariable
+	- sobald ich die gefunden habe, plotte die anderen Größen über die Variable
+- Gedanken, chemischer Zustand eindeutig nachbilden zu können, was man dazu in der CFD 3D SImulation habe, brauche, orientieren an der tabelierte Chemie, nur Parameter einbinden, die ich brauche und die ich messen kann, um den Zustand eindeutig wiedergeben zu können --> reduzierte Parameterzahl im Vergleich zum detailierten Mechanismus
+- Gedanken über NN, wie tabelierte Chemie einbinden
+- Literatur ähnliche Ansätze, dass ganze Dokumentieren
+
+
+
 

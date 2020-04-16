@@ -20,7 +20,7 @@ def plot_ign(ign_delay_run):
     ax2.set_xlim(ax.get_xlim())
     ax2.set_xlabel(r'Temperature: $T(K)$')
 
-    textstr = '$\\theta$=%.2f\np=%.0f\n bar' % (ign_delay_run[0, 0], ign_delay_run[0, 1] / 1.e+5)
+    textstr = '$\\Phi$={:.2f}\np={:.0f}bar' .format(ign_delay_run[0, 0], ign_delay_run[0, 1] / 1.e+5)
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
 
     ax.legend(loc='lower right')

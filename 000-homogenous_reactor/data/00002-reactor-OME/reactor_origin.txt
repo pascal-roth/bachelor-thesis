@@ -1,1 +1,0 @@
-/home/pascal/ba-pascal-roth/000-homogenous_reactor/code/00002-reactor-OME/Homogeneous_Reactor.py
