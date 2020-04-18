@@ -11,7 +11,7 @@ import numpy as np
 from pathlib import Path
 
 # %% Run homogeneous reactor model
-iteration = True
+iteration = False
 information_print = True
 
 # create an array for the different samples/ the ignition delays and decide if to save them
@@ -25,14 +25,17 @@ plot_ign_delays = True  # Decide if plotting ignition delay over temperature for
 
 # define the used mechanism
 mechanism_all = np.array([['he_2018.xml', 'DMM3'], ['cai_ome14_2019.xml', 'OME3'], ['sun_2017.xml', 'DMM3'],
-                          ['he_2018.xml', 'CH3OCH2OCH3'], ['sun_2017.xml', 'CH3OCH2OCH3']])
-mechanism = mechanism_all[4, :]
+                          ['he_2018.xml', 'CH3OCH2OCH3'], ['sun_2017.xml', 'CH3OCH2OCH3'],
+                          ['cai_ome14_2019.cti', 'OME3']])
+
+mechanism = mechanism_all[5, :]
+
 if information_print is True:
     print('the used mechanism is {}'.format(mechanism[0]))
 
 # Define end time and time step
-t_end = 0.010
-t_step = 5.e-8
+t_end = 0.001
+t_step = 1.e-9
 
 # %% set parameters
 if iteration is True:
