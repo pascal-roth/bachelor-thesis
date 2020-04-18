@@ -68,6 +68,7 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.xlabel('PRV')
         plt.ylabel('Volume (m$^3$)')
 
+        plt.tight_layout()
         plt.figlegend(h, ['Reactor 1'], loc='lower right')
         plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_TPV_pRPV.png'.format
                     (equivalence_ratio, reactorPressure / 1.e+5, reactorTemperature))
@@ -129,8 +130,9 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.xlabel('RPV')
         plt.ylabel('Heat release [W/m$^3$]')
 
-        textstr = '$RPV_1$={:.3f} \n$RPV_2$={:.3f} '.format(RPV[peaks[0]], RPV[max_Q])
-        plt.text(RPV[x1], 0.95 * values[max_Q, 2], textstr, fontsize=14, verticalalignment='top')
+        if peaks.any():
+            textstr = '$RPV_1$={:.3f} \n$RPV_2$={:.3f} '.format(RPV[peaks[0]], RPV[max_Q])
+            plt.text(RPV[x1], 0.95 * values[max_Q, 2], textstr, fontsize=14, verticalalignment='top')
 
         plt.title(title_plot)
         plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_heat_pRPV.png'.format
@@ -147,11 +149,11 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
                     (equivalence_ratio, reactorPressure / 1.e+5, reactorTemperature))
         plt.show()
 
-        plt.plot(values[:, 0] * 1.e+3, RPV[:], 'b-')
-        plt.xlabel('Time (ms)')
-        plt.ylabel('RPV')
-
-        plt.title(title_plot)
-        plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_RPV_long.png'.format
-                    (equivalence_ratio, reactorPressure / 1.e+5, reactorTemperature))
-        plt.show()
+#        plt.plot(values[:, 0] * 1.e+3, RPV[:], 'b-')
+#        plt.xlabel('Time (ms)')
+#        plt.ylabel('RPV')
+#
+#        plt.title(title_plot)
+#        plt.savefig('/media/pascal/DATA/000-Homogeneous-Reactor/plt_he_2018_{:.1f}_{:.0f}_{:.0f}_RPV_long.png'.format
+#                    (equivalence_ratio, reactorPressure / 1.e+5, reactorTemperature))
+#        plt.show()

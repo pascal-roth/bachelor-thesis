@@ -11,54 +11,55 @@ import numpy as np
 from pathlib import Path
 
 # %% Run homogeneous reactor model
-iteration = False
+iteration = True
 information_print = True
 
 # create an array for the different samples/ the ignition delays and decide if to save them
-save_samples = True
+save_samples = False
 save_delays = True
 
 # Plot decisions
-plot_axes = [True, True]  # Decide if process variables are plotted over time and/or over RPV
-process_plot = [True, True, True, True]  # thermodynamic properties (T, p, V), species development, heat release, RPV
+plot_axes = [False, False]  # Decide if process variables are plotted over time and/or over RPV
+process_plot = [False, False, False, False]  # thermodynamic properties (T, p, V), species development, heat release, RPV
 plot_ign_delays = True  # Decide if plotting ignition delay over temperature for different settings
 
 # define the used mechanism
-mechanism_all = np.array([['he_2018.xml', 'DMM3'], ['cai_ome14_2019.xml', 'OME3'], ['sun_2017.xml', 'DMM3']])
-mechanism = mechanism_all[0, :]
+mechanism_all = np.array([['he_2018.xml', 'DMM3'], ['cai_ome14_2019.xml', 'OME3'], ['sun_2017.xml', 'DMM3'],
+                          ['he_2018.xml', 'CH3OCH2OCH3'], ['sun_2017.xml', 'CH3OCH2OCH3']])
+mechanism = mechanism_all[4, :]
 if information_print is True:
     print('the used mechanism is {}'.format(mechanism[0]))
 
 # Define end time and time step
-t_end = 0.001
-t_step = 1.e-9
+t_end = 0.010
+t_step = 5.e-8
 
 # %% set parameters
 if iteration is True:
     # Initialize different configurations
-    equivalence_ratio = [0.5, 1.0, 1.5]
-    reactorPressure = ct.one_atm * np.array([20.0, 25.0])
+    equivalence_ratio = [1.0]
+    reactorPressure = ct.one_atm * np.array([20.0])
     # Define temperature interval and step size
-    reactorTemperature_start = 640
-    reactorTemperature_end = 865
-    reactorTemperature_step = 15
+    reactorTemperature_start = 700
+    reactorTemperature_end = 1250
+    reactorTemperature_step = 25
 else:
     # Initialize the one configuration to test
     equivalence_ratio = np.array([1.0])
     reactorPressure = ct.one_atm * np.array([20])
     # initialize the start temperature
-    reactorTemperature_start = 800
+    reactorTemperature_start = 790
     reactorTemperature_end = reactorTemperature_start + 1  # don't change
     reactorTemperature_step = 1  # don't change
 
 # %% Iterate between the parameter settings
-if save_delays is True:
-    ign_delay_run = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                              len(equivalence_ratio) * len(reactorPressure), 5))
-    n = 0
-    nn = 0
-
 for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate through different equivalence ratios
+
+    if save_delays is True:
+        ign_delay_run = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
+                                  len(reactorPressure), 5))
+        n = 0
+        nn = 0
 
     for i, reactorPressure_run in enumerate(reactorPressure):  # enumerate through different pressures
 
@@ -95,22 +96,24 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
 
             # print information about parameter setting and ignition
             if information_print is True and 0 < main_ignition_delay < t_end*1.e+3:
-                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.3f}ms, '
-                      'main {:.3f}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
+                      'main {:.5f}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
                                             reactorTemperature, first_ignition_delay, main_ignition_delay))
             elif information_print is True and main_ignition_delay is 0:
-                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K no ignition will happen in engine relevant '
-                      'time'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature))
+                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K ignition will happen after the monitored '
+                      'interval'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature))
             elif information_print is True and main_ignition_delay is t_end*1.e+3*0.99:
-                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K ignition happens after the end of the '
-                      'interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature,
-                                             t_end*1.e+3))
+                print('For settings: $\\Phi$={:.1f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end of '
+                      'the interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5, reactorTemperature,
+                                                 t_end*1.e+3))
 
         if plot_ign_delays is True and iteration is True:
             plot_ign(ign_delay_run[nn:n, :])
             nn = n
 
-if save_delays is True:
-    # path = Path(__file__).parents[2] / 'data/00002-reactor-OME/samples_{}.npy'.format(mechanism[0])
-    path = ('/media/pascal/DATA/000-Homogeneous-Reactor/delays_{}.npy'.format(mechanism[0]))
-    np.save(path, ign_delay_run)
+    if save_delays is True:
+        # path = Path(__file__).parents[2] / 'data/00002-reactor-OME/delays_{}_{}.npy'.format(mechanism[0],
+        #                                                                                      equivalence_ratio_run))
+        path = ('/media/pascal/DATA/000-Homogeneous-Reactor/delays_{}_{}.npy'.format(mechanism[0],
+                                                                                     equivalence_ratio_run))
+        np.save(path, ign_delay_run)

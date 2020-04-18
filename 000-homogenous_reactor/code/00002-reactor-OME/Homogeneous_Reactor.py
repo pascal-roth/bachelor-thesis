@@ -25,7 +25,7 @@ information_print = False
 csv_save = False
 
 # Change the RPV calculation method
-RPV_param = np.array(['C', 'O', 'CO2', 'CO'])
+RPV_param = np.array(['O', 'C', 'CO2', 'CO'])
 
 if information_print is True:
     print('The parameters for the reaction progress variable are: {}'.format(RPV_param))
@@ -77,8 +77,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 #                 r1.Y[pome.species_index(RPV_param[2])] / pome.molecular_weights[pome.species_index(RPV_param[2])] + \
         RPV[n] = r1.Y[pome.species_index(RPV_param[0])] + \
                  r1.Y[pome.species_index(RPV_param[1])] + \
-                 r1.Y[pome.species_index(RPV_param[2])] + \
-                 r1.Y[pome.species_index(RPV_param[3])]
+                 r1.Y[pome.species_index(RPV_param[2])] #+ \
+#                 r1.Y[pome.species_index(RPV_param[3])]
 
     # heat release rate [W/m^3] and ignition delays
     from scipy.signal import find_peaks
