@@ -28,13 +28,13 @@ mechanism_all = np.array([['he_2018.xml', 'DMM3'], ['cai_ome14_2019.xml', 'OME3'
                           ['he_2018.xml', 'CH3OCH2OCH3'], ['sun_2017.xml', 'CH3OCH2OCH3'],
                           ['cai_ome14_2019.cti', 'OME3']])
 
-mechanism = mechanism_all[5, :]
+mechanism = mechanism_all[1, :]
 
 if information_print is True:
-    print('the used mechanism is {}'.format(mechanism[0]))
+    print('the used mechanism is {} with fuel {}'.format(mechanism[0], mechanism[1]))
 
 # Define end time and time step
-t_end = 0.001
+t_end = 0.010
 t_step = 1.e-9
 
 # %% set parameters
@@ -43,13 +43,13 @@ if iteration is True:
     equivalence_ratio = [1.0]
     reactorPressure = ct.one_atm * np.array([20.0])
     # Define temperature interval and step size
-    reactorTemperature_start = 700
+    reactorTemperature_start = 800
     reactorTemperature_end = 1250
     reactorTemperature_step = 25
 else:
     # Initialize the one configuration to test
-    equivalence_ratio = np.array([1.0])
-    reactorPressure = ct.one_atm * np.array([20])
+    equivalence_ratio = np.array([1.5])
+    reactorPressure = ct.one_atm * np.array([25])
     # initialize the start temperature
     reactorTemperature_start = 790
     reactorTemperature_end = reactorTemperature_start + 1  # don't change

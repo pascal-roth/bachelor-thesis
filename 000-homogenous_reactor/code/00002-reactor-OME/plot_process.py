@@ -75,7 +75,7 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.show()
 
     if process_plot[1] is True and time is True:
-        plt.plot(values[x1:x2, 0] * 1.e+3, values[x1:x2, 6],  'b-', label='$Y_{pome_n}$')
+        plt.plot(values[x1:x2, 0] * 1.e+3, values[x1:x2, 6],  'b-', label='$Y_{pode_n}$')
         plt.plot(values[x1:x2, 0] * 1.e+3, values[x1:x2, 7],  'r-', label='$Y_{CO2}$')
         plt.plot(values[x1:x2, 0] * 1.e+3, values[x1:x2, 8],  'g-', label='$Y_{O2}$')
         plt.plot(values[x1:x2, 0] * 1.e+3, values[x1:x2, 9],  'y-', label='$Y_{CO}$')
@@ -93,7 +93,7 @@ def plot_process_f(values, first_ignition_delay, main_ignition_delay, RPV, proce
         plt.show()
 
     if process_plot[1] is True and pRPV is True:
-        plt.plot(RPV[x1:x2], values[x1:x2, 6],  'b-', label='$Y_{pome_n}$')
+        plt.plot(RPV[x1:x2], values[x1:x2, 6],  'b-', label='$Y_{pode_n}$')
         plt.plot(RPV[x1:x2], values[x1:x2, 7],  'r-', label='$Y_{CO2}$')
         plt.plot(RPV[x1:x2], values[x1:x2, 8],  'g-', label='$Y_{O2}$')
         plt.plot(RPV[x1:x2], values[x1:x2, 9],  'y-', label='$Y_{CO}$')
