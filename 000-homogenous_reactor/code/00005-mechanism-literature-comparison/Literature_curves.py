@@ -11,7 +11,8 @@ from pathlib import Path
 
 # Load csv data
 def loaddata(filename):
-    path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/{}.csv'.format(filename)
+    path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/curves-from-literature/{}.csv'\
+        .format(filename)
     data = np.array(pd.read_csv(path, delimiter=';', decimal=','))
     return data
 
@@ -23,15 +24,15 @@ sun_2017_OME1_1_20 = loaddata('Sun_OME1_1_0_20bar')
 jacobs_2019_OME1_1_20 = loaddata('Jacobs_OME1_1_0_20bar_1')
 
 # Plot the data
-plt.plot(he_2018_OME1_1_20[:112, 0], he_2018_OME1_1_20[:112, 1], 'r-', label='He 2018')
-plt.plot(sun_2017_OME1_1_20[:97, 0], sun_2017_OME1_1_20[:97, 1], 'y-', label='Sun 2017')
-plt.plot(jacobs_2019_OME1_1_20[:121, 0], jacobs_2019_OME1_1_20[:121, 1], 'b-', label='Jacobs 2019')
+plt.plot(he_2018_OME1_1_20[:112, 0], he_2018_OME1_1_20[:112, 1], 'r-', label='lit_he_2018')
+plt.plot(sun_2017_OME1_1_20[:97, 0], sun_2017_OME1_1_20[:97, 1], 'y-', label='lit_sun 2017')
+plt.plot(jacobs_2019_OME1_1_20[:121, 0], jacobs_2019_OME1_1_20[:121, 1], 'b-', label='lit_jacobs_2019')
 plt.yscale('log')
 plt.legend()
 plt.ylabel('Time (ms)')
 plt.xlabel(r'$\frac{1000}{T (K)}$')
 plt.title('Plot from Jacobs et al. with OME1, 20bar and $\Phi=1.0$ at $t_0$')
-path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/he-jacobs-sun.png'
+path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/curves-from-literature/he-jacobs-sun.png'
 plt.savefig(path)
 plt.show()
 
@@ -50,13 +51,14 @@ plt.legend()
 plt.ylabel('Time (ms)')
 plt.xlabel(r'$\frac{1000}{T (K)}$')
 plt.title('Mechansim of Cai et al. with OME2 and 20bar as starting conditions')
-path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/cai.png'
+path = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/curves-from-literature/cai.png'
 plt.savefig(path)
 plt.show()
 
 # %% Plot the literature and my results
 def loaddata_npy(filename):
-    path_npy = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/{}.npy'.format(filename)
+    path_npy = Path(__file__).parents[2] / 'data/00005-mechanism-literature-comparison/simulated-delays/{}.npy'\
+        .format(filename)
     data = np.load(path_npy)
     return data
 
@@ -68,11 +70,11 @@ he_2018_OME1_my[:, 2] = 1000 / he_2018_OME1_my[:, 2]
 sun_2017_OME1_my[:, 2] = 1000 / sun_2017_OME1_my[:, 2]
 
 # Plot the data
-plt.plot(he_2018_OME1_1_20[:112, 0], he_2018_OME1_1_20[:112, 1], 'r-', label='He 2018')
-plt.plot(sun_2017_OME1_1_20[:97, 0], sun_2017_OME1_1_20[:97, 1], 'y-', label='Sun 2017')
+plt.plot(he_2018_OME1_1_20[:112, 0], he_2018_OME1_1_20[:112, 1], 'r-', label='lit_he_2018')
+plt.plot(sun_2017_OME1_1_20[:97, 0], sun_2017_OME1_1_20[:97, 1], 'y-', label='lit_sun_2017')
 
-plt.plot(he_2018_OME1_my[:, 2], he_2018_OME1_my[:, 4], 'rx', label='He 2018 my alg')
-plt.plot(sun_2017_OME1_my[:, 2], sun_2017_OME1_my[:, 4], 'yx', label='Sun 2017 my alg')
+plt.plot(he_2018_OME1_my[:, 2], he_2018_OME1_my[:, 4], 'rx', label='sim_he_2018')
+plt.plot(sun_2017_OME1_my[:, 2], sun_2017_OME1_my[:, 4], 'yx', label='sim_sun_2017')
 
 plt.yscale('log')
 plt.legend()
