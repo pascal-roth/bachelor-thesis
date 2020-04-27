@@ -69,12 +69,18 @@ sun_2017_OME1_my = np.flip(loaddata_npy('delays_sun_2017.xml_1.0_OME1'), axis=0)
 he_2018_OME1_my[:, 2] = 1000 / he_2018_OME1_my[:, 2]
 sun_2017_OME1_my[:, 2] = 1000 / sun_2017_OME1_my[:, 2]
 
+# load the experimental data
+exp_OME1_20_1_0_path = Path(__file__).parents[2] / 'data/00004-mechanism-exp-comparison/Exp_OME1_20_1_0.csv'
+exp_OME1_20_1_0 = np.array(pd.read_csv(exp_OME1_20_1_0_path, delimiter=';', decimal=','))
+
 # Plot the data
 plt.plot(he_2018_OME1_1_20[:112, 0], he_2018_OME1_1_20[:112, 1], 'r-', label='lit_he_2018')
 plt.plot(sun_2017_OME1_1_20[:97, 0], sun_2017_OME1_1_20[:97, 1], 'y-', label='lit_sun_2017')
 
-plt.plot(he_2018_OME1_my[:, 2], he_2018_OME1_my[:, 4], 'rx', label='sim_he_2018')
-plt.plot(sun_2017_OME1_my[:, 2], sun_2017_OME1_my[:, 4], 'yx', label='sim_sun_2017')
+plt.plot(he_2018_OME1_my[:, 2], he_2018_OME1_my[:, 4], 'r^-', label='sim_he_2018')
+plt.plot(sun_2017_OME1_my[:, 2], sun_2017_OME1_my[:, 4], 'y^-', label='sim_sun_2017')
+
+plt.plot(exp_OME1_20_1_0[:12, 0], exp_OME1_20_1_0[:12, 1], 'bx', label='exp_OME1')
 
 plt.yscale('log')
 plt.legend()
