@@ -21,11 +21,8 @@ ct.suppress_thermo_warnings()
 # Define if inforamtion should be printed
 information_print = False
 
-# Define if results should be saved in csv data
-csv_save = False
-
 # Change the RPV calculation method
-RPV_param = np.array(['O', 'C', 'CO2', 'CO'])
+PV_p = np.array(['O', 'C', 'CO2', 'CO'])
 
 if information_print is True:
     print('The parameters for the reaction progress variable are: {}'.format(RPV_param))
@@ -53,47 +50,49 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     time = 0.0
     n_steps = int(t_end / t_step)
 
-    values = np.zeros((n_steps, 13))
-    RPV = np.zeros(n_steps)
-    production_rate = np.zeros((n_steps, nbr_species))
-    molar_enthalpies = np.zeros((n_steps, nbr_species))
+    # Nbr of samples and distance between samples
+    n_samples = 10000
+    sample_steps = int(n_steps / n_samples)
+    nn = 0
+
+    values = np.zeros((n_samples, 14))
+    production_rate = np.zeros((n_samples, nbr_species))
+    molar_enthalpies = np.zeros((n_samples, nbr_species))
 
     for n in range(n_steps):
         time += t_step
         sim.advance(time)
 
-        production_rate[n, :] = r1.thermo.net_production_rates
-        molar_enthalpies[n, :] = r1.thermo.partial_molar_enthalpies
+        if n % sample_steps == 0:
+            production_rate[nn, :] = r1.thermo.net_production_rates
+            molar_enthalpies[nn, :] = r1.thermo.partial_molar_enthalpies
 
-        values[n] = (time, equivalence_ratio, 0, r1.thermo.T, r1.thermo.P, r1.volume, r1.Y[pome.species_index(mechanism[1])],
-                     r1.Y[pome.species_index('CO2')], r1.Y[pome.species_index('O2')],
-                     r1.Y[pome.species_index('CO')], r1.Y[pome.species_index('H2O')],
-                     r1.Y[pome.species_index('OH')], r1.Y[pome.species_index('H2O2')])
+            PV = r1.Y[pome.species_index(PV_p[0])] / pome.molecular_weights[pome.species_index(PV_p[0])] + \
+                 r1.Y[pome.species_index(PV_p[1])] / pome.molecular_weights[pome.species_index(PV_p[1])] + \
+                 r1.Y[pome.species_index(PV_p[2])] / pome.molecular_weights[pome.species_index(PV_p[2])]
 
-        # Calculate tabulated chemistry variables
-        # In the literature two different definitions (with and without dividing through the molecular mass
-#        RPV[n] = r1.Y[pome.species_index(RPV_param[0])] / pome.molecular_weights[pome.species_index(RPV_param[0])] + \
-#                 r1.Y[pome.species_index(RPV_param[1])] / pome.molecular_weights[pome.species_index(RPV_param[1])] + \
-#                 r1.Y[pome.species_index(RPV_param[2])] / pome.molecular_weights[pome.species_index(RPV_param[2])] + \
-        RPV[n] = r1.Y[pome.species_index(RPV_param[0])] + \
-                 r1.Y[pome.species_index(RPV_param[1])] + \
-                 r1.Y[pome.species_index(RPV_param[2])] #+ \
-#                 r1.Y[pome.species_index(RPV_param[3])]
+            values[nn] = (time, PV, equivalence_ratio, 0, r1.thermo.T, r1.thermo.P, r1.volume,
+                          r1.Y[pome.species_index(mechanism[1])],
+                          r1.Y[pome.species_index('CO2')], r1.Y[pome.species_index('O2')],
+                          r1.Y[pome.species_index('CO')], r1.Y[pome.species_index('H2O')],
+                          r1.Y[pome.species_index('OH')], r1.Y[pome.species_index('H2O2')])
+
+            nn += 1
 
     # heat release rate [W/m^3] and ignition delays
     from scipy.signal import find_peaks
 
-    values[:, 2] = - np.sum(production_rate * molar_enthalpies, axis=1)
+    values[:, 3] = - np.sum(production_rate * molar_enthalpies, axis=1)
     # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
     # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
     # add Q to values vector
-    max_Q = np.argmax(values[:, 2])
-    peaks, _ = find_peaks(values[:, 2], prominence=values[max_Q, 2] / 100)  # define minimum height
+    max_Q = np.argmax(values[:, 3])
+    peaks, _ = find_peaks(values[:, 3], prominence=values[max_Q, 3] / 100)  # define minimum height
 
     if peaks.any():
-        first_ignition_delay = peaks[0] * t_step * 1.e+3
-        main_ignition_delay = max_Q * t_step * 1.e+3
+        first_ignition_delay = peaks[0] * t_step * sample_steps * 1.e+3
+        main_ignition_delay = max_Q * t_step * sample_steps * 1.e+3
 
         if information_print is True:
             print('The first stage ignition delay is {:.3f} ms'.format(first_ignition_delay))
@@ -106,4 +105,4 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         if information_print is True:
             print('No ignition delay')
 
-    return values, first_ignition_delay, main_ignition_delay, RPV
+    return values, first_ignition_delay, main_ignition_delay
