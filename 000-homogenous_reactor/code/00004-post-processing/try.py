@@ -28,8 +28,15 @@ def loaddata_exp(OME, reactorPressure, equivalence_ratio):
 # %% plot data
 mechanism_all = np.array([['he_2018.xml'], ['cai_ome14_2019.xml'], ['sun_2017.xml']])
 
+pode = 3
+equivalence_ratio = 1.0
+reactorPressure = 20
+t_start = 650
+t_end = 1250
+t_step = 15
+plot_this_shit = True
 
-def plot_delays(pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step):
+if plot_this_shit is True:
     print('\nIgnition Delay plot started \n')
 
     fig = plt.figure()

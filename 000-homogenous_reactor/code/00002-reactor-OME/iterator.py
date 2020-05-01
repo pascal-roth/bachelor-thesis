@@ -41,10 +41,13 @@ print(args)
 # %% Rename arguments
 if args.mechanism_input == 'he':
     mechanism = np.array(['he_2018.xml', 'DMM' + str(args.pode)])
+    t_step = 1.e-7
 elif args.mechanism_input == 'cai':
     mechanism = np.array(['cai_ome14_2019.xml', 'OME' + str(args.pode)])
+    t_step = 5.e-7
 elif args.mechanism_input == 'sun':
     mechanism = np.array(['sun_2017.xml', 'DMM' + str(args.pode)])
+    t_step = 1.e-7
 
 if args.pode == 1:
     mechanism[1] = 'CH3OCH2OCH3'
@@ -68,7 +71,6 @@ reactorTemperature_step = args.temperature_step
 
 # Define end time and time step
 t_end = 0.010
-t_step = 1.e-7
 
 # %% Run homogeneous reactor model
 information_print = True

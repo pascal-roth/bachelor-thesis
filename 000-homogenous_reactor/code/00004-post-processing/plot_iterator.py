@@ -11,7 +11,7 @@ import cantera as ct
 # %% Collect arguments
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 
-parser.add_argument("-plt", "--plot", type=str, choices=['ign_delays', 'thermo', 'species', 'HR', 'PV'], default='HR',
+parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HR', 'PV'], default='HR',
                     help="chose which plot to create")
 
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='he',
@@ -29,8 +29,17 @@ parser.add_argument("-p", "--pressure", type=int, choices=[10, 20, 40, 0], defau
 parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='PV',
                     help="chose if plotted over time or PV")
 
-parser.add_argument("-t_0", "--temperature", type=int, default='950',
+parser.add_argument("-t", "--temperature", type=int, default='950',
                     help="chose starting temperature")
+
+parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
+                    help="chose staring temperature of simulation")
+
+parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
+                    help="chose staring temperature of simulation")
+
+parser.add_argument("-t_step", "--temperature_step", type=int, default=15,
+                    help="chose staring temperature of simulation")
 
 args = parser.parse_args()
 print(args)
@@ -47,18 +56,18 @@ elif args.mechanism_input == 'sun':
 
 # %% Call plot function
 
-if args.plot is 'ign_delay':
+if args.plot == 'ign_delay':
     from plot_ign_delay import plot_delays
-    plot_delays(args.pode, args.equivalence_ratio, args.pressure)
+    plot_delays(args.pode, args.equivalence_ratio, args.pressure, args.temperature_start, args.temperature_end, args.temperature_step)
 elif args.plot == 'thermo':
     from plot_process import plot_thermo
-    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode)
+    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
 elif args.plot == 'species':
     from plot_process import plot_species
-    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode)
+    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
 elif args.plot == 'HR':
     from plot_process import plot_HR
-    plot_HR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode)
+    plot_HR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
 elif args.plot == 'PV':
     from plot_process import plot_PV
-    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode)
+    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
