@@ -8,6 +8,7 @@ __pycache__/
 
 # Project specification
 *.npy
+*.csv
 
 # Distribution / packaging
 .Python

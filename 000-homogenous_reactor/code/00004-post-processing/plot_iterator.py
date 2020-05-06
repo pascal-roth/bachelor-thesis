@@ -1,3 +1,5 @@
+#!/home/pascal/anaconda3/envs/BA/bin/python
+
 #######################################################################################################################
 # Iteration through different temperatures, pressures, ... of the homogeneous reactor
 #######################################################################################################################
@@ -11,7 +13,7 @@ import cantera as ct
 # %% Collect arguments
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 
-parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HR', 'PV'], default='HR',
+parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HR', 'PV', 'time_scale'], default='HR',
                     help="chose which plot to create")
 
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='he',
@@ -20,10 +22,10 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("--pode", type=int, choices=[1, 2, 3, 4], default=3,
                     help="chose degree of polymerization")
 
-parser.add_argument("-phi", "--equivalence_ratio", type=float, choices=[0.5, 1.0, 1.5, 0.0], default='1.0',
+parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.0',
                     help="chose equivalence ratio")
 
-parser.add_argument("-p", "--pressure", type=int, choices=[10, 20, 40, 0], default=20,
+parser.add_argument("-p", "--pressure", type=int, default=20,
                     help="chose reactor pressure")
 
 parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='PV',
@@ -71,3 +73,6 @@ elif args.plot == 'HR':
 elif args.plot == 'PV':
     from plot_process import plot_PV
     plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+elif args.plot == 'time_scale':
+    from plot_process import plot_time_scale
+    plot_time_scale(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)

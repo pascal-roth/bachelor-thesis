@@ -12,9 +12,9 @@ import pandas as pd
 
 # %% initialise dataloaders
 def loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{}_{}_{}_{}/delays.npy'.format(
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{}_{}_{}_{}/delays'.format(
         mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step)
-    data = np.load(path)
+    data =  np.array(pd.read_csv(path))
     return data
 
 

@@ -1,3 +1,7 @@
+#!/bin/bash
+
+source /home/pascal/anaconda3/bin/activate BA
+
 echo "Welcome to data iterator"
 echo "------------------------"
 echo ""

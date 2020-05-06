@@ -9,6 +9,7 @@ import cantera as ct
 from Homogeneous_Reactor import homogeneous_reactor
 from pathlib import Path
 import os
+import pandas as pd
 
 
 # %% Collect arguments
@@ -17,10 +18,10 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='he',
                     help="chose reaction mechanism")
 
-parser.add_argument("-phi", "--equivalence_ratio", type=float, choices=[0.5, 1.0, 1.5, 0.0], default='1.0',
+parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.0',
                     help="chose equivalence ratio")
 
-parser.add_argument("-p", "--pressure", type=int, choices=[10, 20, 40, 0], default=20,
+parser.add_argument("-p", "--pressure", type=int, default=20,
                     help="chose reactor pressure")
 
 parser.add_argument("--pode", type=int, choices=[1, 2, 3, 4], default=3,
@@ -41,13 +42,13 @@ print(args)
 # %% Rename arguments
 if args.mechanism_input == 'he':
     mechanism = np.array(['he_2018.xml', 'DMM' + str(args.pode)])
-    t_step = 1.e-7
+    t_step = 1.e-6
 elif args.mechanism_input == 'cai':
     mechanism = np.array(['cai_ome14_2019.xml', 'OME' + str(args.pode)])
-    t_step = 5.e-7
+    t_step = 1.e-6
 elif args.mechanism_input == 'sun':
     mechanism = np.array(['sun_2017.xml', 'DMM' + str(args.pode)])
-    t_step = 1.e-7
+    t_step = 1.e-6
 
 if args.pode == 1:
     mechanism[1] = 'CH3OCH2OCH3'
@@ -91,16 +92,16 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
         if not ((save_delays is False) and (save_samples is False)):
             path = Path(__file__).resolve()
             path_dir = path.parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}'.format(
-                                mechanism[0], args.pode, equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                                mechanism[0], args.pode, equivalence_ratio_run, reactorPressure_run / ct.one_atm,
                                 reactorTemperature_start, reactorTemperature_end, reactorTemperature_step)
             os.makedirs(path_dir)
             path_plt = path.parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}'.format(
-                                mechanism[0], args.pode, equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                                mechanism[0], args.pode, equivalence_ratio_run, reactorPressure_run / ct.one_atm,
                                 reactorTemperature_start, reactorTemperature_end, reactorTemperature_step)
             os.makedirs(path_plt)
 
         if save_delays is True:
-            ign_delay_run = np.zeros(
+            delays = np.zeros(
                 (((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step), 3))
             n = 0
 
@@ -116,33 +117,35 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
 
             # save species development with the parameter setting
             if save_samples is True:
-                path_sample = '{}/samples_{}.npy'.format(path_dir, reactorTemperature)
-                np.save(path_sample, values)
+                path_sample = '{}/samples_{}'.format(path_dir, reactorTemperature)
+                values.to_csv(path_sample)
 
             # saving ignition delays for the parameter setting
             if save_delays is True and 0 < main_ignition_delay < t_end*1.e+3*0.99:
-                ign_delay_run[n] = (reactorTemperature, first_ignition_delay, main_ignition_delay)
+                delays[n] = (reactorTemperature, first_ignition_delay, main_ignition_delay)
                 n += 1
             elif save_delays is True:  # cancelling rows if ignition didn't happened
-                n_rows, _ = ign_delay_run.shape
-                ign_delay_run = ign_delay_run[:(n_rows - 1), :]
+                n_rows, _ = delays.shape
+                delays = delays[:(n_rows - 1), :]
 
             # print information about parameter setting and ignition
             if information_print is True and 0 < main_ignition_delay < t_end*1.e+3:
                 print('For settings: Phi={:.1f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
-                        'main {:.5f}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                        'main {:.5f}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
                                                reactorTemperature, first_ignition_delay, main_ignition_delay))
 
             elif information_print is True and main_ignition_delay is 0:
                 print('For settings: Phi={:.1f}, p={:.0f}bar, T={:.0f}K ignition will happen after the '
-                      'monitored interval'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                      'monitored interval'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
                                                   reactorTemperature))
 
             elif information_print is True and main_ignition_delay is t_end*1.e+3*0.99:
                 print('For settings: Phi={:.1f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end'
-                      ' of the interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / 1.e+5,
+                      ' of the interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
                                                      reactorTemperature, t_end*1.e+3))
 
         if save_delays is True:
-            path_delay = '{}/delays.npy'.format(path_dir)
-            np.save(path_delay, ign_delay_run)
+            path_delay = '{}/delays'.format(path_dir)
+            delays = pd.DataFrame(delays)
+            delays.columns = ['T', 'first', 'main']
+            delays.to_csv(path_delay)
