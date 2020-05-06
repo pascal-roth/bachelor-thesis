@@ -16,7 +16,7 @@ import pandas as pd
 
 #######################################################################################################################
 def loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/samples_{}'.format(
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/samples_{}.csv'.format(
                                   mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end,
                                   t_step, reactorTemperature)
     data = pd.read_csv(path)
@@ -34,7 +34,7 @@ def loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTempe
 
 
 def loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/delays'.format(
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/delays.csv'.format(
         mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step)
     data = pd.read_csv(path)
     return data

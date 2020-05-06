@@ -117,7 +117,7 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
 
             # save species development with the parameter setting
             if save_samples is True:
-                path_sample = '{}/samples_{}'.format(path_dir, reactorTemperature)
+                path_sample = '{}/samples_{}.csv'.format(path_dir, reactorTemperature)
                 values.to_csv(path_sample)
 
             # saving ignition delays for the parameter setting
@@ -145,7 +145,7 @@ for ii, equivalence_ratio_run in enumerate(equivalence_ratio):  # enumerate thro
                                                      reactorTemperature, t_end*1.e+3))
 
         if save_delays is True:
-            path_delay = '{}/delays'.format(path_dir)
+            path_delay = '{}/delays.csv'.format(path_dir)
             delays = pd.DataFrame(delays)
             delays.columns = ['T', 'first', 'main']
             delays.to_csv(path_delay)
