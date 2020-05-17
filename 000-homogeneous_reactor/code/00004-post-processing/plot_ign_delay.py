@@ -11,49 +11,40 @@ import pandas as pd
 
 
 # %% initialise dataloaders
-def loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{}_{}_{}_{}/delays.csv'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step)
-    data = np.array(pd.read_csv(path))
-    return data[:, 1:]
+def loaddata_delays(mechanism, nbr_run, equivalence_ratio, reactorPressure, pode, category):
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_{}_delays.csv'.format(mechanism, nbr_run, category)
+    data = pd.read_csv(path)
 
+    # Select only the data needed for the plot
+    data = data[data.pode == pode]
+    data = data[data.phi == equivalence_ratio]
+    data = data[data.P_0 == reactorPressure * ct.one_atm]
 
-def loaddata_exp(OME, reactorPressure, equivalence_ratio):
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/data_exp/Exp_{0}_{1}_{2}.csv'. \
-        format(OME, reactorPressure, equivalence_ratio)
-    data = np.array(pd.read_csv(path, delimiter=';', decimal=','))
-    return data
-
+    data = np.array(data)
+    return data[:, 3:]
 
 # %% plot data
 mechanism_all = np.array([['he_2018.xml'], ['cai_ome14_2019.xml'], ['sun_2017.xml']])
 
 
-def plot_delays(pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step):
-    print('\nIgnition Delay plot started \n')
-
+def plot_delays(mechanism, pode, equivalence_ratio, reactorPressure, nbr_run, category):
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
     if pode <= 3:
-        if (reactorPressure == 10 or reactorPressure == 20) and equivalence_ratio == 1.0:
-            exp = loaddata_exp('OME' + str(pode), reactorPressure, equivalence_ratio)
-            ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME' + str(pode))
 
-        he = np.flip(loaddata_delays(mechanism_all[0], equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step), axis=0)
-        cai = np.flip(loaddata_delays(mechanism_all[1], equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step), axis=0)
-        sun = np.flip(loaddata_delays(mechanism_all[2], equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step), axis=0)
+        colors = ['r-', 'g-', 'y-']
 
-        ax.semilogy(1000 / he[:, 0], he[:, 2], 'r-', label='sim_he_2018')
-        ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
-        ax.semilogy(1000 / sun[:, 0], sun[:, 2], 'y-', label='sim_sun_2017')
+        for i, mechanism_run in enumerate(mechanism):
+
+            if len(mechanism) > 1:
+                mechanism_run = mechanism_run[0]
+
+            sim = np.flip(loaddata_delays(mechanism_run, nbr_run, equivalence_ratio, reactorPressure, pode, category), axis=0)
+            ax.semilogy(1000 / sim[:, 0], sim[:, 2], colors[i], label=mechanism_run)
 
     elif pode == 4:
-        if reactorPressure == 10 and equivalence_ratio == 1.0:
-            exp = loaddata_exp('OME4', reactorPressure, equivalence_ratio)
-            ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME4')
-
-        cai = np.flip(loaddata_delays(mechanism_all[1], equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step), axis=0)
+        cai = np.flip(loaddata_delays(mechanism_all[1], nbr_run, equivalence_ratio, reactorPressure, pode, category), axis=0)
         ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
 
     else:
@@ -76,8 +67,8 @@ def plot_delays(pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step
     ax.set_yscale('log')
     ax.legend(loc='lower right')
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}_{}_{}_{}.pdf'\
-        .format(equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\
+        .format(equivalence_ratio, reactorPressure, pode)
     plt.savefig(path)
 
     plt.show()

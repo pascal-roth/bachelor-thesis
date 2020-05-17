@@ -86,7 +86,7 @@ while time < t_end:
 
     # different ways to calculate the enthalpy or internal energy
     u_state = state[2]
-    h_thermo = r1.thermo.h
+    h_thermo = r1.thermo.h * state[0]
 
     T = (state[2] / state[0] - r1.thermo.g + r1.thermo.P * r1.thermo.v) / r1.thermo.s
 
@@ -100,44 +100,44 @@ values = values[:n, :]
 title = '{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                 reactorPressure / ct.one_atm, reactorTemperature)
 # %% enthalpy
-# plt.plot(values[:, 0], values[:, 8], label='h_thermo')
+plt.plot(values[:, 0], values[:, 8], label='h_thermo')
+plt.title(title)
+plt.xlabel('time [ms]')
+plt.ylabel('h [J/kmol]')
+plt.legend()
+plt.show()
+
+# # %% internal energy
+# plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='u_state')
+# plt.plot(values[:, 0] * 1.e+3, values[:, 12], label='u_thermo')
 # plt.title(title)
 # plt.xlabel('time [ms]')
-# plt.ylabel('h [J/kmol]')
+# plt.ylabel('u [J/kmol]')
 # plt.legend()
 # plt.show()
-
-# %% internal energy
-plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='u_state')
-plt.plot(values[:, 0] * 1.e+3, values[:, 12], label='u_thermo')
-plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('u [J/kmol]')
-plt.legend()
-plt.show()
-
-# %% Temperature comparison to validate formula
-plt.plot(values[:, 0] * 1.e+3, values[:, 4], label='temperature from cantera thermo')
-plt.plot(values[:, 0] * 1.e+3, values[:, 11], label='T_u_state')
-plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('T [K]')
-plt.legend()
-plt.show()
-
-# %% Plot the starting temperature calculated with the internal energy value at every point in time
-plt.plot(values[:, 0] * 1.e+3, values[:, 9], label='T_start')
-plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('T [K]')
-plt.legend()
-plt.show()
-
-# %% Plot difference
-T_diff = values[:, 9] - reactorTemperature
-plt.plot(values[:, 0] * 1.e+3, T_diff, label='T_diff')
-plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('T [K]')
-plt.show()
-print('The maximal difference between actual and calculated initial temperature is {}K'.format(np.amax(T_diff)))
+#
+# # %% Temperature comparison to validate formula
+# plt.plot(values[:, 0] * 1.e+3, values[:, 4], label='temperature from cantera thermo')
+# plt.plot(values[:, 0] * 1.e+3, values[:, 11], label='T_u_state')
+# plt.title(title)
+# plt.xlabel('time [ms]')
+# plt.ylabel('T [K]')
+# plt.legend()
+# plt.show()
+#
+# # %% Plot the starting temperature calculated with the internal energy value at every point in time
+# plt.plot(values[:, 0] * 1.e+3, values[:, 9], label='T_start')
+# plt.title(title)
+# plt.xlabel('time [ms]')
+# plt.ylabel('T [K]')
+# plt.legend()
+# plt.show()
+#
+# # %% Plot difference
+# T_diff = values[:, 9] - reactorTemperature
+# plt.plot(values[:, 0] * 1.e+3, T_diff, label='T_diff')
+# plt.title(title)
+# plt.xlabel('time [ms]')
+# plt.ylabel('T [K]')
+# plt.show()
+# print('The maximal difference between actual and calculated initial temperature is {}K'.format(np.amax(T_diff)))

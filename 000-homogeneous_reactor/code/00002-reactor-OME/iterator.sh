@@ -6,11 +6,13 @@ echo "Welcome to data iterator"
 echo "------------------------"
 echo ""
 
-echo "Enter parameters of the homogeneous reactor"
-read -p "mechanism         [he, sun, cai]:           " mechanism
-read -p "PODE_n            [1, 2, 3, 4]:             " pode_n
-read -p "equivalence ratio [0.5, 1.0, 1.5, all=0.0]: " equivalence_ratio
-read -p "pressure          [10, 20, 40, all=0]:      " pressure
+echo "Enter parameters of the homogeneous reactor (ar = array entry possible)"
+read -p "mechanism         [he, sun, cai]:       " mechanism
+read -p "PODE_n            [1, 2, 3, 4]    (ar): " pode_n
+read -p "equivalence ratio [0.5, 1.0, 1.5] (ar): " equivalence_ratio
+read -p "pressure          [10, 20, 40]    (ar): " pressure
+read -p "name of run       [XXX]:                " name
+read -p "category of data  [train, test]:        " category
 
 while true; do
 	echo ""
@@ -20,8 +22,8 @@ while true; do
 		[Yy]* ) read -p "start temperature: " t_start
 			      read -p "end temperature:   " t_end
 			      read -p "temperature step:  " t_step
-			      python iterator.py -mech $mechanism -phi $equivalence_ratio -p $pressure --pode $pode_n -t_0 $t_start -t_end $t_end -t_step $t_step; break;;
-		[Nn]* ) python iterator.py -mech $mechanism -phi $equivalence_ratio -p $pressure --pode $pode_n ; exit;;
+			      python iterator.py -mech $mechanism -phi $equivalence_ratio -p $pressure --pode $pode_n -t_0 $t_start -t_end $t_end -t_step $t_step -nbr_run $name --category $category; break;;
+		[Nn]* ) python iterator.py -mech $mechanism -phi $equivalence_ratio -p $pressure --pode $pode_n -nbr_run $name --category $category; exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac
 done

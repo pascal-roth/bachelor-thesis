@@ -15,14 +15,25 @@ import pandas as pd
 
 
 #######################################################################################################################
-def loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/samples_{}.csv'.format(
-                                  mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end,
-                                  t_step, reactorTemperature)
+def loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, category):
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_{}_samples.csv'.format(mechanism[0], nbr_run, category)
     data = pd.read_csv(path)
 
+    # Select only the data needed for the plot
+    data = data[data.pode == pode]
+    data = data[data.phi == equivalence_ratio]
+    data = data[data.P_0 == reactorPressure * ct.one_atm]
+    data = data[data.T_0 == reactorTemperature]
+
+    if data.empty:
+        print('WARNING:Entered parameter setting not capturad in data!')
+
+    # Normalize/ fit certain data
+    data[['P']] = data[['P']] / ct.one_atm
     data[['PV']] = data[['PV']] / np.amax(data[['PV']])
     data[['time']] = data[['time']] * 1.e+3
+
+    # define the name of the x_axis
     if scale == 'PV':
         scale_name = 'PV (normalized)'
     elif scale == 'time':
@@ -33,22 +44,32 @@ def loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTempe
     return data, scale_name
 
 
-def loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/delays.csv'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step)
+def create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category):
+    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_{}_delays.csv'.format(mechanism[0], nbr_run, category)
     data = pd.read_csv(path)
-    return data
+
+    # Select only the data needed for the plot
+    data = data[data.pode == pode]
+    data = data[data.phi == equivalence_ratio]
+    data = data[data.P_0 == reactorPressure * ct.one_atm]
+
+    if data.empty:
+        print('WARNING:Entered parameter setting not capturad in data!')
+
+    result = np.where(data == reactorTemperature)
+    first = data.iloc[result[0], 4]
+    main = data.iloc[result[0], 5]
+    textstr = 'first={:.4f}ms \nmain={:.4f}ms'.format(first.iloc[0], main.iloc[0])
+    return textstr
 
 
 #######################################################################################################################
-def plot_thermo(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, t_start, t_end, t_step):
-
+def plot_thermo(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
     # get data
-    samples, scale_name = loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature,
-                                           scale, pode, t_start, t_end, t_step)
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
 
     fig = plt.figure()
-    samples[['P']] = samples[['P']] / ct.one_atm
     ax1 = samples.plot(scale, 'T', style='b-', ax=fig.add_subplot(221))
     ax1.set_xlabel(scale_name)
     ax1.set_ylabel('Temperature (K)')
@@ -62,27 +83,26 @@ def plot_thermo(mechanism, equivalence_ratio, reactorPressure, reactorTemperatur
     ax3.set_ylabel('Volume (m$^3$)')
 
     plt.tight_layout()
-    plt.figlegend(['$\Phi$ = {} \np = {} \n$T_0$ = {}'. format(equivalence_ratio, reactorPressure,
-                                                               reactorTemperature)], loc='lower right')
+    plt.figlegend(['$\Phi$ = {}\np = {}\n$T_0$ = {}'.format(equivalence_ratio, reactorPressure,
+                                                            reactorTemperature)], loc='lower right')
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}/plot_thermo_{}_{}.pdf'\
-        .format(mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature,
-                scale)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_species_PODE{}_{}_{:.0f}_{}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 
     plt.show()
 
 
 #######################################################################################################################
-def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, t_start, t_end, t_step):
+def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
     # get data
-    samples, scale_name = loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature,
-                                           scale, pode, t_start, t_end, t_step)
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
 
-#    samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'OH', 'H2O2', 'CH3', 'CH3O', 'CH2O', 'C2H2'],
-#                 style=['b-', 'r-', 'g-', 'y-', 'c-', 'm-', 'k-', 'y-', 'r-', 'g-', 'c-'],
-#                 label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{OH}$', '$Y_{H2O2}$',
-#                        '$Y_{CH3}$', '$Y_{CH3O}$', '$Y_{CH2O}$', '$Y_{C2H2}$'])
+    #    samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'OH', 'H2O2', 'CH3', 'CH3O', 'CH2O', 'C2H2'],
+    #                 style=['b-', 'r-', 'g-', 'y-', 'c-', 'm-', 'k-', 'y-', 'r-', 'g-', 'c-'],
+    #                 label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{OH}$', '$Y_{H2O2}$',
+    #                        '$Y_{CH3}$', '$Y_{CH3O}$', '$Y_{CH2O}$', '$Y_{C2H2}$'])
 
     samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'CH2O'],
                  style=['b-', 'r-', 'g-', 'y-', 'k-', 'm-'],
@@ -91,79 +111,67 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     plt.legend(loc="upper right")
     plt.xlabel(scale_name)
     plt.ylabel('mass fraction value')
-    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode,equivalence_ratio,
+    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}/plot_species_{}_{}.pdf'\
-        .format(mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature,
-                scale)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_species_PODE{}_{}_{:.0f}_{}_{}.pdf' \
+        .format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 
     plt.show()
 
 
 #######################################################################################################################
-def plot_HR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, t_start, t_end, t_step):
+def plot_HR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
     # get data
-    samples, scale_name = loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature,
-                                           scale, pode, t_start, t_end, t_step)
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
 
     samples.plot(scale, 'Q', style='b-')
     plt.xlabel(scale_name)
     plt.ylabel('Heat release [W/m$^3$]')
 
-    delays = loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step)
-    result = np.where(delays == reactorTemperature)
-    first = delays.iloc[result[0], 2]
-    main = delays.iloc[result[0], 3]
-    textstr = 'first={:.4f}ms \nmain={:.4f}ms'.format(first.iloc[0], main.iloc[0])
-    plt.text(0.6 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
+    textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
+    plt.text(0.2 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
 
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}/plot_HR_{}_{}.pdf'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature, scale)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HR_PODE{}_{}_{:.0f}_{}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 
     plt.show()
 
 
 #######################################################################################################################
-def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, t_start, t_end, t_step):
+def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, nbr_run, category, scale='time'):
     # get data
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}_PODE{}_{}_{:.0f}_{}_{}_{}/samples_{}'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature)
-    data = pd.read_csv(path)
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
 
-    data[['PV']] = data[['PV']] / np.amax(data[['PV']])
-    data[['time']] = data[['time']] * 1.e+3
-    data.plot('time', 'PV', style='b-')
+    samples.plot('time', 'PV', style='b-')
     plt.xlabel('time in ms')
     plt.ylabel('PV (normalized)')
 
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    delays = loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step)
-    result = np.where(delays == reactorTemperature)
-    first = delays.iloc[result[0], 2]
-    main = delays.iloc[result[0], 3]
-    textstr = 'first={:.4f}ms \nmain={:.4f}ms'.format(first.iloc[0], main.iloc[0])
-    plt.text(0.6 * np.amax(data[['time']]) * 1.e+3, 0.05, textstr, fontsize=12)
+    textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
+    plt.text(0.2 * np.amax(samples[['time']]) * 1.e+3, 0.05, textstr, fontsize=12)
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}/plot_PV_{}.pdf'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_PODE{}_{}_{:.0f}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
 
     plt.show()
 
 
 #######################################################################################################################
-def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, t_start, t_end, t_step, scale='time'):
+def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, nbr_run, category, scale='time'):
     # get data
-    samples, scale_name = loaddata_samples(mechanism, equivalence_ratio, reactorPressure, reactorTemperature,
-                                           scale, pode, t_start, t_end, t_step)
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
 
     time = samples['time'].to_numpy()
     x = np.zeros((len(time)))
@@ -171,22 +179,18 @@ def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemper
     for i in range(0, len(time), 1):
         x[i] = i
 
-    plt.plot(x, time)
-    plt.xlabel('Samples taken')
-    plt.ylabel('Time [ms]')
+    plt.plot(time, x)
+    plt.xlabel('Time [ms]')
+    plt.ylabel('Samples taken')
 
-    delays = loaddata_delays(mechanism, equivalence_ratio, reactorPressure, pode, t_start, t_end, t_step)
-    result = np.where(delays == reactorTemperature)
-    first = delays.iloc[result[0], 2]
-    main = delays.iloc[result[0], 3]
-    textstr = 'first={:.4f}ms \nmain={:.4f}ms'.format(first.iloc[0], main.iloc[0])
-    plt.text(0.6 * np.amax(samples[['time']]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
+    textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
+    plt.text(0.2 * np.amax(samples[['time']]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
 
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}_PODE{}_{}_{:.0f}_{}_{}_{}/plot_time_scale_{}.pdf'.format(
-        mechanism[0], pode, equivalence_ratio, reactorPressure, t_start, t_end, t_step, reactorTemperature)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_time_scale_PODE{}_{}_{:.0f}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
 
     plt.show()

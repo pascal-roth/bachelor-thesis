@@ -34,17 +34,14 @@ parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='
 parser.add_argument("-t", "--temperature", type=int, default='950',
                     help="chose starting temperature")
 
-parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
-                    help="chose staring temperature of simulation")
+parser.add_argument("-nbr_run", "--number_run", type=str, default='000',
+                    help="define a nbr to identify the started iterator run")
 
-parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
-                    help="chose staring temperature of simulation")
-
-parser.add_argument("-t_step", "--temperature_step", type=int, default=15,
-                    help="chose staring temperature of simulation")
+parser.add_argument("--category", type=str, choices=['train', 'test', 'exp'], default='train',
+                    help="chose if train or test data should be generated")
 
 args = parser.parse_args()
-print(args)
+print('\n{}\n'.format(args))
 
 # %% Rename mechanism
 mechanism_all = np.array([['he_2018.xml'], ['cai_ome14_2019.xml'], ['sun_2017.xml']])
@@ -55,24 +52,26 @@ elif args.mechanism_input == 'cai':
     mechanism = mechanism_all[1]
 elif args.mechanism_input == 'sun':
     mechanism = mechanism_all[2]
+else:
+    mechanism = mechanism_all
 
 # %% Call plot function
 
 if args.plot == 'ign_delay':
     from plot_ign_delay import plot_delays
-    plot_delays(args.pode, args.equivalence_ratio, args.pressure, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_delays(mechanism, args.pode, args.equivalence_ratio, args.pressure, args.number_run, args.category)
 elif args.plot == 'thermo':
     from plot_process import plot_thermo
-    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
 elif args.plot == 'species':
     from plot_process import plot_species
-    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
 elif args.plot == 'HR':
     from plot_process import plot_HR
-    plot_HR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_HR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
 elif args.plot == 'PV':
     from plot_process import plot_PV
-    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run, args.category)
 elif args.plot == 'time_scale':
     from plot_process import plot_time_scale
-    plot_time_scale(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.temperature_start, args.temperature_end, args.temperature_step)
+    plot_time_scale(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run, args.category)

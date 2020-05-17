@@ -12,8 +12,7 @@ while true; do
 	echo ""
 	case $yn in
 		[Yy]* ) echo "Very good"; break;;
-		[Nn]* ) python ./00002-reactor-OME/iterator.py -mech cai -phi 1.0 -p 20 --pode 3 -inf_print False;
-		        python ./00002-reactor-OME/iterator.py -mech cai -phi 1.0 -p 20 --pode 4 -inf_print False;
+		[Nn]* ) python ./00002-reactor-OME/iterator.py -mech cai -phi 0.5 1.0 1.5 -p 10 20 40 --pode 3 4-inf_print False;
 		        exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac
@@ -24,16 +23,7 @@ echo ""
 echo "Chapter 2: Chemical-Kinetic-Modelling"
 echo "Data for IDTs-Exp-Comparison plot"
 # Plot of the IDTs with experimental data for Phi=1.0, p = 10/20 bar and PODE 1-4
-python ./00002-reactor-OME/iterator.py -mech he  -phi 1.0 -p 20 --pode 1 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech sun -phi 1.0 -p 20 --pode 1 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech cai -phi 1.0 -p 20 --pode 1 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech he  -phi 1.0 -p 20 --pode 2 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech sun -phi 1.0 -p 20 --pode 2 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech cai -phi 1.0 -p 20 --pode 2 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech he  -phi 1.0 -p 20 --pode 3 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech sun -phi 1.0 -p 20 --pode 3 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech he  -phi 1.0 -p 10 --pode 3 -inf_print False
-python ./00002-reactor-OME/iterator.py -mech sun -phi 1.0 -p 10 --pode 3 -inf_print False
+
 echo "Data for ..."
 
 
@@ -43,9 +33,5 @@ echo "Start with plot execution"
 echo "-------------------------"
 echo "Chapter 2: Chemical-Kinetic-Modelling"
 echo "IDTs-Exp-Comparison plots"
-python ./00004-post-processing/plot_iterator.py -plt ign_delay -phi 1.0 -p 20 --pode 1
-python ./00004-post-processing/plot_iterator.py -plt ign_delay -phi 1.0 -p 20 --pode 2
-python ./00004-post-processing/plot_iterator.py -plt ign_delay -phi 1.0 -p 20 --pode 3
-python ./00004-post-processing/plot_iterator.py -plt ign_delay -phi 1.0 -p 10 --pode 3
-python ./00004-post-processing/plot_iterator.py -plt ign_delay -phi 1.0 -p 10 --pode 4
+
 

@@ -30,11 +30,11 @@ if information_print is True:
 
 
 # %% Homogeneous reactor simulation
-def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step):
+def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode, O2, N2):
     #  Fuel mixture
     pome = ct.Solution(mechanism[0])
     pome.TP = reactorTemperature, reactorPressure
-    pome.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:0.21 N2:0.79')
+    pome.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
 
     if information_print is True:
         print(pome())
@@ -53,29 +53,35 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     time = 0.0
     n_samples = 12500
     n = 0
+    samples_after_ignition = 300
+    stop_criterion = False
 
     values = np.zeros((n_samples, 18))
 
     while time < t_end:
-        if n == n_samples:
-            print('WARNING: {} samples taken and {} not reached'.format(n_samples, t_end))
-            break
-
-        # calculate grad to define step size
+        # calculate grad to define step size and stop_criterion
         if n <= 1:
-            grad_run = np.zeros((3))
+            grad_PV = np.zeros((3))
+            grad_T = np.zeros((3))
         else:
-            grad_run = np.gradient(values[:(n + 1), 1])
+            grad_PV = np.gradient(values[:(n + 1), 5])
+            grad_T = np.gradient(values[:(n + 1), 7])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if grad_run[n - 2] > 1.e-6:
+        if grad_PV[n - 2] > 1.e-6:
             time += t_step / 100
         else:
             time += t_step
 
+        # Initialize a break condition so that after the ignition, samples are not taken for an unnecessary long time
+        if r1.thermo.T > 1.25 * reactorTemperature and grad_T[n - 2] < 1.e-7 and stop_criterion is False:
+            t_end = time + samples_after_ignition * t_step
+            stop_criterion = True
+
         # Calculate the reactor parameters for the point in time
         sim.advance(time)
 
+        # Calculate the PV
         PV = r1.Y[pome.species_index(PV_p[0])] / pome.molecular_weights[pome.species_index(PV_p[0])] + \
              r1.Y[pome.species_index(PV_p[1])] / pome.molecular_weights[pome.species_index(PV_p[1])] * 0.15 + \
              r1.Y[pome.species_index(PV_p[2])] / pome.molecular_weights[pome.species_index(PV_p[2])] * 1.5
@@ -84,27 +90,45 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
-        values[n] = (time, PV, equivalence_ratio, Q, r1.thermo.T, r1.thermo.P, r1.volume,
-                     r1.Y[pome.species_index(mechanism[1])],
-                     r1.Y[pome.species_index('CO2')], r1.Y[pome.species_index('O2')],
-                     r1.Y[pome.species_index('CO')], r1.Y[pome.species_index('H2O')],
-                     r1.Y[pome.species_index('OH')], r1.Y[pome.species_index('H2O2')],
-                     r1.Y[pome.species_index('CH3')], r1.Y[pome.species_index('CH3O')],
-                     r1.Y[pome.species_index('CH2O')], r1.Y[pome.species_index('C2H2')])
+        # Calculate the internal energy as characterization of the thermodynamical state
+        r1.thermo.basis = 'mass'
+        if n == 0:
+            s_0 = r1.thermo.s
+            g_0 = r1.thermo.g
+            v_0 = r1.thermo.v
+
+            if information_print is True:
+                print('The initial conditions for the temperature of {}K are: \n'
+                      'entropy s: {:.3f} [J/kgK] free gibbs energy: {:.3f} [J/kg] volume: {:.3f} [m³/kg]'.format(
+                       reactorTemperature, s_0, g_0, v_0))
+
+        state = r1.get_state()
+        internal_energy = state[2]
+
+        # Summarize all values to be saved in an array
+        values[n] = (pode, equivalence_ratio, reactorPressure, reactorTemperature, time, PV, Q, r1.thermo.T, r1.thermo.P,
+        r1.volume, internal_energy, r1.Y[pome.species_index(mechanism[1])],
+        r1.Y[pome.species_index('CO2')], r1.Y[pome.species_index('O2')],
+        r1.Y[pome.species_index('CO')], r1.Y[pome.species_index('H2O')],
+        r1.Y[pome.species_index('H2')], r1.Y[pome.species_index('CH2O')])
 
         n += 1
+
+        if n == n_samples and time < t_end:
+            print('WARNING: maximum nbr of samples: {} taken and {} not reached'.format(n_samples, t_end))
+            break
 
     values = values[:n, :]
 
     # ignition delay times
     from scipy.signal import find_peaks
 
-    max_Q = np.argmax(values[:, 3])
-    peaks, _ = find_peaks(values[:, 3], prominence=values[max_Q, 3] / 100)  # define minimum height
+    max_Q = np.argmax(values[:, 6])
+    peaks, _ = find_peaks(values[:, 6], prominence=values[max_Q, 6] / 100)  # define minimum height
 
-    if peaks.any() and values[max_Q, 4] > (reactorTemperature * 1.15):
-        first_ignition_delay = values[peaks[0], 0] * 1.e+3
-        main_ignition_delay = values[max_Q, 0] * 1.e+3
+    if peaks.any() and values[max_Q, 7] > (reactorTemperature * 1.15):
+        first_ignition_delay = values[peaks[0], 4] * 1.e+3
+        main_ignition_delay = values[max_Q, 4] * 1.e+3
 
         if information_print is True:
             print('The first stage ignition delay is {:.3f} ms'.format(first_ignition_delay))
@@ -117,8 +141,4 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         if information_print is True:
             print('No ignition delay')
 
-    # Convert to panda array
-    values = pd.DataFrame(values)
-    values.columns = ['time', 'PV', 'phi', 'Q', 'T', 'P', 'V', 'PODE', 'CO2', 'O2', 'CO', 'H2O', 'OH', 'H2O2', 'CH3',
-                      'CH3O', 'CH2O', 'C2H2']
-    return values, first_ignition_delay, main_ignition_delay
+    return values, first_ignition_delay, main_ignition_delay, s_0, g_0, v_0
