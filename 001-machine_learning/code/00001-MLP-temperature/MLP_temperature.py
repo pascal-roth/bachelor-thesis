@@ -3,15 +3,13 @@
 #######################################################################################################################
 
 # import packages
-import pandas as pd
-import numpy as np
 import argparse
 from fc_pre_processing_load import loaddata
 from fc_post_processing import load_checkpoint
 import torch
 from torch import nn
-from pathlib import Path
 import fc_model
+import numpy as np
 
 # %% Collect arguments
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
@@ -19,17 +17,26 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("-nbr_run", "--number_run", type=str, default='000',
+parser.add_argument("-nbr_run", "--number_train_run", type=str, default='000',
                     help="define which training data should be used")
 
 parser.add_argument("-nbr_test", "--number_test_run", type=str, default='000',
                     help="define which test data should be for validation")
+
+parser.add_argument("-s_paras", "--sample_parameters", nargs='+', type=str, default=['pode', 'phi', 'T_0', 'P_0', 'PV'],
+                    help="chose input parameters for the NN")
+
+parser.add_argument("-l_paras", "--label_parameters", nargs='+', type=str, default=['T'],
+                    help="chose output parameters for the NN")
 
 parser.add_argument("--n_epochs", type=int, default=50,
                     help="chose number of epochs for training")
 
 parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                     help="chose number of the network")
+
+parser.add_argument("--typ", type=str, choices=['train', 'test'], default='test',
+                    help="chose validation method of pre-trained NN")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],
                     help="chose equivalence ratio")
@@ -50,56 +57,48 @@ args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
 
-# %% Load training, validation and test tensors
-train_loader, valid_loader = loaddata(args.mechanism_input, args.number_run, args.equivalence_ratio, args.pressure,
-                                      args.temperature, args.pode, category='train', val_split=True)
-
-test_loader, scaler = loaddata(args.mechanism_input, args.number_test_run, args.equivalence_ratio, args.pressure,
-                               args.temperature, args.pode, category='test', val_split=False)
-
 # %% Network implementation
-n_input = 5
-n_output = 1
-n_hidden = [32, 32]
-
 try:
-    model, criterion = load_checkpoint(args.number_net)
+    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, n_input, n_output, valid_test_loss_min, \
+    valid_train_loss_min, _ = load_checkpoint(args.number_net, args.typ)
     print('Pretrained model found, training will be continued ...')
 except FileNotFoundError:
+    n_input = 5
+    n_output = 1
+    n_hidden = [64, 64, 32]
     model = fc_model.Net(n_input, n_output, n_hidden)
     criterion = nn.MSELoss()
     print('New model created')
+    scaler_samples = None
+    scaler_labels = None
+    s_paras = args.sample_parameters
+    l_paras = args.label_parameters
+    valid_test_loss_min = np.Inf
+    valid_train_loss_min = np.Inf
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 print(model)
 
-# number of epochs to train the model
-losses = fc_model.train(model, train_loader, valid_loader, test_loader, criterion, optimizer, args.n_epochs)
-model.load_state_dict(torch.load('model.pt'))
+# %% Load training, validation and test tensors
+train_loader, valid_loader, scaler_samples, scaler_labels = loaddata \
+    (args.mechanism_input, args.number_train_run, args.equivalence_ratio, args.pressure, args.temperature, args.pode,
+     s_paras, l_paras, category='train', scaler_samples=scaler_samples,
+     scaler_labels=scaler_labels)
 
-# save losses
-path = Path(__file__).resolve()
-path_loss = path.parents[2] / 'data/00001-MLP-temperature/{}_losses.csv'.format(args.number_net)
+test_loader = loaddata(args.mechanism_input, args.number_test_run, args.equivalence_ratio, args.pressure,
+                       args.temperature, args.pode, s_paras, l_paras,
+                       category='test', scaler_samples=scaler_samples, scaler_labels=scaler_labels)
 
+print('Data loaded, start training ...')
 
-try:
-    losses_pre = pd.read_csv(path_loss)
-    losses_pre = losses_pre.values
-    losses = np.append(losses_pre[:, 1:], losses, axis=0)
-    losses = pd.DataFrame(losses)
-except FileNotFoundError:
-    losses = pd.DataFrame(losses)
+# %% number of epochs to train the model
+valid_test_loss_min, valid_train_loss_min = fc_model.train(model, train_loader, valid_loader, test_loader, criterion,
+                                                           optimizer, args.n_epochs, args.number_net,
+                                                           valid_test_loss_min, valid_train_loss_min)
 
-losses.columns = ['train_loss', 'valid_loss']
-losses.to_csv(path_loss)
+# %% save best models depending the validation loss
+fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, s_paras, l_paras, scaler_samples,
+                    scaler_labels, valid_test_loss_min, valid_train_loss_min, args.number_train_run, typ='train')
 
-# Save model with structure
-checkpoint = {'input_size': n_input,
-              'output_size': n_output,
-              'hidden_layers': [each.out_features for each in model.hidden_layers],
-              'optimizer': optimizer.state_dict(),
-              'criterion': criterion.state_dict(),
-              'state_dict': model.state_dict()}
-path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(args.number_net)
-torch.save(checkpoint, path_pth)
-print('Model saved ...')
+fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, s_paras, l_paras, scaler_samples,
+                    scaler_labels, valid_test_loss_min, valid_train_loss_min, args.number_train_run, typ='test')

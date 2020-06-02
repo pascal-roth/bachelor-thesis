@@ -29,22 +29,56 @@ if information_print is True:
     print('The parameters for the reaction progress variable are: {}'.format(PV_p))
 
 
-# %% Homogeneous reactor simulation
-def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode, O2, N2):
-    #  Fuel mixture
-    pome = ct.Solution(mechanism[0])
-    pome.TP = reactorTemperature, reactorPressure
-    pome.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
+#%% functions to calculate the mixture fraction variable
+def beta(gas, components, weights):
+    for i in range(len(components)):
+        if i == 0:
+            beta = weights[i] * gas.elemental_mole_fraction(components[i])
+        else:
+            beta = beta + weights[i] * gas.elemental_mole_fraction(components[i])
 
-    if information_print is True:
-        print(pome())
+    return beta
+
+
+def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio):     # create the mixture fraction variable for the run
+
+    Z_components = ['C', 'O', 'H']
+    Z_weights = [2, -1, 0.5]
+
+    pode.X = {'O2': O2, 'N2': N2}
+    beta_oxidizer = beta(pode, Z_components, Z_weights)
+
+    pode.X = {mechanism[1]: 1.0}
+    beta_fuel = beta(pode, Z_components, Z_weights)
+
+    pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
+    beta_run = beta(pode, Z_components, Z_weights)
+
+    Z = (beta_run - beta_oxidizer) / (beta_fuel - beta_oxidizer)
+
+    return Z
+
+
+# %% Homogeneous reactor simulation
+def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode_nbr, O2, N2):
+    #  Fuel mixture
+    pode = ct.Solution(mechanism[0])
+    pode.TP = reactorTemperature, reactorPressure
+
+    # calculate mixture fraction
+    Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio)
 
     # Create Reactor
-    r1 = ct.Reactor(contents=pome, name='homogeneous_reactor')
+    pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
+
+    if information_print is True:
+        print(pode())
+
+    r1 = ct.IdealGasReactor(contents=pode, name='homogeneous_reactor')
     sim = ct.ReactorNet([r1])
     #    sim.atol = 1.e-14  # standard: 1e-15
     #    sim.rtol = 1.e-10  # standard: 1e-09
-    sim.max_err_test_fails = 10
+    sim.max_err_test_fails = 50
 
     if information_print is True:
         print('finished setup, begin solution...')
@@ -56,7 +90,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     samples_after_ignition = 300
     stop_criterion = False
 
-    values = np.zeros((n_samples, 18))
+    values = np.zeros((n_samples, 20))
 
     while time < t_end:
         # calculate grad to define step size and stop_criterion
@@ -64,8 +98,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_PV = np.zeros((3))
             grad_T = np.zeros((3))
         else:
-            grad_PV = np.gradient(values[:(n + 1), 5])
-            grad_T = np.gradient(values[:(n + 1), 7])
+            grad_PV = np.gradient(values[:(n + 1), 8])
+            grad_T = np.gradient(values[:(n + 1), 10])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
         if grad_PV[n - 2] > 1.e-6:
@@ -82,9 +116,9 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         sim.advance(time)
 
         # Calculate the PV
-        PV = r1.Y[pome.species_index(PV_p[0])] / pome.molecular_weights[pome.species_index(PV_p[0])] + \
-             r1.Y[pome.species_index(PV_p[1])] / pome.molecular_weights[pome.species_index(PV_p[1])] * 0.15 + \
-             r1.Y[pome.species_index(PV_p[2])] / pome.molecular_weights[pome.species_index(PV_p[2])] * 1.5
+        PV = r1.Y[pode.species_index(PV_p[0])] / pode.molecular_weights[pode.species_index(PV_p[0])] + \
+             r1.Y[pode.species_index(PV_p[1])] / pode.molecular_weights[pode.species_index(PV_p[1])] * 0.15 + \
+             r1.Y[pode.species_index(PV_p[2])] / pode.molecular_weights[pode.species_index(PV_p[2])] * 1.5
 
         Q = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
@@ -106,11 +140,11 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         internal_energy = state[2]
 
         # Summarize all values to be saved in an array
-        values[n] = (pode, equivalence_ratio, reactorPressure, reactorTemperature, time, PV, Q, r1.thermo.T, r1.thermo.P,
-        r1.volume, internal_energy, r1.Y[pome.species_index(mechanism[1])],
-        r1.Y[pome.species_index('CO2')], r1.Y[pome.species_index('O2')],
-        r1.Y[pome.species_index('CO')], r1.Y[pome.species_index('H2O')],
-        r1.Y[pome.species_index('H2')], r1.Y[pome.species_index('CH2O')])
+        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, internal_energy, r1.thermo.h, Z,
+                     time, PV, Q, r1.thermo.T, r1.thermo.P, r1.volume, r1.Y[pode.species_index(mechanism[1])],
+                     r1.Y[pode.species_index('CO2')], r1.Y[pode.species_index('O2')],
+                     r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
+                     r1.Y[pode.species_index('H2')], r1.Y[pode.species_index('CH2O')])
 
         n += 1
 
@@ -123,12 +157,12 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     # ignition delay times
     from scipy.signal import find_peaks
 
-    max_Q = np.argmax(values[:, 6])
-    peaks, _ = find_peaks(values[:, 6], prominence=values[max_Q, 6] / 100)  # define minimum height
+    max_Q = np.argmax(values[:, 9])
+    peaks, _ = find_peaks(values[:, 9], prominence=values[max_Q, 9] / 100)  # define minimum height
 
-    if peaks.any() and values[max_Q, 7] > (reactorTemperature * 1.15):
-        first_ignition_delay = values[peaks[0], 4] * 1.e+3
-        main_ignition_delay = values[max_Q, 4] * 1.e+3
+    if peaks.any() and values[max_Q, 10] > (reactorTemperature * 1.15):
+        first_ignition_delay = values[peaks[0], 7] * 1.e+3
+        main_ignition_delay = values[max_Q, 7] * 1.e+3
 
         if information_print is True:
             print('The first stage ignition delay is {:.3f} ms'.format(first_ignition_delay))

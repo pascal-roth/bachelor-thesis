@@ -23,7 +23,6 @@ def create_path(mechanism_input, nbr_run):
     path = Path(__file__).resolve()
     path_dir = path.parents[2] / 'data/00002-reactor-OME/{}'.format(mechanism)
     path_plt = path.parents[2] / 'data/00004-post-processing/{}/{}/'.format(mechanism, nbr_run)
-
     return path_dir, path_plt
 
 
@@ -41,16 +40,16 @@ def make_dir(mechanism_input, nbr_run, inf_print):
 
 
 def save_df(typ, category, mechanism_input, nbr_run, reactorTemperature_end, reactorTemperature_start,
-            reactorTemperature_step, equivalence_ratio, pressure, pode, size):
+            reactorTemperature_step, phi_end, phi_0, phi_step, p_end, p_0, p_step, pode, size):
 
     if typ == 'samples' and not category == 'test':
         n = 0
-        data = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                           len(equivalence_ratio) * len(pressure) * len(pode) * 12500, size))
+        data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                         int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 12500, size))
 
     elif typ != 'samples' and not category == 'test':
-        data = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                           len(equivalence_ratio) * len(pressure) * len(pode), size))
+        data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                         int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode), size))
         n = 0
     elif category == 'test':
         try:
@@ -62,23 +61,23 @@ def save_df(typ, category, mechanism_input, nbr_run, reactorTemperature_end, rea
             if typ != 'samples':
                 data = data[:, 1:]
                 n = len(data)
-                data_new = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                                    len(equivalence_ratio) * len(pressure) * len(pode), size))
+                data_new = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                                    int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode), size))
                 data = np.append(data, data_new, axis=0)
             else:
                 n = len(data)
-                data_new = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                                    len(equivalence_ratio) * len(pressure) * len(pode) * 12500, size))
+                data_new = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                                    int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 12500, size))
                 data = np.append(data, data_new, axis=0)
 
         except FileNotFoundError:
 
             if typ != 'samples':
-                data = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                                len(equivalence_ratio) * len(pressure) * len(pode), size))
+                data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                                int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode), size))
             else:
-                data = np.zeros((((reactorTemperature_end - reactorTemperature_start) // reactorTemperature_step) *
-                                 len(equivalence_ratio) * len(pressure) * len(pode) * 12500, size))
+                data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
+                                 int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 12500, size))
             n = 0
             print('No pre existing {}_{} array'.format(category, typ))
 

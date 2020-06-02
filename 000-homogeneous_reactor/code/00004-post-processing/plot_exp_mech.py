@@ -13,7 +13,8 @@ import argparse
 
 # %% initialise dataloaders
 def loaddata_sim(mechanism, nbr_run, equivalence_ratio, reactorPressure, pode):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_exp_delays.csv'.format(mechanism[0], nbr_run)
+    path = Path(__file__).resolve()
+    path = path.parents[2] / 'data/00002-reactor-OME/{}/{}_exp_delays.csv'.format(mechanism[0], nbr_run)
     data = pd.read_csv(path)
 
     # Select only the data needed for the plot
@@ -22,13 +23,13 @@ def loaddata_sim(mechanism, nbr_run, equivalence_ratio, reactorPressure, pode):
     data = data[data.P_0 == reactorPressure * ct.one_atm]
 
     data = np.array(data)
-    return data[:, 3:]
+    return data[:, 4:]
 
 
 def loaddata_exp(OME, reactorPressure, equivalence_ratio):
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/data_exp/Exp_{0}_{1}_{2}.csv'. \
-        format(OME, reactorPressure, equivalence_ratio)
-    data = np.array(pd.read_csv(path, delimiter=';', decimal=','))
+    path = Path(__file__).resolve()
+    path = path.parents[2] / 'data/00004-post-processing/data_exp/Exp_{}_{}_{}.csv'.format(OME, equivalence_ratio, reactorPressure)
+    data = np.array(pd.read_csv(path, delimiter=',', decimal='.'))
     return data
 
 # %% get input arguments
@@ -53,12 +54,6 @@ args = parser.parse_args()
 
 
 mechanism_all = np.array([['he_2018.xml'], ['cai_ome14_2019.xml'], ['sun_2017.xml']])
-if args.mechanism_input == 'he':
-    mechanism = mechanism_all[0]
-elif args.mechanism_input == 'cai':
-    mechanism = mechanism_all[1]
-elif args.mechanism_input == 'sun':
-    mechanism = mechanism_all[2]
 
 pode = args.pode
 equivalence_ratio = args.equivalence_ratio
@@ -74,9 +69,13 @@ if pode <= 3:
     exp = loaddata_exp('OME' + str(pode), reactorPressure, equivalence_ratio)
     ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME' + str(pode))
 
-    he = np.flip(loaddata_sim(mechanism_all[0], equivalence_ratio, reactorPressure, pode, nbr_run), axis=0)
-    cai = np.flip(loaddata_sim(mechanism_all[1], equivalence_ratio, reactorPressure, pode, nbr_run), axis=0)
-    sun = np.flip(loaddata_sim(mechanism_all[2], equivalence_ratio, reactorPressure, pode, nbr_run), axis=0)
+    if reactorPressure == 10 and equivalence_ratio == 1.0:
+        exp_he = loaddata_exp('PODE' + str(pode), reactorPressure, equivalence_ratio)
+        ax.semilogy(exp_he[:, 0], exp_he[:, 1], 'cx', label='exp_he_OME' + str(pode))
+
+    he = np.flip(loaddata_sim(mechanism_all[0], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
+    cai = np.flip(loaddata_sim(mechanism_all[1], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
+    sun = np.flip(loaddata_sim(mechanism_all[2], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
 
     ax.semilogy(1000 / he[:, 0], he[:, 2], 'r-', label='sim_he_2018')
     ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
@@ -86,7 +85,7 @@ elif pode == 4:
     exp = loaddata_exp('OME4', reactorPressure, equivalence_ratio)
     ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME4')
 
-    cai = np.flip(loaddata_sim(mechanism_all[1], equivalence_ratio, reactorPressure, pode, nbr_run), axis=0)
+    cai = np.flip(loaddata_sim(mechanism_all[1], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
     ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
 
 else:
@@ -109,7 +108,8 @@ ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignm
 ax.set_yscale('log')
 ax.legend(loc='lower right')
 
-path = Path(__file__).parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\
+path = Path(__file__).resolve()
+path = path.parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\
     .format(equivalence_ratio, reactorPressure, pode)
 plt.savefig(path)
 

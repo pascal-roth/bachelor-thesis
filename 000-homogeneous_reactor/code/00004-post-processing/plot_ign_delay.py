@@ -21,7 +21,7 @@ def loaddata_delays(mechanism, nbr_run, equivalence_ratio, reactorPressure, pode
     data = data[data.P_0 == reactorPressure * ct.one_atm]
 
     data = np.array(data)
-    return data[:, 3:]
+    return data[:, 4:]
 
 # %% plot data
 mechanism_all = np.array([['he_2018.xml'], ['cai_ome14_2019.xml'], ['sun_2017.xml']])

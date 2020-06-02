@@ -7,6 +7,9 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 import numpy as np
+from pathlib import Path
+import pandas as pd
+import os
 
 
 # model building class ################################################################################################
@@ -34,7 +37,7 @@ class Net(nn.Module):
 
 
 # validation function for the model ###################################################################################
-def validation(model, valid_loader, test_loader, criterion, valid_loss_min):
+def validation(model, valid_loader, test_loader, criterion, valid_test_loss_min, valid_train_loss_min):
     valid_samples_loss = 0
     valid_test_loss = 0
 
@@ -54,15 +57,8 @@ def validation(model, valid_loader, test_loader, criterion, valid_loss_min):
         # update running validation loss
         valid_test_loss += loss.item() * data.size(0)
 
-    valid_samples_loss= valid_samples_loss/len(valid_loader)
-    valid_test_loss = valid_test_loss/len(test_loader)
-
-    # save model if validation loss has decreased
-    if valid_test_loss <= valid_loss_min:
-        print('Interpolation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_loss_min,
-                                                                                           valid_test_loss))
-        torch.save(model.state_dict(), 'model.pt')
-        valid_loss_min = valid_test_loss
+    valid_samples_loss = valid_samples_loss / len(valid_loader)
+    valid_test_loss = valid_test_loss / len(test_loader)
 
     #     correct = np.zeros((len(output)))
     #
@@ -75,12 +71,11 @@ def validation(model, valid_loader, test_loader, criterion, valid_loss_min):
     #     acc = np.append(acc, np.sum(correct) / len(output))
     #
     # acc = np.mean(acc)
-    return valid_samples_loss, valid_test_loss, valid_loss_min
+    return valid_samples_loss, valid_test_loss, valid_test_loss_min, valid_train_loss_min
 
 
 # training function for the model ####################################################################################
-def train(model, train_loader, val_loader, test_loader, criterion, optimizer, epochs):
-    valid_loss_min = np.Inf
+def train(model, train_loader, val_loader, test_loader, criterion, optimizer, epochs, nbr_net, valid_test_loss_min, valid_train_loss_min):
     losses = np.zeros((epochs, 3))
 
     for epoch in range(epochs):
@@ -101,17 +96,80 @@ def train(model, train_loader, val_loader, test_loader, criterion, optimizer, ep
             # update running training loss
             losses[epoch, 0] += loss.item() * data.size(0)
 
-        losses[epoch, 0] = losses[epoch, 0]/len(train_loader)
+        losses[epoch, 0] = losses[epoch, 0] / len(train_loader)
 
         # Model in inference mode, dropout is off
         model.eval()
 
         # Turn off gradients for validation, will speed up inference
         with torch.no_grad():
-            losses[epoch, 1], losses[epoch, 2], valid_loss_min = validation(model, val_loader, test_loader, criterion,
-                                                                            valid_loss_min)
+            losses[epoch, 1], losses[epoch, 2], valid_test_loss_min, valid_train_loss_min = validation \
+                (model, val_loader, test_loader, criterion, valid_test_loss_min, valid_train_loss_min)
 
         print('Epoch: {} \tTraining Loss: {:.6f} \tValidation loss {:.6f} \tInterpolation loss {:.6f}'.format
               (epoch + 1, losses[epoch, 0], losses[epoch, 1], losses[epoch, 2]))
 
-    return losses
+        # save model if validation loss has decreased
+        if losses[epoch, 2] <= valid_test_loss_min:
+            print(
+                'Interpolation test  loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_test_loss_min,
+                                                                                                   losses[epoch, 2]))
+            torch.save(model.state_dict(), 'model_test.pt')
+            valid_test_loss_min = losses[epoch, 2]
+
+        if losses[epoch, 1] <= valid_train_loss_min:
+            print(
+                'Interpolation train loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_train_loss_min,
+                                                                                                   losses[epoch, 1]))
+            torch.save(model.state_dict(), 'model_train.pt')
+            valid_train_loss_min = losses[epoch, 1]
+
+    # save losses
+    path = Path(__file__).resolve()
+    path_loss = path.parents[2] / 'data/00001-MLP-temperature/{}_losses.csv'.format(nbr_net)
+
+    try:
+        losses_pre = pd.read_csv(path_loss)
+        losses_pre = losses_pre.values
+        losses = np.append(losses_pre[:, 1:], losses, axis=0)
+        losses = pd.DataFrame(losses)
+    except FileNotFoundError:
+        losses = pd.DataFrame(losses)
+
+    losses.columns = ['train_loss', 'valid_loss', 'interpolation_loss']
+    losses.to_csv(path_loss)
+
+    return valid_test_loss_min, valid_train_loss_min
+
+
+# save latest models in checkpoint files ##############################################################################
+def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_paras, l_paras, scaler_samples,
+               scaler_labels, valid_test_loss_min, valid_train_loss_min, number_train_run, typ):
+
+    try:
+        model.load_state_dict(torch.load('model_{}.pt'.format(typ)))
+
+        # Save model with structure
+        checkpoint = {'input_size': n_input,
+                      'output_size': n_output,
+                      'hidden_layers': [each.out_features for each in model.hidden_layers],
+                      'optimizer': optimizer.state_dict(),
+                      'criterion': criterion.state_dict(),
+                      'state_dict': model.state_dict(),
+                      's_paras': s_paras,
+                      'l_paras': l_paras,
+                      'scaler_samples': scaler_samples,
+                      'scaler_labels': scaler_labels,
+                      'valid_test_loss_min': valid_test_loss_min,
+                      'valid_train_loss_min': valid_train_loss_min,
+                      'number_train_run': number_train_run}
+
+        path = Path(__file__).resolve()
+        path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_{}_checkpoint.pth'.format(number_net, typ)
+        torch.save(checkpoint, path_pth)
+        print('Model with {} validation saved ...'.format(typ))
+
+        # Delete the model pt files
+        os.remove('model_{}.pt'.format(typ))
+    except FileNotFoundError:
+        print('Training has not improved model with {} validation, no new model will be saved ...'.format(typ))

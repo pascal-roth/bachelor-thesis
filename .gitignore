@@ -9,6 +9,11 @@ __pycache__/
 # Project specification
 *.npy
 *.csv
+*.pdf
+*.png
+*.pt
+*.pth
+*.pt
 
 # Distribution / packaging
 .Python

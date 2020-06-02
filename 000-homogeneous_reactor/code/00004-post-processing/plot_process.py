@@ -16,11 +16,14 @@ import pandas as pd
 
 #######################################################################################################################
 def loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, category):
-    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_{}_samples.csv'.format(mechanism[0], nbr_run, category)
+#    path = Path(__file__).parents[2] / 'data/00002-reactor-OME/{}/{}_{}_samples.csv'.format(mechanism[0], nbr_run, category)
+    path = '/media/pascal/TOSHIBA EXT/BA/{}_{}_samples.csv'.format(nbr_run, category)
     data = pd.read_csv(path)
 
     # Select only the data needed for the plot
     data = data[data.pode == pode]
+    data_phi = data.phi.round(2)
+    data.phi = data_phi
     data = data[data.phi == equivalence_ratio]
     data = data[data.P_0 == reactorPressure * ct.one_atm]
     data = data[data.T_0 == reactorTemperature]
