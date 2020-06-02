@@ -110,7 +110,7 @@ while time < t_end:
     formation_enthalpy_mole = np.sum(h0_mole * r1.thermo.concentrations * r1.volume)
 
     values[n] = (time,
-                 PV,
+                 r1.thermo.enthalpy_mass - np.sum(h0_mass*r1.thermo.Y)/pome.n_species,
                  np.sum(r1.thermo.delta_enthalpy),
                  r1.thermo.cp_mass * state[0] * r1.thermo.T,
                  r1.thermo.T,
