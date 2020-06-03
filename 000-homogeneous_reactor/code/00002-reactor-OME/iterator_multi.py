@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import cantera as ct
 import pandas as pd
-from multiprocessing import Pool, Process, Queue
+import multiprocessing as mp
 from Homogeneous_Reactor import homogeneous_reactor
 from pre_process_fc import save_df
 from pre_process_fc import create_path
@@ -64,6 +64,9 @@ parser.add_argument("--O2", type=float, default=0.21,
 parser.add_argument("--N2", type=float, default=0.79,
                     help="chose N2 ratio in air")
 
+parser.add_argument("--NCPU", type=int, default=20,
+                    help="chose nbr of available CPU cores")
+
 args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
@@ -92,9 +95,9 @@ if not ((save_delays is False) and (save_samples is False)):
 
 if save_samples:
     typ = 'samples'
-    samples, nnn = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
-                           reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
-                           args.p_end, args.p_0, args.p_step, args.pode, size=20)
+    samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
+                          reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
+                          args.p_end, args.p_0, args.p_step, args.pode, size=20)
 
 if save_delays:
     typ = 'delays'
@@ -133,19 +136,26 @@ for iii, pode_run in enumerate(args.pode):
 
             reactorPressure_run = np.array(reactorPressure_run) * ct.one_atm
 
-            for reactorTemperature in range(reactorTemperature_start, reactorTemperature_end + reactorTemperature_step,
-                                            reactorTemperature_step):
+            pool = mp.Pool(processes=args.NCPU)
 
-                # start homogeneous reactor model with defined settings
-                # values vector: ['time', 'PV', 'phi', 'Q', 'T', 'P', 'V', 'U', 'PODE', 'CO2', 'O2', 'CO', 'H2O', 'H2',
-                # 'CH2O']
-                values, first_ignition_delay, main_ignition_delay = homogeneous_reactor \
-                    (mechanism, equivalence_ratio_run, reactorPressure_run, reactorTemperature, t_end, t_step, pode_run,
-                     args.O2, args.N2)
+            values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
+                                                            reactorTemperature, t_end, t_step, pode_run, args.O2,
+                                                            args.N2)) for
+                      reactorTemperature in range(reactorTemperature_start, reactorTemperature_end +
+                                                  reactorTemperature_step, reactorTemperature_step)]
+
+            for i in range(len(values)):
+                # separate the list of all temperatures into the single ones
+                values_run = values[i]
+
+                # separate list in samples, first IDT and main IDT
+                samples_run = values_run[0]
+                first_ignition_delay = values_run[1]
+                main_ignition_delay = values_run[2]
 
                 # saving ignition delays for the parameter setting
                 if save_delays is True and 0 < main_ignition_delay < t_end * 1.e+3 * 0.99:
-                    delays[n, :] = (pode_run, equivalence_ratio_run, reactorPressure_run, reactorTemperature,
+                    delays[n, :] = (pode_run, equivalence_ratio_run, reactorPressure_run, samples_run[0, 3],
                                     first_ignition_delay, main_ignition_delay)
                     n += 1
                 elif save_delays is True:  # cancelling rows if ignition didn't happened
@@ -154,27 +164,11 @@ for iii, pode_run in enumerate(args.pode):
 
                 # combine dataframes of different reactorTemperatures
                 if save_samples is True:
-                    n_samples_run = len(values)
-                    samples[nnn:(nnn + n_samples_run), :] = values
+                    n_samples_run = len(samples_run)
+                    samples[nn:(nn + n_samples_run), :] = samples_run
                     n_samples = len(samples)
                     samples = samples[:(n_samples - (12500 - n_samples_run)), :]
-                    nnn += n_samples_run
-
-                # print information about parameter setting and ignition
-                if args.information_print is True and 0 < main_ignition_delay < t_end * 1.e+3:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
-                          'main {:.5f}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                 reactorTemperature, first_ignition_delay, main_ignition_delay))
-
-                elif args.information_print is True and main_ignition_delay is 0:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition will happen after the '
-                          'monitored interval'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                      reactorTemperature))
-
-                elif args.information_print is True and main_ignition_delay is t_end * 1.e+3 * 0.99:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end'
-                          ' of the interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                         reactorTemperature, t_end * 1.e+3))
+                    nn += n_samples_run
 
 if save_delays is True:
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
@@ -187,10 +181,10 @@ if save_delays is True:
 # save species development with the parameter setting
 if save_samples is True:
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
-    path_dir = '/media/pascal/TOSHIBA EXT/BA'
+    #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
-    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'U', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V', 'PODE', 'CO2',
-                       'O2', 'CO', 'H2O', 'H2', 'CH2O']
+    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'U', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V', 'PODE',
+                       'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)
