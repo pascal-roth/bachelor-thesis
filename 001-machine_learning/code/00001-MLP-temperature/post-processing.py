@@ -26,9 +26,6 @@ parser.add_argument("-nbr_run", "--number_test_run", type=str, default='000',
 parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                     help="chose number of the network")
 
-parser.add_argument("--typ", type=str, choices=['train', 'test'], default='test',
-                    help="chose validation method of pre-trained NN")
-
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],
                     help="chose equivalence ratio")
 
@@ -56,9 +53,7 @@ if args.post == 'loss':
     losses = pd.read_csv(path_loss)
     
     losses = losses.to_numpy()
-    plt.plot(losses[:, 0], losses[:, 1], 'b-', label='train_loss')
-    plt.plot(losses[:, 0], losses[:, 2], 'r-', label='valid_loss')
-#    plt.plot(losses[:, 0], losses[:, 3], 'r-', label='interpolation_loss')
+    plt.plot(losses[:, 0], losses[:, 1], 'r-', label='valid_loss')
     plt.xlabel('Epochs')
     plt.ylabel('loss')
     plt.yscale('log')
@@ -72,15 +67,15 @@ elif args.post == 'plt_train':
         (args.mechanism_input, args.number_run, equivalence_ratio=[0], reactorPressure=[0], reactorTemperature=[0],
          pode=[0], category='train')
 
-    model, criterion = fc_post_processing.load_checkpoint(args.number_net, args.typ)
+    model, criterion = fc_post_processing.load_checkpoint(args.number_net)
     print(model)
 
     fc_post_processing.plot_train(model, samples, labels, scaler_samples, scaler_labels, args.number_net,
-                                  args.pode, args.equivalence_ratio, args.pressure, args.temperature, args.typ)
+                                  args.pode, args.equivalence_ratio, args.pressure, args.temperature)
 
 elif args.post == 'test':     # PLot interpolation capability of Network
     # get the model
-    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, _, _, _, _, number_train_run = fc_post_processing.load_checkpoint(args.number_net, args.typ)
+    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, _, _, _, number_train_run = fc_post_processing.load_checkpoint(args.number_net)
     print(model)
 
     #  Load  test tensors
@@ -113,5 +108,5 @@ elif args.post == 'test':     # PLot interpolation capability of Network
     # plot the output of NN and reactor together with the closest parameter in the training set (data between the
     # interpolation took place)
     fc_post_processing.plot_data(model, train_samples, train_labels, test_samples, test_labels, scaler_samples,
-                                 scaler_labels, args.number_net, args.typ, plt_nbrs=True)
+                                 scaler_labels, args.number_net, plt_nbrs=True)
 

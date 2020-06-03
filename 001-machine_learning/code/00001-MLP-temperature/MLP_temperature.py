@@ -20,9 +20,6 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("-nbr_run", "--number_train_run", type=str, default='000',
                     help="define which training data should be used")
 
-parser.add_argument("-nbr_test", "--number_test_run", type=str, default='000',
-                    help="define which test data should be for validation")
-
 parser.add_argument("-s_paras", "--sample_parameters", nargs='+', type=str, default=['pode', 'phi', 'T_0', 'P_0', 'PV'],
                     help="chose input parameters for the NN")
 
@@ -59,8 +56,8 @@ if args.information_print is True:
 
 # %% Network implementation
 try:
-    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, n_input, n_output, valid_test_loss_min, \
-    valid_train_loss_min, _ = load_checkpoint(args.number_net, args.typ)
+    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, n_input, n_output, valid_loss_min, _ = \
+        load_checkpoint(args.number_net)
     print('Pretrained model found, training will be continued ...')
 except FileNotFoundError:
     n_input = 5
@@ -73,32 +70,26 @@ except FileNotFoundError:
     scaler_labels = None
     s_paras = args.sample_parameters
     l_paras = args.label_parameters
-    valid_test_loss_min = np.Inf
-    valid_train_loss_min = np.Inf
+    valid_loss_min = np.Inf
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 print(model)
 
 # %% Load training, validation and test tensors
+print('Load data ...')
+
 train_loader, valid_loader, scaler_samples, scaler_labels = loaddata \
     (args.mechanism_input, args.number_train_run, args.equivalence_ratio, args.pressure, args.temperature, args.pode,
      s_paras, l_paras, category='train', scaler_samples=scaler_samples,
      scaler_labels=scaler_labels)
 
-test_loader = loaddata(args.mechanism_input, args.number_test_run, args.equivalence_ratio, args.pressure,
-                       args.temperature, args.pode, s_paras, l_paras,
-                       category='test', scaler_samples=scaler_samples, scaler_labels=scaler_labels)
-
 print('Data loaded, start training ...')
 
 # %% number of epochs to train the model
-valid_test_loss_min, valid_train_loss_min = fc_model.train(model, train_loader, valid_loader, test_loader, criterion,
-                                                           optimizer, args.n_epochs, args.number_net,
-                                                           valid_test_loss_min, valid_train_loss_min)
+valid_loss_min = fc_model.train(model, train_loader, valid_loader, criterion,
+                                optimizer, args.n_epochs, args.number_net,
+                                valid_loss_min, plot=True)
 
 # %% save best models depending the validation loss
 fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, s_paras, l_paras, scaler_samples,
-                    scaler_labels, valid_test_loss_min, valid_train_loss_min, args.number_train_run, typ='train')
-
-fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, s_paras, l_paras, scaler_samples,
-                    scaler_labels, valid_test_loss_min, valid_train_loss_min, args.number_train_run, typ='test')
+                    scaler_labels, valid_loss_min, args.number_train_run)

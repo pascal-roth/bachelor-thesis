@@ -16,15 +16,14 @@ equivalence_ratio = [0.0]
 pressure = [0]
 temperature = [0]
 pode = [0]
-number_net = '003'
-number_train_run = '000'
-number_run = '001'
+number_net = '000'
+number_train_run = '001'
+number_run = '000'
 n_epochs = 2
-typ = 'train'
 
 # get the model
-model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, _, _, _, _, number_train_run = fc_post_processing.load_checkpoint(
-    number_net, typ)
+model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, _, _, _, number_train_run = fc_post_processing.load_checkpoint(
+    number_net)
 print(model)
 
 # get samples and labels not included in training data
@@ -46,4 +45,4 @@ test_labels, _ = fc_pre_processing_load.normalize_df(test_labels, scaler=scaler_
 
 # plot the output of NN and reactor together with the closest parameter in the training set (data between the
 # interpolation took place)
-fc_post_processing.plot_data(model, train_samples, train_labels, test_samples, test_labels, scaler_samples, scaler_labels, number_net, typ, plt_nbrs=False)
+fc_post_processing.plot_data(model, train_samples, train_labels, test_samples, test_labels, scaler_samples, scaler_labels, number_net, plt_nbrs=False)

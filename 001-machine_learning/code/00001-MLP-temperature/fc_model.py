@@ -10,6 +10,8 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 
 # model building class ################################################################################################
@@ -36,53 +38,93 @@ class Net(nn.Module):
         return x
 
 
-# validation function for the model ###################################################################################
-def validation(model, valid_loader, test_loader, criterion, valid_test_loss_min, valid_train_loss_min):
-    valid_samples_loss = 0
-    valid_test_loss = 0
+# update lines of loss plot ############################################################################################
+def updateLines(ax, train_losses, validation_losses):
+    """
+    updates line values for loss plot
 
-    for data, target in valid_loader:
-        # forward pass: compute predicted outputs by passing inputs to the model
-        output = model.forward(data)
-        # calculate the loss
-        loss = criterion(output, target)
-        # update running validation loss
-        valid_samples_loss += loss.item() * data.size(0)
+    Parameters
+    ----------
+    ax - matplotlib.axes.Axes : axis object to be updated
+    train_losses - list : list of floats of training losses
+    validation_losses - list : list of floats of validation losses
+    """
 
-    for data, target in test_loader:
-        # forward pass: compute predicted outputs by passing inputs to the model
-        output = model.forward(data)
-        # calculate the loss
-        loss = criterion(output, target)
-        # update running validation loss
-        valid_test_loss += loss.item() * data.size(0)
-
-    valid_samples_loss = valid_samples_loss / len(valid_loader)
-    valid_test_loss = valid_test_loss / len(test_loader)
-
-    #     correct = np.zeros((len(output)))
-    #
-    #     for i in range(len(output)):
-    #         if labels.data[i] * 0.95 < output[i] < labels.data[i] * 1.05:
-    #             correct[i] = 1
-    #         else:
-    #             correct[i] = 0
-    #
-    #     acc = np.append(acc, np.sum(correct) / len(output))
-    #
-    # acc = np.mean(acc)
-    return valid_samples_loss, valid_test_loss, valid_test_loss_min, valid_train_loss_min
+    x = list(range(1, len(train_losses)+1))
+    lines = ax.get_lines()
+    lines[0].set_xdata(x)
+    lines[1].set_xdata(x)
+    lines[0].set_ydata(train_losses)
+    lines[1].set_ydata(validation_losses)
+    plt.draw()
+    plt.pause(1e-17)
 
 
 # training function for the model ####################################################################################
-def train(model, train_loader, val_loader, test_loader, criterion, optimizer, epochs, nbr_net, valid_test_loss_min, valid_train_loss_min):
-    losses = np.zeros((epochs, 3))
+def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, valid_loss_min, plot):
+    """Optimize the weights of a given MLP.
+
+    Parameters
+    ----------
+    model - SimpleMLP : model to optimize
+    train_loader - pytorch Data Loader : Data Loader of the Train samples and labels
+    val_loader - pytorch Data Loader : Data Loader of the Validation samples and labels
+    criterion - Loss function : pytorch Loss function
+    optimizer - Optimizer function : pytorch Optimizer function, include the learning rate
+    epochs - Integer : number of epochs to train
+    nbr_net - Integer : number to identify the trained network
+    valid_loss_min - Float : minimum value of the train validation, model is saved if new loss lower
+    plot: Bool
+        plots loss curves
+​
+    Returns
+    -------
+    valid_test_loss_min,  - Float : training loss developments over epochs
+    valid_loss_min - Float : validation loss developments over epochs
+    """
+
+    # check if CUDA is available
+    train_on_gpu = torch.cuda.is_available()
+
+    if not train_on_gpu:
+        print('CUDA is not available.  Training on CPU ...')
+    else:
+        print('CUDA is available!  Training on GPU ...')# check if CUDA is available
+        model.cuda()
+
+    # initialize loss array
+    train_losses, validation_losses = [], []
+
+    # Prepare plot
+    if plot:
+        #print("backend: "+plt.get_backend())
+        xdata = []
+        plt.show()
+        ax = plt.gca()
+        ax.set_xlim(0, epochs)
+        ax.set_ylim(1e-8, 1000)
+        plt.yscale('log')
+        ax.plot(xdata, train_losses, 'r-', label="Training loss")
+        ax.plot(xdata, validation_losses, 'b-', label="Validation loss")
+        ax.legend()
+        plt.draw()
+        plt.pause(1e-17)
+
+    # prepare tqdm progress bars
+    # https://medium.com/@philipplies/progress-bar-and-status-logging-in-python-with-tqdm-35ce29b908f5
+    outer = tqdm(total=epochs, position=0)
+    inner = tqdm(total=int(len(train_loader.dataset) / train_loader.batch_size), position=1)
+    loss_log = tqdm(total=0, position=3, bar_format='{desc}')
+    best_log = tqdm(total=0, position=4, bar_format='{desc}')
 
     for epoch in range(epochs):
-
+        running_loss = 0
         # Model in training mode, dropout is on
         model.train()
         for data, labels in train_loader:
+            # move tensors to GPU if CUDA is available
+            if train_on_gpu:
+                data, labels = data.cuda(), labels.cuda()
             # clear the gradients of all optimized variables
             optimizer.zero_grad()
             # forward pass: compute predicted outputs by passing inputs to the model
@@ -94,40 +136,60 @@ def train(model, train_loader, val_loader, test_loader, criterion, optimizer, ep
             # perform a single optimization step (parameter update)
             optimizer.step()
             # update running training loss
-            losses[epoch, 0] += loss.item() * data.size(0)
+            running_loss += loss.item() * data.size(0)
+            inner.update(1)
 
-        losses[epoch, 0] = losses[epoch, 0] / len(train_loader)
+        outer.update(1)
+        inner.refresh()
+        inner.reset()
 
-        # Model in inference mode, dropout is off
-        model.eval()
+        # Track training loss
+        train_losses.append(running_loss/len(train_loader))
 
         # Turn off gradients for validation, will speed up inference
         with torch.no_grad():
-            losses[epoch, 1], losses[epoch, 2], valid_test_loss_min, valid_train_loss_min = validation \
-                (model, val_loader, test_loader, criterion, valid_test_loss_min, valid_train_loss_min)
+            # Model in inference mode, dropout is off
+            model.eval()
+            valid_loss = 0
 
-        print('Epoch: {} \tTraining Loss: {:.6f} \tValidation loss {:.6f} \tInterpolation loss {:.6f}'.format
-              (epoch + 1, losses[epoch, 0], losses[epoch, 1], losses[epoch, 2]))
+            for data, target in valid_loader:
+                # move tensors to GPU if CUDA is available
+                if train_on_gpu:
+                    data, target = data.cuda(), target.cuda()
+                # forward pass: compute predicted outputs by passing inputs to the model
+                output = model.forward(data)
+                # calculate the loss
+                loss = criterion(output, target)
+                # update running validation loss
+                valid_loss += loss.item() * data.size(0)
 
-        # save model if validation loss has decreased
-        if losses[epoch, 2] <= valid_test_loss_min:
-            print(
-                'Interpolation test  loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_test_loss_min,
-                                                                                                   losses[epoch, 2]))
-            torch.save(model.state_dict(), 'model_test.pt')
-            valid_test_loss_min = losses[epoch, 2]
+            validation_losses.append(valid_loss / len(valid_loader))
 
-        if losses[epoch, 1] <= valid_train_loss_min:
-            print(
-                'Interpolation train loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(valid_train_loss_min,
-                                                                                                   losses[epoch, 1]))
-            torch.save(model.state_dict(), 'model_train.pt')
-            valid_train_loss_min = losses[epoch, 1]
+        if plot:
+            updateLines(ax, train_losses, validation_losses)
+
+        if valid_loss <= valid_loss_min:
+            torch.save(model.state_dict(), 'model.pt')
+            valid_loss_min = valid_loss
+
+        outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
+        loss_log.set_description_str("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
+        best_log.set_description_str("Best validation loss {}".format(valid_loss_min))
+
+    inner.close()
+    outer.close()
 
     # save losses
     path = Path(__file__).resolve()
     path_loss = path.parents[2] / 'data/00001-MLP-temperature/{}_losses.csv'.format(nbr_net)
 
+    train_losses = np.asarray(train_losses)
+    validation_losses = np.asarray(validation_losses)
+
+    train_losses = train_losses.reshape((len(train_losses), 1))
+    validation_losses = validation_losses.reshape((len(validation_losses), 1))
+
+    losses = np.concatenate((train_losses, validation_losses), axis=1)
     try:
         losses_pre = pd.read_csv(path_loss)
         losses_pre = losses_pre.values
@@ -136,18 +198,36 @@ def train(model, train_loader, val_loader, test_loader, criterion, optimizer, ep
     except FileNotFoundError:
         losses = pd.DataFrame(losses)
 
-    losses.columns = ['train_loss', 'valid_loss', 'interpolation_loss']
+    losses.columns = ['train_loss', 'valid_loss']
     losses.to_csv(path_loss)
 
-    return valid_test_loss_min, valid_train_loss_min
+    return valid_loss_min
 
 
 # save latest models in checkpoint files ##############################################################################
 def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_paras, l_paras, scaler_samples,
-               scaler_labels, valid_test_loss_min, valid_train_loss_min, number_train_run, typ):
+               scaler_labels, valid_loss_min, number_train_run):
+    """Save model together with important parameters
+
+    :parameter
+    -----------
+    :param model: Simple MLP model
+    :param n_input: number of input features
+    :param n_output: number of output features
+    :param optimizer: pytorch optimizer function, including the learning rate
+    :param criterion: pytorch loss function
+    :param number_net: number to identify the network
+    :param s_paras: input features of the network
+    :param l_paras: output features of the network
+    :param scaler_samples: MinMaxScaler of the samples
+    :param scaler_labels: MinMasxScaler of the labels
+    :param valid_loss_min: Minimum value of the validation loss
+    :param number_train_run: Numer to identify the training used to train the network
+    :param typ:
+    """
 
     try:
-        model.load_state_dict(torch.load('model_{}.pt'.format(typ)))
+        model.load_state_dict(torch.load('model.pt'))
 
         # Save model with structure
         checkpoint = {'input_size': n_input,
@@ -160,16 +240,15 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_par
                       'l_paras': l_paras,
                       'scaler_samples': scaler_samples,
                       'scaler_labels': scaler_labels,
-                      'valid_test_loss_min': valid_test_loss_min,
-                      'valid_train_loss_min': valid_train_loss_min,
+                      'valid_loss_min': valid_loss_min,
                       'number_train_run': number_train_run}
 
         path = Path(__file__).resolve()
-        path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_{}_checkpoint.pth'.format(number_net, typ)
+        path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(number_net)
         torch.save(checkpoint, path_pth)
-        print('Model with {} validation saved ...'.format(typ))
+        print('Model saved ...')
 
         # Delete the model pt files
-        os.remove('model_{}.pt'.format(typ))
+        os.remove('model.pt')
     except FileNotFoundError:
-        print('Training has not improved model with {} validation, no new model will be saved ...'.format(typ))
+        print('Training has not improved model, no new model will be saved ...')

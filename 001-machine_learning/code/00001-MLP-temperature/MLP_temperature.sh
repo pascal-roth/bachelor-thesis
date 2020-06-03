@@ -9,7 +9,6 @@ echo ""
 echo "Which data should be used for the MLP"
 read -p "mechanism         [he, sun, cai]:                 " mechanism
 read -p "name of train run [XXX]:                          " name_train
-read -p "name of test run  [XXX]:                          " name_test
 
 while true; do
 	echo ""
@@ -37,14 +36,14 @@ while true; do
                 read -p "nbr of train epochs:                              " epochs
                 read -p "nbr of network:                                   " name_net
 		        read -p "Which validation method model  [train, test]:     " typ
-		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train -nbr_test $name_test --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net --typ $typ ; break;;
+		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net --typ $typ ; break;;
 		[Nn]* ) echo "Decide NN building and training parameters"
                 read -p "Input parameters  [pode, phi, P_0, T_0, PV] (ar): " samples
                 read -p "Output parameters [T]                       (ar): " labels
                 read -p "nbr of train epochs:                              " epochs
                 read -p "nbr of network:                                   " name_net
 		        typ=train
-		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train -nbr_test $name_test --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp -s_paras $samples -l_paras $labels --n_epochs $epochs -nbr_net $name_net; exit;;
+		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train  --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp -s_paras $samples -l_paras $labels --n_epochs $epochs -nbr_net $name_net; exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac
 done

@@ -16,9 +16,9 @@ from sklearn import preprocessing
 
 
 # load trained model ##################################################################################################
-def load_checkpoint(nbr_net, typ):
+def load_checkpoint(nbr_net):
     path = Path(__file__).resolve()
-    path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_{}_checkpoint.pth'.format(nbr_net, typ)
+    path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(nbr_net)
     checkpoint = torch.load(path_pth)
 
     # Create model and load its criterion
@@ -41,11 +41,10 @@ def load_checkpoint(nbr_net, typ):
     n_output = checkpoint['output_size']
 
     # parameters needed to continue training the model
-    valid_test_loss_min = checkpoint['valid_test_loss_min']
-    valid_train_loss_min = checkpoint['valid_train_loss_min']
+    valid_loss_min = checkpoint['valid_loss_min']
 
     return model, criterion, sample_paras, labels_paras, scaler_samples, scaler_labels, n_input, n_output, \
-           valid_test_loss_min, valid_train_loss_min, number_train_run
+           valid_loss_min, number_train_run
 
 
 # calculate mean accuracy over test data ###############################################################################
@@ -82,7 +81,7 @@ def calc_acc(model, criterion, test_loader, scaler):
 
 # plot output of the reactor next to the output of the NN #############################################################
 def plot_data(model, train_samples, train_labels, test_samples, test_labels, scaler_samples, scaler_labels, number_net,
-              typ, plt_nbrs):
+              plt_nbrs):
 
     phi = test_samples.drop_duplicates(subset=['phi'])
     phi = phi[['phi']].to_numpy()
@@ -136,8 +135,8 @@ def plot_data(model, train_samples, train_labels, test_samples, test_labels, sca
                 plt.ylabel('T [K]')
 
                 path = Path(__file__).resolve()
-                path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
-                    (number_net, typ, samples_temperature[0, 0], samples_temperature[0, 1],
+                path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
+                    (number_net, samples_temperature[0, 0], samples_temperature[0, 1],
                      samples_temperature[0, 2] / ct.one_atm, samples_temperature[0, 3])
                 plt.savefig(path_plt)
 
@@ -203,7 +202,7 @@ def find_neighbors(sample_phi, sample_p, sample_temp, train_samples, train_label
 
 # function to plot the fitting to the training data ###################################################################
 def plot_train(model, samples, labels, scaler_samples, scaler_labels, number_net, pode, equivalence_ratio,
-               reactorPressure, reactorTemperature, typ):
+               reactorPressure, reactorTemperature):
     samples_denormalized = denormalize_df(samples, scaler_samples)
 
     samples_denormalized = samples_denormalized[samples_denormalized.pode == pode[0]]
@@ -237,8 +236,8 @@ def plot_train(model, samples, labels, scaler_samples, scaler_labels, number_net
     plt.ylabel('T [K]')
 
     path = Path(__file__).resolve()
-    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
-        (number_net, typ, samples_denormalized.iloc[0, 0], samples_denormalized.iloc[0, 1],
+    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
+        (number_net, samples_denormalized.iloc[0, 0], samples_denormalized.iloc[0, 1],
          samples_denormalized.iloc[0, 2] / ct.one_atm, samples_denormalized.iloc[0, 3])
     plt.savefig(path_plt)
 

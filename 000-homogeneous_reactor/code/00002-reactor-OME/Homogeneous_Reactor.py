@@ -15,18 +15,19 @@ import pandas as pd
 import os
 import csv
 import matplotlib.pyplot as plt
+import multiprocessing
 
 # Suppress warnings
 ct.suppress_thermo_warnings()
 
 # Define if inforamtion should be printed
-information_print = False
+information_print = True
 
 # Change the RPV calculation method
 PV_p = np.array(['H2O', 'CO2', 'CH2O'])
 
-if information_print is True:
-    print('The parameters for the reaction progress variable are: {}'.format(PV_p))
+# if information_print is True:
+#     print('The parameters for the reaction progress variable are: {}'.format(PV_p))
 
 
 #%% functions to calculate the mixture fraction variable
@@ -71,17 +72,14 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     # Create Reactor
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
 
-    if information_print is True:
-        print(pode())
+    # if information_print is True:
+    #     print(pode())
 
     r1 = ct.IdealGasReactor(contents=pode, name='homogeneous_reactor')
     sim = ct.ReactorNet([r1])
     #    sim.atol = 1.e-14  # standard: 1e-15
     #    sim.rtol = 1.e-10  # standard: 1e-09
     sim.max_err_test_fails = 50
-
-    if information_print is True:
-        print('finished setup, begin solution...')
 
     #  Solution of reaction
     time = 0.0
@@ -126,15 +124,6 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
         # Calculate the internal energy as characterization of the thermodynamical state
         r1.thermo.basis = 'mass'
-        if n == 0:
-            s_0 = r1.thermo.s
-            g_0 = r1.thermo.g
-            v_0 = r1.thermo.v
-
-            if information_print is True:
-                print('The initial conditions for the temperature of {}K are: \n'
-                      'entropy s: {:.3f} [J/kgK] free gibbs energy: {:.3f} [J/kg] volume: {:.3f} [m³/kg]'.format(
-                       reactorTemperature, s_0, g_0, v_0))
 
         state = r1.get_state()
         internal_energy = state[2]
@@ -164,15 +153,24 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         first_ignition_delay = values[peaks[0], 7] * 1.e+3
         main_ignition_delay = values[max_Q, 7] * 1.e+3
 
-        if information_print is True:
-            print('The first stage ignition delay is {:.3f} ms'.format(first_ignition_delay))
-            print('The second/ main stage ignition delay: is {:.3f} ms'.format(main_ignition_delay))
-
     else:
         first_ignition_delay = 0
         main_ignition_delay = 0
 
-        if information_print is True:
-            print('No ignition delay')
+    # print information about parameter setting and ignition
+    if information_print is True and 0 < main_ignition_delay < t_end * 1.e+3:
+        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
+              'main {:.5f}ms'.format(equivalence_ratio, reactorPressure / ct.one_atm,
+                                     reactorTemperature, first_ignition_delay, main_ignition_delay))
 
-    return values, first_ignition_delay, main_ignition_delay, s_0, g_0, v_0
+    elif information_print is True and main_ignition_delay is 0:
+        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition will happen after the '
+              'monitored interval'.format(equivalence_ratio, reactorPressure / ct.one_atm,
+                                          reactorTemperature))
+
+    elif information_print is True and main_ignition_delay is t_end * 1.e+3 * 0.99:
+        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end'
+              ' of the interval {}ms'.format(equivalence_ratio, reactorPressure / ct.one_atm,
+                                             reactorTemperature, t_end * 1.e+3))
+
+    return values, first_ignition_delay, main_ignition_delay

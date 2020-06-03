@@ -16,9 +16,8 @@ enthalpies = np.zeros((len(species), 2))
 
 for i in range(len(species)):
     pome.TPY = 298.15, ct.one_atm, '{}:1.0'.format(species[i])
-    q1 = ct.Quantity(pome, mass=1)
-    enthalpies[i, 0] = q1.enthalpy_mole
-    enthalpies[i, 1] = q1.enthalpy_mass
+    enthalpies[i, 0] = pome.enthalpy_mole
+    enthalpies[i, 1] = pome.enthalpy_mass
 
 
 path = Path(__file__).resolve()

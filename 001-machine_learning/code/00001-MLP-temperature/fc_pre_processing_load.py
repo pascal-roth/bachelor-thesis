@@ -19,7 +19,7 @@ def loaddata_samples(mechanism_input, nbr_run, equivalence_ratio, reactorPressur
     mechanism = chose_mechanism(mechanism_input)
     path = Path(__file__).parents[3] / '000-homogeneous_reactor/data/00002-reactor-OME/{}/{}_{}_samples.csv'.\
         format(mechanism, nbr_run, category)
-    path = '/media/pascal/TOSHIBA EXT/BA/{}_{}_samples.csv'.format(nbr_run, category)
+#    path = '/media/pascal/TOSHIBA EXT/BA/{}_{}_samples.csv'.format(nbr_run, category)
     data = pd.read_csv(path)
 
     data = exclude(data, equivalence_ratio, reactorPressure, reactorTemperature, pode)
