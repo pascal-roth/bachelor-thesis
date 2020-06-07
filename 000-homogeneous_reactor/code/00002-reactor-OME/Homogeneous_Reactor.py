@@ -11,11 +11,6 @@
 # %% Import Packages
 import cantera as ct
 import numpy as np
-import pandas as pd
-import os
-import csv
-import matplotlib.pyplot as plt
-import multiprocessing
 
 # Suppress warnings
 ct.suppress_thermo_warnings()
@@ -41,17 +36,18 @@ def beta(gas, components, weights):
     return beta
 
 
-def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio):     # create the mixture fraction variable for the run
+def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature):     # create the mixture fraction variable for the run
 
     Z_components = ['C', 'O', 'H']
     Z_weights = [2, -1, 0.5]
 
-    pode.X = {'O2': O2, 'N2': N2}
+    pode.TPX = reactorTemperature, reactorPressure, 'O2:{} N2:{}'.format(O2, N2)
     beta_oxidizer = beta(pode, Z_components, Z_weights)
 
-    pode.X = {mechanism[1]: 1.0}
+    pode.TPX = reactorTemperature, reactorPressure, '{}:1.0'.format(mechanism[1])
     beta_fuel = beta(pode, Z_components, Z_weights)
 
+    pode.TP = reactorTemperature, reactorPressure
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
     beta_run = beta(pode, Z_components, Z_weights)
 
@@ -64,12 +60,12 @@ def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio):     # create the m
 def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode_nbr, O2, N2):
     #  Fuel mixture
     pode = ct.Solution(mechanism[0])
-    pode.TP = reactorTemperature, reactorPressure
 
     # calculate mixture fraction
-    Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio)
-
+    Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
+#    Z = 0
     # Create Reactor
+    pode.TP = reactorTemperature, reactorPressure
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
 
     # if information_print is True:
@@ -79,7 +75,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     sim = ct.ReactorNet([r1])
     #    sim.atol = 1.e-14  # standard: 1e-15
     #    sim.rtol = 1.e-10  # standard: 1e-09
-    sim.max_err_test_fails = 50
+    sim.max_err_test_fails = 10
 
     #  Solution of reaction
     time = 0.0
@@ -126,7 +122,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         r1.thermo.basis = 'mass'
 
         state = r1.get_state()
-        internal_energy = state[2]
+        internal_energy = r1.thermo.u * state[0]
 
         # Summarize all values to be saved in an array
         values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, internal_energy, r1.thermo.h, Z,
@@ -159,17 +155,17 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
     # print information about parameter setting and ignition
     if information_print is True and 0 < main_ignition_delay < t_end * 1.e+3:
-        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
-              'main {:.5f}ms'.format(equivalence_ratio, reactorPressure / ct.one_atm,
+        print('For settings: Phi={:2.2e}, p={:.0f}bar, T={:2.2e}K the delays are: first {:6.5e}ms, '
+              'main {:6.5e}ms'.format(equivalence_ratio, reactorPressure / ct.one_atm,
                                      reactorTemperature, first_ignition_delay, main_ignition_delay))
 
     elif information_print is True and main_ignition_delay is 0:
-        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition will happen after the '
+        print('For settings: Phi={:2.2e}, p={:.0f}bar, T={:2.2e}K ignition will happen after the '
               'monitored interval'.format(equivalence_ratio, reactorPressure / ct.one_atm,
                                           reactorTemperature))
 
     elif information_print is True and main_ignition_delay is t_end * 1.e+3 * 0.99:
-        print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end'
+        print('For settings: Phi={:2.2e}, p={:.0f}bar, T={:2.2e}K \tignition happens shortly after the end'
               ' of the interval {}ms'.format(equivalence_ratio, reactorPressure / ct.one_atm,
                                              reactorTemperature, t_end * 1.e+3))
 

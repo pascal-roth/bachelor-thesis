@@ -38,7 +38,7 @@ time = 0.0
 n_samples = 12500
 n = 0
 
-values = np.zeros((n_samples, 6))
+values = np.zeros((n_samples, 7))
 
 # Load enthalpy of formation
 path = Path(__file__).resolve()
@@ -74,13 +74,17 @@ while time < t_end:
          r1.Y[pome.species_index(PV_p[1])] / pome.molecular_weights[pome.species_index(PV_p[1])] * 0.15 + \
          r1.Y[pome.species_index(PV_p[2])] / pome.molecular_weights[pome.species_index(PV_p[2])] * 1.5
 
+    states = r1.get_state()
+    r1.thermo.basis = 'mass'
+
     # keep track of the enthalpy over
     values[n] = (time,
                  PV,
                  r1.thermo.enthalpy_mole - (np.sum(h0_mole * r1.thermo.X)),
                  r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y)),
                  np.sum(h0_mole * r1.thermo.X) / pome.n_species,
-                 np.sum(h0_mass * r1.thermo.Y) / pome.n_species)
+                 np.sum(h0_mass * r1.thermo.Y) / pome.n_species,
+                 r1.thermo.u * states[0])
 
     n += 1
 

@@ -4,7 +4,7 @@
 
 # import packages
 import argparse
-from fc_pre_processing_load import loaddata
+from fc_pre_processing_load import load_samples, load_dataloader
 from fc_post_processing import load_checkpoint
 import torch
 from torch import nn
@@ -20,10 +20,10 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("-nbr_run", "--number_train_run", type=str, default='000',
                     help="define which training data should be used")
 
-parser.add_argument("-s_paras", "--sample_parameters", nargs='+', type=str, default=['pode', 'phi', 'T_0', 'P_0', 'PV'],
-                    help="chose input parameters for the NN")
+parser.add_argument("--feature_set", type=int, choices=[1, 2],
+                    help="chose set of features")
 
-parser.add_argument("-l_paras", "--label_parameters", nargs='+', type=str, default=['T'],
+parser.add_argument("--labels", nargs='+', type=str, default=['T'],
                     help="chose output parameters for the NN")
 
 parser.add_argument("--n_epochs", type=int, default=50,
@@ -56,8 +56,7 @@ if args.information_print is True:
 
 # %% Network implementation
 try:
-    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, n_input, n_output, valid_loss_min, _ = \
-        load_checkpoint(args.number_net)
+    model, criterion, features, labels, x_scaler, y_scaler, n_input, n_output, _ = load_checkpoint(args.number_net)
     print('Pretrained model found, training will be continued ...')
 except FileNotFoundError:
     n_input = 5
@@ -66,30 +65,36 @@ except FileNotFoundError:
     model = fc_model.Net(n_input, n_output, n_hidden)
     criterion = nn.MSELoss()
     print('New model created')
-    scaler_samples = None
-    scaler_labels = None
-    s_paras = args.sample_parameters
-    l_paras = args.label_parameters
-    valid_loss_min = np.Inf
+    x_scaler = None
+    y_scaler = None
+    if args.feature_set == 1:
+        features = ['pode', 'phi', 'P_0', 'T_0', 'PV']
+    elif args.feature_set == 2:
+        features = ['pode', 'Z', 'U', 'P', 'PV']
+    labels = args.labels
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 print(model)
 
 # %% Load training, validation and test tensors
 print('Load data ...')
+feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': args.pressure, 'T_0': args.temperature}
 
-train_loader, valid_loader, scaler_samples, scaler_labels = loaddata \
-    (args.mechanism_input, args.number_train_run, args.equivalence_ratio, args.pressure, args.temperature, args.pode,
-     s_paras, l_paras, category='train', scaler_samples=scaler_samples,
-     scaler_labels=scaler_labels)
+x_samples, y_samples = load_samples(args.mechanism_input, args.number_train_run, feature_select, features, labels,
+                                    select_data='exclude', category='train')
+
+train_loader, valid_loader, x_scaler, y_scaler = load_dataloader(x_samples, y_samples, split=True, x_scaler=x_scaler,
+                                                                 y_scaler=y_scaler, features=features)
+
+# free space because only dataloaders needed for training
+x_samples = None
+y_samples = None
 
 print('Data loaded, start training ...')
 
 # %% number of epochs to train the model
-valid_loss_min = fc_model.train(model, train_loader, valid_loader, criterion,
-                                optimizer, args.n_epochs, args.number_net,
-                                valid_loss_min, plot=True)
+fc_model.train(model, train_loader, valid_loader, criterion, optimizer, args.n_epochs, args.number_net, plot=True)
 
 # %% save best models depending the validation loss
-fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, s_paras, l_paras, scaler_samples,
-                    scaler_labels, valid_loss_min, args.number_train_run)
+fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, features, labels, x_scaler,
+                    y_scaler, args.number_train_run)

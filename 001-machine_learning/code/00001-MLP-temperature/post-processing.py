@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import fc_pre_processing_load
 from pathlib import Path
 import fc_post_processing
+import cantera as ct
+import numpy as np
 
 
 #%% get arguments
@@ -53,7 +55,8 @@ if args.post == 'loss':
     losses = pd.read_csv(path_loss)
     
     losses = losses.to_numpy()
-    plt.plot(losses[:, 0], losses[:, 1], 'r-', label='valid_loss')
+    plt.plot(losses[:, 0], losses[:, 1], 'b-', label='training_loss')
+    plt.plot(losses[:, 0], losses[:, 2], 'r-', label='valid_loss')
     plt.xlabel('Epochs')
     plt.ylabel('loss')
     plt.yscale('log')
@@ -63,50 +66,59 @@ if args.post == 'loss':
     plt.show()
 
 elif args.post == 'plt_train':
-    samples, labels, scaler_samples, scaler_labels = fc_pre_processing_load.loaddata_samples \
-        (args.mechanism_input, args.number_run, equivalence_ratio=[0], reactorPressure=[0], reactorTemperature=[0],
-         pode=[0], category='train')
+    model, criterion, features, labels, x_scaler, y_scaler, _, _, number_train_run = fc_post_processing.\
+        load_checkpoint(args.number_net)
 
-    model, criterion = fc_post_processing.load_checkpoint(args.number_net)
     print(model)
 
-    fc_post_processing.plot_train(model, samples, labels, scaler_samples, scaler_labels, args.number_net,
-                                  args.pode, args.equivalence_ratio, args.pressure, args.temperature)
+    pressure = np.array(args.pressure) * ct.one_atm
+    feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': pressure, 'T_0': args.temperature}
+
+    x_samples, y_samples = fc_pre_processing_load.load_samples(args.mechanism_input, number_train_run, feature_select,
+                                                               features, labels, select_data='include',
+                                                               category='train')
+
+    fc_post_processing.plot_train(model, x_samples, y_samples, x_scaler, y_scaler, args.number_net, features)
 
 elif args.post == 'test':     # PLot interpolation capability of Network
     # get the model
-    model, criterion, s_paras, l_paras, scaler_samples, scaler_labels, _, _, _, number_train_run = fc_post_processing.load_checkpoint(args.number_net)
-    print(model)
+    model, _, features, labels, x_scaler, y_scaler, _, _, number_train_run = fc_post_processing.\
+        load_checkpoint(args.number_net)
+    print('Model loaded, begin to load data ...')
+
+    # get train and test samples
+    feature_select = {}
+
+    x_train, y_train = fc_pre_processing_load.load_samples(args.mechanism_input, number_train_run,
+                                                           feature_select, features, labels, select_data='exclude',
+                                                           category='train')
+
+    pressure = np.array(args.pressure) * ct.one_atm
+    feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': pressure, 'T_0': args.temperature}
+
+    x_test, y_test = fc_pre_processing_load.load_samples(args.mechanism_input, args.number_test_run,
+                                                         feature_select, features, labels,
+                                                         select_data='exclude', category='test')
 
     #  Load  test tensors
-    test_loader = fc_pre_processing_load.loaddata(args.mechanism_input, args.number_test_run, args.equivalence_ratio,
-                                                  args.pressure, args.temperature, args.pode, s_paras, l_paras,
-                                                  category='test', scaler_samples=scaler_samples,
-                                                  scaler_labels=scaler_labels)
+    test_loader = fc_pre_processing_load.load_dataloader(x_test, y_test, split=False,
+                                                         x_scaler=x_scaler, y_scaler=y_scaler, features=None)
+
+    print('Data loaded!')
 
     # calculate accuracy
-    acc_mean = fc_post_processing.calc_acc(model, criterion, test_loader, scaler_labels)
+    acc_mean = fc_post_processing.calc_acc(model, test_loader, y_scaler)
     print('The mean accuracy with a 5% tolerance is {}'. format(acc_mean))
 
-    # get samples and labels not included in training data
-    train_samples, train_labels = fc_pre_processing_load.loaddata_samples(args.mechanism_input, number_train_run,
-                                                                          args.equivalence_ratio, args.pressure,
-                                                                          args.temperature, args.pode, category='train',
-                                                                          s_paras=s_paras, l_paras=l_paras)
+    # normalize the data
+    x_train, _ = fc_pre_processing_load.normalize_df(x_train, scaler=x_scaler)
+    y_train, _ = fc_pre_processing_load.normalize_df(y_train, scaler=y_scaler)
 
-    test_samples, test_labels = fc_pre_processing_load.loaddata_samples(args.mechanism_input, args.number_test_run,
-                                                                        args.equivalence_ratio, args.pressure,
-                                                                        args.temperature, args.pode, category='test',
-                                                                        s_paras=s_paras, l_paras=l_paras)
-
-    train_samples, _ = fc_pre_processing_load.normalize_df(train_samples, scaler=scaler_samples)
-    train_labels, _ = fc_pre_processing_load.normalize_df(train_labels, scaler=scaler_labels)
-
-    test_samples, _ = fc_pre_processing_load.normalize_df(test_samples, scaler=scaler_samples)
-    test_labels, _ = fc_pre_processing_load.normalize_df(test_labels, scaler=scaler_labels)
+    x_test, _ = fc_pre_processing_load.normalize_df(x_test, scaler=x_scaler)
+    y_test, _ = fc_pre_processing_load.normalize_df(y_test, scaler=y_scaler)
 
     # plot the output of NN and reactor together with the closest parameter in the training set (data between the
     # interpolation took place)
-    fc_post_processing.plot_data(model, train_samples, train_labels, test_samples, test_labels, scaler_samples,
-                                 scaler_labels, args.number_net, plt_nbrs=True)
+    fc_post_processing.plot_data(model, x_train, y_train, x_test, y_test, x_scaler,
+                                 y_scaler, args.number_net, plt_nbrs=False, features=features)
 

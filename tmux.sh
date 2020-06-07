@@ -6,7 +6,7 @@ session="work"
 # tmux start-server
 
 # create a new tmux session, starting vim from a saved session in the new window
-tmux new-session -d -s $session -n shell #"vim -S ~/.vim/sessions/kittybusiness"
+tmux new-session -d -s $session -n shell
 
 # Select pane 1
 tmux selectp -t 1

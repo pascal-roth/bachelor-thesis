@@ -38,12 +38,15 @@ while true; do
 		        read -p "Which validation method model  [train, test]:     " typ
 		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net --typ $typ ; break;;
 		[Nn]* ) echo "Decide NN building and training parameters"
-                read -p "Input parameters  [pode, phi, P_0, T_0, PV] (ar): " samples
-                read -p "Output parameters [T]                       (ar): " labels
                 read -p "nbr of train epochs:                              " epochs
                 read -p "nbr of network:                                   " name_net
+                echo "Decide which training feature set"
+                echo "  1) [pode, phi, P_0, T_0, PV]"
+                echo "  2) [pode, Z,   P,   H/U, PV]"
+                read -p "Chose set (1, 2):                                 " set
+                read -p "Output parameters [T]                       (ar): " labels
 		        typ=train
-		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train  --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp -s_paras $samples -l_paras $labels --n_epochs $epochs -nbr_net $name_net; exit;;
+		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train  --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --feature_set $set --labels $labels --n_epochs $epochs -nbr_net $name_net; exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac
 done

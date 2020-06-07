@@ -71,23 +71,19 @@ args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
 
-# %% Rename arguments
-reactorTemperature_start = args.temperature_start
-reactorTemperature_end = args.temperature_end
-reactorTemperature_step = args.temperature_step
-
-# Define end time and time step
+#%% Define end time and time step
 if args.category == 'exp':
-    t_end = 0.020
-    t_step = 5.e-6
+    t_end = 0.040
+    t_step = 1.e-5
+    # create an array for the different samples/ the ignition delays and decide if to save them
+    save_samples = False
+    save_delays = True
 else:
     t_end = 0.010
     t_step = 1.e-6
-
-# create an array for the different samples/ the ignition delays and decide if to save them
-save_samples = True
-save_delays = True
-save_initials = True
+    # create an array for the different samples/ the ignition delays and decide if to save them
+    save_samples = True
+    save_delays = True
 
 # %% Create to save files
 if not ((save_delays is False) and (save_samples is False)):
@@ -95,14 +91,14 @@ if not ((save_delays is False) and (save_samples is False)):
 
 if save_samples:
     typ = 'samples'
-    samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
-                          reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
+    samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
+                          args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
                           args.p_end, args.p_0, args.p_step, args.pode, size=20)
 
 if save_delays:
     typ = 'delays'
-    delays, n = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
-                        reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
+    delays, n = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
+                        args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
                         args.p_end, args.p_0, args.p_step, args.pode, size=6)
 
 # %% Iterate between the parameter settings
@@ -141,8 +137,8 @@ for iii, pode_run in enumerate(args.pode):
             values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
                                                             reactorTemperature, t_end, t_step, pode_run, args.O2,
                                                             args.N2)) for
-                      reactorTemperature in range(reactorTemperature_start, reactorTemperature_end +
-                                                  reactorTemperature_step, reactorTemperature_step)]
+                      reactorTemperature in range(args.temperature_start, args.temperature_end +
+                                                  args.temperature_step, args.temperature_step)]
 
             for i in range(len(values)):
                 # separate the list of all temperatures into the single ones

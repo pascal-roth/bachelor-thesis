@@ -69,23 +69,19 @@ args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
 
-# %% Rename arguments
-reactorTemperature_start = args.temperature_start
-reactorTemperature_end = args.temperature_end
-reactorTemperature_step = args.temperature_step
-
-# Define end time and time step
+#%% Define end time and time step
 if args.category == 'exp':
-    t_end = 0.020
-    t_step = 5.e-6
+    t_end = 0.040
+    t_step = 1.e-5
+    # create an array for the different samples/ the ignition delays and decide if to save them
+    save_samples = False
+    save_delays = True
 else:
     t_end = 0.010
     t_step = 1.e-6
-
-# create an array for the different samples/ the ignition delays and decide if to save them
-save_samples = True
-save_delays = True
-save_initials = True
+    # create an array for the different samples/ the ignition delays and decide if to save them
+    save_samples = True
+    save_delays = True
 
 #%% Create to save files
 if not ((save_delays is False) and (save_samples is False)):
@@ -93,14 +89,14 @@ if not ((save_delays is False) and (save_samples is False)):
 
 if save_samples:
     typ = 'samples'
-    samples, nnn = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
-                           reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
-                           args.p_end, args.p_0, args.p_step, args.pode, size=20)
+    samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
+                          args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
+                          args.p_end, args.p_0, args.p_step, args.pode, size=20)
 
 if save_delays:
     typ = 'delays'
-    delays, n = save_df(typ, args.category, args.mechanism_input, args.number_run, reactorTemperature_end,
-                        reactorTemperature_start, reactorTemperature_step, args.phi_end, args.phi_0, args.phi_step,
+    delays, n = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
+                        args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
                         args.p_end, args.p_0, args.p_step, args.pode, size=6)
 
 
@@ -135,8 +131,8 @@ for iii, pode_run in enumerate(args.pode):
 
             reactorPressure_run = np.array(reactorPressure_run) * ct.one_atm
 
-            for reactorTemperature in range(reactorTemperature_start, reactorTemperature_end + reactorTemperature_step,
-                                            reactorTemperature_step):
+            for reactorTemperature in range(args.temperature_start, args.temperature_end + args.temperature_step,
+                                            args.temperature_step):
 
                 # start homogeneous reactor model with defined settings
                 # values vector: ['time', 'PV', 'phi', 'Q', 'T', 'P', 'V', 'U', 'PODE', 'CO2', 'O2', 'CO', 'H2O', 'H2',
@@ -158,27 +154,12 @@ for iii, pode_run in enumerate(args.pode):
                 # combine dataframes of different reactorTemperatures
                 if save_samples is True:
                     n_samples_run = len(values)
-                    samples[nnn:(nnn+n_samples_run), :] = values
+                    samples[nn:(nn+n_samples_run), :] = values
                     n_samples = len(samples)
                     samples = samples[:(n_samples-(12500-n_samples_run)), :]
-                    nnn += n_samples_run
+                    nn += n_samples_run
 
-                # print information about parameter setting and ignition
-                if args.information_print is True and 0 < main_ignition_delay < t_end*1.e+3:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K the delays are: first {:.5f}ms, '
-                          'main {:.5f}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                 reactorTemperature, first_ignition_delay, main_ignition_delay))
-
-                elif args.information_print is True and main_ignition_delay is 0:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition will happen after the '
-                          'monitored interval'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                      reactorTemperature))
-
-                elif args.information_print is True and main_ignition_delay is t_end*1.e+3*0.99:
-                    print('For settings: Phi={:.2f}, p={:.0f}bar, T={:.0f}K ignition happens shortly after the end'
-                          ' of the interval {}ms'.format(equivalence_ratio_run, reactorPressure_run / ct.one_atm,
-                                                         reactorTemperature, t_end*1.e+3))
-
+# save delays in pd dataframe
 if save_delays is True:
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
     path_delay = '{}/{}_{}_delays.csv'.format(path_dir, args.number_run, args.category)
@@ -187,10 +168,10 @@ if save_delays is True:
     delays.set_index(['pode', 'phi', 'P_0'])
     delays.to_csv(path_delay)
 
-# save species development with the parameter setting
+# save samples in pd dataframe
 if save_samples is True:
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
-    path_dir = '/media/pascal/TOSHIBA EXT/BA'
+#    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
     samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'U', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V',  'PODE', 'CO2',

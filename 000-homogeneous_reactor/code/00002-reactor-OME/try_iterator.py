@@ -16,8 +16,8 @@ from pre_process_fc import make_dir
 
 
 # %% Rename arguments
-reactorTemperature_start = 650
-reactorTemperature_end = 800
+reactorTemperature_start = 665
+reactorTemperature_end = 665
 reactorTemperature_step = 30
 N2 = 0.79
 O2 = 0.21

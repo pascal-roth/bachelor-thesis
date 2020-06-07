@@ -61,7 +61,7 @@ def updateLines(ax, train_losses, validation_losses):
 
 
 # training function for the model ####################################################################################
-def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, valid_loss_min, plot):
+def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, plot):
     """Optimize the weights of a given MLP.
 
     Parameters
@@ -77,10 +77,6 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     plot: Bool
         plots loss curves
 ​
-    Returns
-    -------
-    valid_test_loss_min,  - Float : training loss developments over epochs
-    valid_loss_min - Float : validation loss developments over epochs
     """
 
     # check if CUDA is available
@@ -92,6 +88,21 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         print('CUDA is available!  Training on GPU ...')# check if CUDA is available
         model.cuda()
 
+    # the minimal validation loss at the beginning of the training
+    valid_loss_min = 0
+    for data, target in valid_loader:
+        # move tensors to GPU if CUDA is available
+        if train_on_gpu:
+            data, target = data.cuda(), target.cuda()
+        # forward pass: compute predicted outputs by passing inputs to the model
+        output = model.forward(data)
+        # calculate the loss
+        loss = criterion(output, target)
+        # update running validation loss
+        valid_loss_min += loss.item() * data.size(0)
+    valid_loss_min = valid_loss_min / len(valid_loader)
+    print("\nInitial validation loss is: {:6.5e}\n".format(valid_loss_min))
+
     # initialize loss array
     train_losses, validation_losses = [], []
 
@@ -102,7 +113,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         plt.show()
         ax = plt.gca()
         ax.set_xlim(0, epochs)
-        ax.set_ylim(1e-8, 1000)
+        ax.set_ylim(1e-4, valid_loss_min)
         plt.yscale('log')
         ax.plot(xdata, train_losses, 'r-', label="Training loss")
         ax.plot(xdata, validation_losses, 'b-', label="Validation loss")
@@ -121,16 +132,16 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         running_loss = 0
         # Model in training mode, dropout is on
         model.train()
-        for data, labels in train_loader:
+        for data, target in train_loader:
             # move tensors to GPU if CUDA is available
             if train_on_gpu:
-                data, labels = data.cuda(), labels.cuda()
+                data, target = data.cuda(), target.cuda()
             # clear the gradients of all optimized variables
             optimizer.zero_grad()
             # forward pass: compute predicted outputs by passing inputs to the model
             output = model.forward(data)
             # calculate the loss
-            loss = criterion(output, labels)
+            loss = criterion(output, target)
             # backward pass: compute gradient of the loss with respect to model parameters
             loss.backward()
             # perform a single optimization step (parameter update)
@@ -170,7 +181,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
         if valid_loss <= valid_loss_min:
             torch.save(model.state_dict(), 'model.pt')
-            valid_loss_min = valid_loss
+            valid_loss_min = valid_loss/len(valid_loader)
 
         outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
         loss_log.set_description_str("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
@@ -201,12 +212,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     losses.columns = ['train_loss', 'valid_loss']
     losses.to_csv(path_loss)
 
-    return valid_loss_min
-
 
 # save latest models in checkpoint files ##############################################################################
-def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_paras, l_paras, scaler_samples,
-               scaler_labels, valid_loss_min, number_train_run):
+def save_model(model, n_input, n_output, optimizer, criterion, number_net, features, labels, x_scaler,
+               y_scaler, number_train_run):
     """Save model together with important parameters
 
     :parameter
@@ -217,13 +226,11 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_par
     :param optimizer: pytorch optimizer function, including the learning rate
     :param criterion: pytorch loss function
     :param number_net: number to identify the network
-    :param s_paras: input features of the network
-    :param l_paras: output features of the network
-    :param scaler_samples: MinMaxScaler of the samples
-    :param scaler_labels: MinMasxScaler of the labels
-    :param valid_loss_min: Minimum value of the validation loss
-    :param number_train_run: Numer to identify the training used to train the network
-    :param typ:
+    :param features: input features of the network
+    :param labels: output features of the network
+    :param x_scaler: MinMaxScaler of the samples
+    :param y_scaler: MinMasxScaler of the labels
+    :param number_train_run: number to identify the train run used for training
     """
 
     try:
@@ -236,11 +243,10 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, s_par
                       'optimizer': optimizer.state_dict(),
                       'criterion': criterion.state_dict(),
                       'state_dict': model.state_dict(),
-                      's_paras': s_paras,
-                      'l_paras': l_paras,
-                      'scaler_samples': scaler_samples,
-                      'scaler_labels': scaler_labels,
-                      'valid_loss_min': valid_loss_min,
+                      'features': features,
+                      'labels': labels,
+                      'x_scaler': x_scaler,
+                      'y_scaler': y_scaler,
                       'number_train_run': number_train_run}
 
         path = Path(__file__).resolve()
