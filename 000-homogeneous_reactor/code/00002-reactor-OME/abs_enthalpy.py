@@ -38,7 +38,7 @@ time = 0.0
 n_samples = 12500
 n = 0
 
-values = np.zeros((n_samples, 7))
+values = np.zeros((n_samples, 10))
 
 # Load enthalpy of formation
 path = Path(__file__).resolve()
@@ -82,9 +82,12 @@ while time < t_end:
                  PV,
                  r1.thermo.enthalpy_mole - (np.sum(h0_mole * r1.thermo.X)),
                  r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y)),
-                 np.sum(h0_mole * r1.thermo.X) / pome.n_species,
-                 np.sum(h0_mass * r1.thermo.Y) / pome.n_species,
-                 r1.thermo.u * states[0])
+                 np.sum(h0_mole * r1.thermo.X),
+                 np.sum(h0_mass * r1.thermo.Y),
+                 r1.thermo.enthalpy_mole,
+                 r1.thermo.enthalpy_mass,
+                 np.sum(r1.thermo.T * r1.thermo.s + r1.thermo.g - r1.thermo.P * r1.thermo.v) * states[0],
+                 np.sum(r1.thermo.partial_molar_cp * r1.thermo.X * r1.thermo.T))
 
     n += 1
 
@@ -122,5 +125,29 @@ plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
 plt.title(title)
 plt.xlabel('time [ms]')
 plt.ylabel('H [J/kg]')
+plt.legend()
+plt.show()
+
+# %%
+plt.plot(values[:, 0] * 1.e+3, values[:, 6], label='H  mole')
+plt.title(title)
+plt.xlabel('time [ms]')
+plt.ylabel('H [J/kmol]')
+plt.legend()
+plt.show()
+
+# %%
+plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H  mass')
+plt.title(title)
+plt.xlabel('time [ms]')
+plt.ylabel('H [J/kg]')
+plt.legend()
+plt.show()
+
+# %%
+plt.plot(values[:, 0] * 1.e+3, values[:, 8], label='H cp')
+# plt.title(title)
+plt.xlabel('time [ms]')
+plt.ylabel('H [J/kmol]')
 plt.legend()
 plt.show()

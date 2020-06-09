@@ -91,7 +91,7 @@ if save_samples:
     typ = 'samples'
     samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
                           args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
-                          args.p_end, args.p_0, args.p_step, args.pode, size=20)
+                          args.p_end, args.p_0, args.p_step, args.pode, size=19)
 
 if save_delays:
     typ = 'delays'
@@ -174,7 +174,7 @@ if save_samples is True:
 #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
-    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'U', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V',  'PODE', 'CO2',
+    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V',  'PODE', 'CO2',
                        'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)

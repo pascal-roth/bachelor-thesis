@@ -1,0 +1,28 @@
+# submit a job and access pinky after #####################################################################################################
+
+1. open tmux
+2. submit run
+
+srun --exclusive --ntasks=20 --partition=medium --time=48:00:00 --mail-user=roth.pascal@outlook.de --mail-type=ALL --pty bash
+
+3. get back to bash without finishing the session
+
+contr + B
+D
+
+4. access pinky
+
+ssh pinkyXX
+(on gsc cluster watch gpuX)
+############################################################################################################################################
+
+
+# move files ###############################################################################################################################
+
+rsyn -azP "data to copy" "username"@"address":"location"
+
+Example: rsyn -azP cluster_scripts.txt stud-18@gpu1.gs.ce.tu-darmstadt.de:
+
+man rsyn for further help/ commands
+############################################################################################################################################
+

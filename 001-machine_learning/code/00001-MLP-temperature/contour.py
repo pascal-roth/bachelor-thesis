@@ -62,74 +62,102 @@ y_samples_nn = y_scaler.inverse_transform(y_samples_nn)
 y_samples_diff = y_samples - y_samples_nn
 
 # %% Scatter plot
-plt_scatter = False
+plt_scatter = True
 
 if plt_scatter:
     x = x_samples[['PV']]
-    y = y_samples
+    y = x_samples[['U']] / 1.e+6
+    z = y_samples
 
-    plt.scatter(x, y) #, s=area, c=colors, alpha=0.5)
-    plt.title('Scatter plot')
-    plt.xlabel('x')
-    plt.ylabel('y')
+    fig, axs = plt.subplots(nrows=1, ncols=2)
+
+    axs[0].scatter(x, y) #, s=area, c=colors, alpha=0.5)
+    axs[0].set_title('Energy over OV')
+    axs[0].set_xlabel('PV')
+    axs[0].set_ylabel('U [MJ]')
+
+    axs[1].scatter(x, z) #, s=area, c=colors, alpha=0.5)
+    axs[1].set_title('Temperature over PV')
+    axs[1].set_xlabel('PV')
+    axs[1].set_ylabel('T [K]')
+
     plt.show()
 
 # %% Contour Plot
-Us = x_samples[['U']].round(-5)
-Us = Us.drop_duplicates()
-indexes = Us.index.values
+interpolate = True
 
-z_reactor = np.zeros((len(Us), 7000))
-z_nn = np.zeros((len(Us), 7000))
-z_diff = np.zeros((len(Us), 7000))
-PV = np.zeros((len(Us), 7000))
-U = np.zeros((len(Us), 7000))
+if interpolate:
+    PV_max = np.amax(x_samples[['PV']])
+    PV_min = np.amin(x_samples[['PV']])
 
-n = 0
+    x_samples[['U']] = x_samples[['U']].round(-3)
+    U_max = np.amax(x_samples[['U']])
+    U_min = np.amin(x_samples[['U']])
 
-for i in range(len(Us)):
+    grid_x, grid_y = np.mgrid[PV_min[0]:PV_max[0]:7000j, U_min[0]:U_max[0]:200j]
 
-    if not i == len(Us)-1:
-        n_samples = indexes[i+1] - indexes[i]
-    else:
-        n_samples = x_samples.index.max() - indexes[i]
+    from scipy.interpolate import griddata
 
-    z_reactor[i, :n_samples] = np.ravel(y_samples.iloc[n:(n+n_samples)])
-    z_nn[i, :n_samples] = np.ravel(y_samples_nn[n:(n+n_samples)])
-    z_diff[i, :n_samples] = np.ravel(y_samples_diff.iloc[n:(n+n_samples)])
+    grid_reactor = griddata(x_samples[['PV', 'U']].values, y_samples.values, (grid_x, grid_y), method='linear')
+    grid_nn = griddata(x_samples[['PV', 'U']].values, y_samples_nn, (grid_x, grid_y), method='linear')
+    grid_diff = griddata(x_samples[['PV', 'U']].values, y_samples_diff.values, (grid_x, grid_y), method='linear')
 
-    PV[i, :n_samples] = np.ravel(x_samples[['PV']].iloc[n:(n+n_samples)])
-    U[i, :n_samples] = np.ravel(x_samples[['U']].iloc[n:(n+n_samples)])
+    grid_reactor = np.squeeze(grid_reactor)
+    grid_nn = np.squeeze(grid_nn)
+    grid_diff = np.squeeze(grid_diff)
 
-    n += n_samples
+else:  # manually create grid
+    Us = x_samples[['U']].round(-5)
+    Us = Us.drop_duplicates()
+    indexes = Us.index.values
 
-#%%
-# PV, U = np.meshgrid(PV, U, sparse=True)   # no orthogonal separation in the PV
+    grid_reactor = np.zeros((len(Us), 7000))
+    grid_nn = np.zeros((len(Us), 7000))
+    grid_diff = np.zeros((len(Us), 7000))
+    grid_x = np.zeros((len(Us), 7000))
+    grid_y = np.zeros((len(Us), 7000))
 
-U = U / 1.e+6
+    n = 0
+
+    for i in range(len(Us)):
+
+        if not i == len(Us)-1:
+            n_samples = indexes[i+1] - indexes[i]
+        else:
+            n_samples = x_samples.index.max() - indexes[i]
+
+        grid_reactor[i, :n_samples] = np.ravel(y_samples.iloc[n:(n+n_samples)])
+        grid_nn[i, :n_samples] = np.ravel(y_samples_nn[n:(n+n_samples)])
+        grid_diff[i, :n_samples] = np.ravel(y_samples_diff.iloc[n:(n+n_samples)])
+
+        grid_x[i, :n_samples] = np.ravel(x_samples[['PV']].iloc[n:(n+n_samples)])
+        grid_y[i, :n_samples] = np.ravel(x_samples[['U']].iloc[n:(n+n_samples)])
+
+        n += n_samples
+
+#%% create plot
+grid_y = grid_y / 1.e6
 Z = x_samples[['Z']].iloc[0]
 
-fig, axs = plt.subplots(nrows=1, ncols=3)
+fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5])
 
-img = axs[0].contourf(PV, U, z_reactor) #, levels=100, cmap='RdGy_r')
+img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_heat_r')
 axs[0].set_xlabel('PV')
 axs[0].set_ylabel('U [MJ]')
-axs[0].ticklabel_format(axis='both', style='sci', scilimits=[0, 10], useOffset=None, useLocale=None, useMathText=True)
-fig.colorbar(img, ax=axs[0], label='T [K]')
+
+fig.colorbar(img, ax=axs[0], label='T_reactor [K]')
 axs[0].set_title('Z={:.2f}'.format(Z[0]))
 
-img = axs[1].contourf(PV, U, z_nn) #, levels=100, cmap='RdGy_r')
+img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_heat_r')
 axs[1].set_xlabel('PV')
 axs[1].set_ylabel('U [MJ]')
-axs[1].ticklabel_format(axis='both', style='sci', scilimits=[0, 10], useOffset=None, useLocale=None, useMathText=True)
-fig.colorbar(img, ax=axs[1], label='T [K]')
+fig.colorbar(img, ax=axs[1], label='T_MLP [K]')
 axs[1].set_title('Z={:.2f}'.format(Z[0]))
 
-img = axs[2].contourf(PV, U, z_diff) #, levels=100)
+img = axs[2].contourf(grid_x, grid_y, grid_diff, levels=100, cmap='gist_heat_r')
 axs[2].set_xlabel('PV')
 axs[2].set_ylabel('h_mean [MJ]')
-axs[2].ticklabel_format(axis='both', style='sci', scilimits=[0, 10], useOffset=None, useLocale=None, useMathText=True)
-fig.colorbar(img, ax=axs[2], label='T [K]')
+fig.colorbar(img, ax=axs[2], label='T_diff [K]')
 axs[2].set_title('Z={:.2f}'.format(Z[0]))
 
 # plt.tight_layout()

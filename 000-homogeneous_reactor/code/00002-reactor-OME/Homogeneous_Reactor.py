@@ -84,7 +84,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     samples_after_ignition = 300
     stop_criterion = False
 
-    values = np.zeros((n_samples, 20))
+    values = np.zeros((n_samples, 19))
 
     while time < t_end:
         # calculate grad to define step size and stop_criterion
@@ -92,8 +92,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_PV = np.zeros((3))
             grad_T = np.zeros((3))
         else:
-            grad_PV = np.gradient(values[:(n + 1), 8])
-            grad_T = np.gradient(values[:(n + 1), 10])
+            grad_PV = np.gradient(values[:(n + 1), 7])
+            grad_T = np.gradient(values[:(n + 1), 9])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
         if grad_PV[n - 2] > 1.e-6:
@@ -118,14 +118,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
-        # Calculate the internal energy as characterization of the thermodynamical state
-        r1.thermo.basis = 'mass'
-
-        state = r1.get_state()
-        internal_energy = r1.thermo.u * state[0]
-
         # Summarize all values to be saved in an array
-        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, internal_energy, r1.thermo.h, Z,
+        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, r1.thermo.enthalpy_mass, Z,
                      time, PV, Q, r1.thermo.T, r1.thermo.P, r1.volume, r1.Y[pode.species_index(mechanism[1])],
                      r1.Y[pode.species_index('CO2')], r1.Y[pode.species_index('O2')],
                      r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
@@ -142,12 +136,12 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     # ignition delay times
     from scipy.signal import find_peaks
 
-    max_Q = np.argmax(values[:, 9])
-    peaks, _ = find_peaks(values[:, 9], prominence=values[max_Q, 9] / 100)  # define minimum height
+    max_Q = np.argmax(values[:, 8])
+    peaks, _ = find_peaks(values[:, 8], prominence=values[max_Q, 8] / 100)  # define minimum height
 
-    if peaks.any() and values[max_Q, 10] > (reactorTemperature * 1.15):
-        first_ignition_delay = values[peaks[0], 7] * 1.e+3
-        main_ignition_delay = values[max_Q, 7] * 1.e+3
+    if peaks.any() and values[max_Q, 9] > (reactorTemperature * 1.15):
+        first_ignition_delay = values[peaks[0], 6] * 1.e+3
+        main_ignition_delay = values[max_Q, 6] * 1.e+3
 
     else:
         first_ignition_delay = 0
