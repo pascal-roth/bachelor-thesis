@@ -66,7 +66,7 @@ plt_scatter = True
 
 if plt_scatter:
     x = x_samples[['PV']]
-    y = x_samples[['U']] / 1.e+6
+    y = x_samples[['H']] / 1.e+6
     z = y_samples
 
     fig, axs = plt.subplots(nrows=1, ncols=2)
@@ -74,7 +74,7 @@ if plt_scatter:
     axs[0].scatter(x, y) #, s=area, c=colors, alpha=0.5)
     axs[0].set_title('Energy over OV')
     axs[0].set_xlabel('PV')
-    axs[0].set_ylabel('U [MJ]')
+    axs[0].set_ylabel('H [MJ/kg]')
 
     axs[1].scatter(x, z) #, s=area, c=colors, alpha=0.5)
     axs[1].set_title('Temperature over PV')
@@ -90,24 +90,24 @@ if interpolate:
     PV_max = np.amax(x_samples[['PV']])
     PV_min = np.amin(x_samples[['PV']])
 
-    x_samples[['U']] = x_samples[['U']].round(-3)
-    U_max = np.amax(x_samples[['U']])
-    U_min = np.amin(x_samples[['U']])
+    x_samples[['H']] = x_samples[['H']].round(-3)
+    U_max = np.amax(x_samples[['H']])
+    U_min = np.amin(x_samples[['H']])
 
     grid_x, grid_y = np.mgrid[PV_min[0]:PV_max[0]:7000j, U_min[0]:U_max[0]:200j]
 
     from scipy.interpolate import griddata
 
-    grid_reactor = griddata(x_samples[['PV', 'U']].values, y_samples.values, (grid_x, grid_y), method='linear')
-    grid_nn = griddata(x_samples[['PV', 'U']].values, y_samples_nn, (grid_x, grid_y), method='linear')
-    grid_diff = griddata(x_samples[['PV', 'U']].values, y_samples_diff.values, (grid_x, grid_y), method='linear')
+    grid_reactor = griddata(x_samples[['PV', 'H']].values, y_samples.values, (grid_x, grid_y), method='linear')
+    grid_nn = griddata(x_samples[['PV', 'H']].values, y_samples_nn, (grid_x, grid_y), method='linear')
+    grid_diff = griddata(x_samples[['PV', 'H']].values, y_samples_diff.values, (grid_x, grid_y), method='linear')
 
     grid_reactor = np.squeeze(grid_reactor)
     grid_nn = np.squeeze(grid_nn)
     grid_diff = np.squeeze(grid_diff)
 
 else:  # manually create grid
-    Us = x_samples[['U']].round(-5)
+    Us = x_samples[['H']].round(-5)
     Us = Us.drop_duplicates()
     indexes = Us.index.values
 
@@ -131,7 +131,7 @@ else:  # manually create grid
         grid_diff[i, :n_samples] = np.ravel(y_samples_diff.iloc[n:(n+n_samples)])
 
         grid_x[i, :n_samples] = np.ravel(x_samples[['PV']].iloc[n:(n+n_samples)])
-        grid_y[i, :n_samples] = np.ravel(x_samples[['U']].iloc[n:(n+n_samples)])
+        grid_y[i, :n_samples] = np.ravel(x_samples[['H']].iloc[n:(n+n_samples)])
 
         n += n_samples
 
@@ -143,20 +143,20 @@ fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5])
 
 img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_heat_r')
 axs[0].set_xlabel('PV')
-axs[0].set_ylabel('U [MJ]')
+axs[0].set_ylabel('h [MJ/kg]')
 
 fig.colorbar(img, ax=axs[0], label='T_reactor [K]')
 axs[0].set_title('Z={:.2f}'.format(Z[0]))
 
 img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_heat_r')
 axs[1].set_xlabel('PV')
-axs[1].set_ylabel('U [MJ]')
+axs[1].set_ylabel('h [MJ/kg]')
 fig.colorbar(img, ax=axs[1], label='T_MLP [K]')
 axs[1].set_title('Z={:.2f}'.format(Z[0]))
 
 img = axs[2].contourf(grid_x, grid_y, grid_diff, levels=100, cmap='gist_heat_r')
 axs[2].set_xlabel('PV')
-axs[2].set_ylabel('h_mean [MJ]')
+axs[2].set_ylabel('h [MJ/kg]')
 fig.colorbar(img, ax=axs[2], label='T_diff [K]')
 axs[2].set_title('Z={:.2f}'.format(Z[0]))
 

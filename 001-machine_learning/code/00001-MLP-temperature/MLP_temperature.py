@@ -70,7 +70,7 @@ except FileNotFoundError:
     if args.feature_set == 1:
         features = ['pode', 'phi', 'P_0', 'T_0', 'PV']
     elif args.feature_set == 2:
-        features = ['pode', 'Z', 'U', 'P', 'PV']
+        features = ['pode', 'Z', 'H', 'P', 'PV']
     labels = args.labels
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
