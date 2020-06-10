@@ -4,11 +4,12 @@
 
 # Import packages
 import argparse
+import itertools
 import numpy as np
 import cantera as ct
 import pandas as pd
 import multiprocessing as mp
-from Homogeneous_Reactor import homogeneous_reactor
+from Homogeneous_Reactor import homogeneous_reactor, init_process
 from pre_process_fc import save_df
 from pre_process_fc import create_path
 from pre_process_fc import make_dir
@@ -73,7 +74,7 @@ if args.information_print is True:
 
 #%% Define end time and time step
 if args.category == 'exp':
-    t_end = 0.040
+    t_end = 0.100
     t_step = 1.e-5
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = False
@@ -93,7 +94,7 @@ if save_samples:
     typ = 'samples'
     samples, nn = save_df(typ, args.category, args.mechanism_input, args.number_run, args.temperature_end,
                           args.temperature_start, args.temperature_step, args.phi_end, args.phi_0, args.phi_step,
-                          args.p_end, args.p_0, args.p_step, args.pode, size=20)
+                          args.p_end, args.p_0, args.p_step, args.pode, size=19)
 
 if save_delays:
     typ = 'delays'
@@ -132,13 +133,21 @@ for iii, pode_run in enumerate(args.pode):
 
             reactorPressure_run = np.array(reactorPressure_run) * ct.one_atm
 
-            pool = mp.Pool(processes=args.NCPU)
+            pool = mp.Pool(processes=args.NCPU, initializer=init_process, initargs=(mechanism, ))
 
             values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
                                                             reactorTemperature, t_end, t_step, pode_run, args.O2,
                                                             args.N2)) for
                       reactorTemperature in range(args.temperature_start, args.temperature_end +
                                                   args.temperature_step, args.temperature_step)]
+
+            # values = pool.map(homogeneous_reactor, zip(itertools.repeat(mechanism), itertools.repeat(equivalence_ratio_run),
+            #                                             itertools.repeat(reactorPressure_run),
+            #                                             np.arange(args.temperature_start, args.temperature_end +
+            #                                             args.temperature_step, args.temperature_step),
+            #                                             itertools.repeat(t_end), itertools.repeat(t_step),
+            #                                             itertools.repeat(pode_run), itertools.repeat(args.O2),
+            #                                             itertools.repeat(args.N2)))
 
             for i in range(len(values)):
                 # separate the list of all temperatures into the single ones
@@ -180,7 +189,7 @@ if save_samples is True:
     #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
-    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'U', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V', 'PODE',
+    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V', 'PODE',
                        'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)

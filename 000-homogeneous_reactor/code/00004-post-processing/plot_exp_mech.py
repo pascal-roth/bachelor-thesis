@@ -4,11 +4,12 @@
 
 # Import packages
 import numpy as np
-import matplotlib.pyplot as plt
 from pathlib import Path
 import cantera as ct
 import pandas as pd
 import argparse
+import matplotlib.pyplot as plt
+plt.style.use('stfs')
 
 
 # %% initialise dataloaders
@@ -67,23 +68,23 @@ ax = fig.add_subplot(111)
 
 if pode <= 3:
     exp = loaddata_exp('OME' + str(pode), reactorPressure, equivalence_ratio)
-    ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME' + str(pode))
 
-    if reactorPressure == 10 and equivalence_ratio == 1.0:
-        exp_he = loaddata_exp('PODE' + str(pode), reactorPressure, equivalence_ratio)
-        ax.semilogy(exp_he[:, 0], exp_he[:, 1], 'cx', label='exp_he_OME' + str(pode))
+    if reactorPressure == 10 and equivalence_ratio == 1.0 and nbr_run == '002':
+        exp = loaddata_exp('PODE' + str(pode), reactorPressure, equivalence_ratio)
+#        ax.semilogy(exp[:, 0], exp[:, 1], 'cx', label='exp_he_PODE' + str(pode))
 
     he = np.flip(loaddata_sim(mechanism_all[0], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
     cai = np.flip(loaddata_sim(mechanism_all[1], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
     sun = np.flip(loaddata_sim(mechanism_all[2], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
 
+    ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_PODE' + str(pode))
     ax.semilogy(1000 / he[:, 0], he[:, 2], 'r-', label='sim_he_2018')
     ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
     ax.semilogy(1000 / sun[:, 0], sun[:, 2], 'y-', label='sim_sun_2017')
 
 elif pode == 4:
     exp = loaddata_exp('OME4', reactorPressure, equivalence_ratio)
-    ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_OME4')
+    ax.semilogy(exp[:, 0], exp[:, 1], 'bx', label='exp_PODE4')
 
     cai = np.flip(loaddata_sim(mechanism_all[1], nbr_run, equivalence_ratio, reactorPressure, pode), axis=0)
     ax.semilogy(1000 / cai[:, 0], cai[:, 2], 'g-', label='sim_cai_2019')
@@ -92,7 +93,7 @@ else:
     print('Entered PODE > 4 and not focus of this work')
 
 ax.set_ylabel('Ignition Delay (ms)')
-ax.set_xlabel(r'$\frac{1000}{T (K)}$', fontsize=18)
+ax.set_xlabel('1000/T [1/K]')
 
 # Add a second axis on top to plot the temperature for better readability
 ax2 = ax.twiny()
@@ -102,7 +103,7 @@ ax2.set_xticklabels((1000 / ticks).round(1))
 ax2.set_xlim(ax.get_xlim())
 ax2.set_xlabel(r'Temperature: $T(K)$')
 
-textstr = '$\\Phi$={:.1f}\np={:.0f}bar'.format(equivalence_ratio, reactorPressure)
+textstr = '$\\Phi$={:.1f}\np={:.0f}bar\nPODE{}'.format(equivalence_ratio, reactorPressure, pode)
 ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
 
 ax.set_yscale('log')

@@ -4,12 +4,13 @@
 
 # import packages
 import argparse
-import matplotlib.pyplot as plt
 from fc_pre_processing_load import load_samples, normalize_df
 from fc_post_processing import load_checkpoint
 import torch
 import numpy as np
 import cantera as ct
+import matplotlib.pyplot as plt
+plt.style.use('stfs')
 
 #%% get arguments
 # parser = argparse.ArgumentParser(description="Create contour plot")

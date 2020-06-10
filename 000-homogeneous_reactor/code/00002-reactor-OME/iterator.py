@@ -71,8 +71,8 @@ if args.information_print is True:
 
 #%% Define end time and time step
 if args.category == 'exp':
-    t_end = 0.040
-    t_step = 1.e-5
+    t_end = 0.100
+    t_step = 3.e-4
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = False
     save_delays = True

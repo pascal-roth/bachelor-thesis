@@ -21,9 +21,8 @@ information_print = True
 # Change the RPV calculation method
 PV_p = np.array(['H2O', 'CO2', 'CH2O'])
 
-# if information_print is True:
-#     print('The parameters for the reaction progress variable are: {}'.format(PV_p))
-
+# Create a global variable for pode_mulit
+pode_multi = {}
 
 #%% functions to calculate the mixture fraction variable
 def beta(gas, components, weights):
@@ -56,11 +55,17 @@ def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, re
     return Z
 
 
-# %% Homogeneous reactor simulation
-def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode_nbr, O2, N2):
-    #  Fuel mixture
-    pode = ct.Solution(mechanism[0])
+def init_process(mechanism):
+    mech = mechanism[0]
+    pode_multi[mech] = ct.Solution(mech)
+    pode_multi[mech].transport_model = 'Multi'
 
+
+# %% Homogeneous reactor simulation
+def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step,
+                        pode_nbr, O2, N2):
+
+    pode = pode_multi[mechanism[0]]
     # calculate mixture fraction
     Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
 #    Z = 0

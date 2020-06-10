@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import matplotlib.pyplot as plt
+plt.style.use('stfs')
 
 # Suppress warnings
 ct.suppress_thermo_warnings()
@@ -147,6 +148,7 @@ plt.show()
 # %%
 plt.plot(values[:, 0] * 1.e+3, values[:, 8], label='H cp')
 # plt.title(title)
+
 plt.xlabel('time [ms]')
 plt.ylabel('H [J/kmol]')
 plt.legend()

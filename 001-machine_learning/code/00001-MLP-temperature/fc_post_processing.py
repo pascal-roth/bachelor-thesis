@@ -7,10 +7,11 @@ import torch
 import fc_model
 import numpy as np
 import cantera as ct
-import matplotlib.pyplot as plt
 from torch import nn
 from pathlib import Path
 from fc_pre_processing_load import normalize_df
+import matplotlib.pyplot as plt
+plt.style.use('stfs')
 
 
 # load trained model ##################################################################################################

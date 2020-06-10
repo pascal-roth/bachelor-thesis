@@ -7,7 +7,7 @@ echo "---------------------------------------------------"
 echo "Beforehand the generate_data_exp.sh script has to be executed"
 echo ""
 
-echo "Experimental Data taken from the paper of Cai et al:"
+echo "Experimental Data taken from the paper of Jacobs et al:"
 python plot_exp_mech.py -phi 1.0 -p 20 --pode 1 -nbr_run 000
 python plot_exp_mech.py -phi 1.0 -p 20 --pode 2 -nbr_run 000
 python plot_exp_mech.py -phi 1.0 -p 20 --pode 3 -nbr_run 000
