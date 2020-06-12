@@ -19,9 +19,9 @@ ssh pinkyXX
 
 # move files ###############################################################################################################################
 
-rsyn -azP "data to copy" "username"@"address":"location"
+rsync -azP "data to copy" "username"@"address":"location"
 
-Example: rsyn -azP cluster_scripts.txt stud-18@gpu1.gs.ce.tu-darmstadt.de:
+Example: rsync -azP cluster_scripts.txt stud-18@gpu1.gs.ce.tu-darmstadt.de:
 
 man rsyn for further help/ commands
 ############################################################################################################################################

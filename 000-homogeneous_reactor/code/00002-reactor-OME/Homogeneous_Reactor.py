@@ -65,6 +65,7 @@ def init_process(mechanism):
 def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step,
                         pode_nbr, O2, N2):
 
+#    pode = ct.Solution(mechanism[0])
     pode = pode_multi[mechanism[0]]
     # calculate mixture fraction
     Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
