@@ -1,4 +1,8 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 
-csv = pd.read_csv('001_train_samples.csv')
+samples_normal = pd.read_csv('005_train_samples.csv')
+delays_normal = pd.read_csv('005_train_delays.csv')
+samples_multi = pd.read_csv('006_train_samples.csv')
+delays_multi = pd.read_csv('006_train_delays.csv')
+
+

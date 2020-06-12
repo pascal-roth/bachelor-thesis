@@ -55,18 +55,11 @@ def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, re
     return Z
 
 
-def init_process(mechanism):
-    mech = mechanism[0]
-    pode_multi[mech] = ct.Solution(mech)
-    pode_multi[mech].transport_model = 'Multi'
-
-
 # %% Homogeneous reactor simulation
 def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step,
                         pode_nbr, O2, N2):
 
-#    pode = ct.Solution(mechanism[0])
-    pode = pode_multi[mechanism[0]]
+    pode = ct.Solution(mechanism[0])
     # calculate mixture fraction
     Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
 #    Z = 0

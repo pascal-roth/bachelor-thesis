@@ -9,7 +9,7 @@ import numpy as np
 import cantera as ct
 import pandas as pd
 import multiprocessing as mp
-from Homogeneous_Reactor import homogeneous_reactor, init_process
+from Homogeneous_Reactor_Multi import homogeneous_reactor, init_process
 from pre_process_fc import save_df
 from pre_process_fc import create_path
 from pre_process_fc import make_dir
@@ -38,7 +38,7 @@ parser.add_argument("--p_end", type=int, default=40,
 parser.add_argument("--p_step", type=int, default=10,
                     help="chose step size of pressure of simulation")
 
-parser.add_argument("--pode", type=int, nargs='+', default=3,
+parser.add_argument("--pode", type=int, nargs='+', default=[3],
                     help="chose degree of polymerization")
 
 parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
@@ -65,7 +65,7 @@ parser.add_argument("--O2", type=float, default=0.21,
 parser.add_argument("--N2", type=float, default=0.79,
                     help="chose N2 ratio in air")
 
-parser.add_argument("--NCPU", type=int, default=20,
+parser.add_argument("--NCPU", type=int, default=4,
                     help="chose nbr of available CPU cores")
 
 args = parser.parse_args()
@@ -135,19 +135,19 @@ for iii, pode_run in enumerate(args.pode):
 
             pool = mp.Pool(processes=args.NCPU, initializer=init_process, initargs=(mechanism, ))
 
-            values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
-                                                            reactorTemperature, t_end, t_step, pode_run, args.O2,
-                                                            args.N2)) for
-                      reactorTemperature in range(args.temperature_start, args.temperature_end +
-                                                  args.temperature_step, args.temperature_step)]
+            # values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
+            #                                                       reactorTemperature, t_end, t_step, pode_run, args.O2,
+            #                                                       args.N2)) for
+            #           reactorTemperature in range(args.temperature_start, args.temperature_end +
+            #                                       args.temperature_step, args.temperature_step)]
 
-            # values = pool.map(homogeneous_reactor, zip(itertools.repeat(mechanism), itertools.repeat(equivalence_ratio_run),
-            #                                             itertools.repeat(reactorPressure_run),
-            #                                             np.arange(args.temperature_start, args.temperature_end +
-            #                                             args.temperature_step, args.temperature_step),
-            #                                             itertools.repeat(t_end), itertools.repeat(t_step),
-            #                                             itertools.repeat(pode_run), itertools.repeat(args.O2),
-            #                                             itertools.repeat(args.N2)))
+            values = pool.map(homogeneous_reactor, zip(itertools.repeat(mechanism), itertools.repeat(equivalence_ratio_run),
+                                                       itertools.repeat(reactorPressure_run),
+                                                       np.arange(args.temperature_start, args.temperature_end +
+                                                       args.temperature_step, args.temperature_step),
+                                                       itertools.repeat(t_end), itertools.repeat(t_step),
+                                                       itertools.repeat(pode_run), itertools.repeat(args.O2),
+                                                       itertools.repeat(args.N2)))
 
             for i in range(len(values)):
                 # separate the list of all temperatures into the single ones
