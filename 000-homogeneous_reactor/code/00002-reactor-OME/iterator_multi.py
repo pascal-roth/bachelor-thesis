@@ -175,6 +175,8 @@ for iii, pode_run in enumerate(args.pode):
                     samples = samples[:(n_samples - (12500 - n_samples_run)), :]
                     nn += n_samples_run
 
+            pool.close()
+
 if save_delays is True:
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
     path_delay = '{}/{}_{}_delays.csv'.format(path_dir, args.number_run, args.category)
