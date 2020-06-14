@@ -177,7 +177,9 @@ for iii, pode_run in enumerate(args.pode):
 
             pool.close()
 
+
 if save_delays is True:
+    print('Reactor solved! Saving delays ...')
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
     path_delay = '{}/{}_{}_delays.csv'.format(path_dir, args.number_run, args.category)
     delays = pd.DataFrame(delays)
@@ -187,6 +189,7 @@ if save_delays is True:
 
 # save species development with the parameter setting
 if save_samples is True:
+    print('Delays saved! Saving samples ...')
     path_dir, _ = create_path(args.mechanism_input, args.number_run)
     #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
@@ -195,3 +198,5 @@ if save_samples is True:
                        'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)
+
+print('DONE!')
