@@ -27,7 +27,7 @@ while true; do
 		        read -p "start temperature [default:  650]     : " t_start
 			    read -p "end temperature   [default: 1250]     : " t_end
 			    read -p "temperature step  [default:   30]     : " t_step
-			    python iterator_multi.py -mech $mechanism --pode $pode_n -nbr_run $name --category $category --phi_0 $phi_0 --phi_end $phi_end --phi_step $phi_step --p_0 $p_0 --p_end $p_end --p_step $p_step -t_0 $t_start -t_end $t_end -t_step $t_step --NCPU $NCPU; break;;
+			    python iterator_multi.py -mech $mechanism --pode $pode_n -nbr_run $name --category $category --phi_0 $phi_0 --phi_end $phi_end --phi_step $phi_step --p_0 $p_0 --p_end $p_end --p_step $p_step -t_0 $t_start -t_end $t_end -t_step $t_step --NCPU $NCPU; exit;;
 		[Nn]* ) python iterator_multi.py -mech $mechanism --pode $pode_n -nbr_run $name --category $category --NCPU $NCPU; exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac

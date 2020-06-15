@@ -18,7 +18,7 @@ while true; do
 		[Yy]* ) read -p "PODE_n            [1, 2, 3, 4]    (ar): " pode_n
                 read -p "equivalence ratio [0.5, 1.0, 1.5] (ar): " equivalence_ratio
                 read -p "pressure          [10, 20, 40]    (ar): " pressure
-                read -p "temperature       (650, 1250, 15) (ar): " temp; break;;
+                read -p "temperature       (650, 1250, 30) (ar): " temp; break;;
 		[Nn]* ) pode_n=0
 		        equivalence_ratio=0
 		        pressure=0
@@ -35,18 +35,18 @@ while true; do
 		[Yy]* ) echo "Decide training and network parameters"
                 read -p "nbr of train epochs:                              " epochs
                 read -p "nbr of network:                                   " name_net
-		        read -p "Which validation method model  [train, test]:     " typ
-		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net --typ $typ ; break;;
+		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net; break;;
 		[Nn]* ) echo "Decide NN building and training parameters"
-                read -p "nbr of train epochs:                              " epochs
                 read -p "nbr of network:                                   " name_net
+                read -p "nbr of train epochs:                              " epochs
+                read -p "size of the NN (neurons for hidden layer)   (ar): " hidden
                 echo "Decide which training feature set"
                 echo "  1) [pode, phi, P_0, T_0, PV]"
-                echo "  2) [pode, Z,   P,   H/U, PV]"
-                read -p "Chose set (1, 2):                                 " set
+                echo "  2) [pode, Z,   P,   H,   PV]"
+                echo "  3) [pode, Z,   H,   PV     ]"
+                read -p "Chose set (1, 2, 3):                              " set
                 read -p "Output parameters [T]                       (ar): " labels
-		        typ=train
-		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train  --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --feature_set $set --labels $labels --n_epochs $epochs -nbr_net $name_net; exit;;
+		        python MLP_temperature.py -mech $mechanism -nbr_run $name_train  --pode $pode_n -phi $equivalence_ratio -p $pressure -temp $temp --n_epochs $epochs -nbr_net $name_net --feature_set $set --labels $labels --hidden $hidden; exit;;
 		* ) echo "Please answer with yes or no." ;;
 	esac
 done

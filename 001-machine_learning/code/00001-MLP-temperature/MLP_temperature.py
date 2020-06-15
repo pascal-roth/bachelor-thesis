@@ -9,7 +9,6 @@ from fc_post_processing import load_checkpoint
 import torch
 from torch import nn
 import fc_model
-import numpy as np
 
 # %% Collect arguments
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
@@ -20,8 +19,11 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("-nbr_run", "--number_train_run", type=str, default='000',
                     help="define which training data should be used")
 
-parser.add_argument("--feature_set", type=int, choices=[1, 2],
+parser.add_argument("--feature_set", type=int, choices=[1, 2, 3],
                     help="chose set of features")
+
+parser.add_argument("--hidden", nargs='+', type=int, default=[64, 64, 64],
+                    help="chose size of NN")
 
 parser.add_argument("--labels", nargs='+', type=str, default=['T'],
                     help="chose output parameters for the NN")
@@ -31,9 +33,6 @@ parser.add_argument("--n_epochs", type=int, default=50,
 
 parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                     help="chose number of the network")
-
-parser.add_argument("--typ", type=str, choices=['train', 'test'], default='test',
-                    help="chose validation method of pre-trained NN")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],
                     help="chose equivalence ratio")
@@ -59,19 +58,25 @@ try:
     model, criterion, features, labels, x_scaler, y_scaler, n_input, n_output, _ = load_checkpoint(args.number_net)
     print('Pretrained model found, training will be continued ...')
 except FileNotFoundError:
-    n_input = 5
-    n_output = 1
-    n_hidden = [64, 64, 32]
-    model = fc_model.Net(n_input, n_output, n_hidden)
-    criterion = nn.MSELoss()
-    print('New model created')
     x_scaler = None
     y_scaler = None
+
+    # Select which features and labels to use
     if args.feature_set == 1:
         features = ['pode', 'phi', 'P_0', 'T_0', 'PV']
     elif args.feature_set == 2:
         features = ['pode', 'Z', 'H', 'P', 'PV']
+    elif args.feature_set == 3:
+        features = ['pode', 'Z', 'H', 'PV']
     labels = args.labels
+
+    # Parameters of the NN
+    n_input = len(features)
+    n_output = len(args.labels)
+    n_hidden = args.hidden
+    model = fc_model.Net(n_input, n_output, n_hidden)
+    criterion = nn.MSELoss()
+    print('New model created')
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 print(model)
