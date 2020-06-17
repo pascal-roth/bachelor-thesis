@@ -43,11 +43,10 @@ def updateLines(ax, train_losses, validation_losses):
     """
     updates line values for loss plot
 
-    Parameters
-    ----------
-    ax - matplotlib.axes.Axes : axis object to be updated
-    train_losses - list : list of floats of training losses
-    validation_losses - list : list of floats of validation losses
+    :parameter
+    :param ax:                              axis object to be updated
+    :param train_losses:        - list -    list of floats of training losses
+    :param validation_losses:   - list -    list of floats of validation losses
     """
 
     x = list(range(1, len(train_losses)+1))
@@ -61,22 +60,19 @@ def updateLines(ax, train_losses, validation_losses):
 
 
 # training function for the model ####################################################################################
-def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, plot):
+def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, plot, inf_print):
     """Optimize the weights of a given MLP.
 
-    Parameters
-    ----------
-    model - SimpleMLP : model to optimize
-    train_loader - pytorch Data Loader : Data Loader of the Train samples and labels
-    val_loader - pytorch Data Loader : Data Loader of the Validation samples and labels
-    criterion - Loss function : pytorch Loss function
-    optimizer - Optimizer function : pytorch Optimizer function, include the learning rate
-    epochs - Integer : number of epochs to train
-    nbr_net - Integer : number to identify the trained network
-    valid_loss_min - Float : minimum value of the train validation, model is saved if new loss lower
-    plot: Bool
-        plots loss curves
-​
+    :parameter
+    :param model:                           SimpleMLP -> model to optimize
+    :param train_loader:    - dataloader -  Data Loader of the Train samples and labels
+    :param valid_loader:    - dataloader -  Data Loader of the Validation samples and labels
+    :param criterion:                       pytorch Loss function
+    :param optimizer:                       pytorch Optimizer function, include the learning rate
+    :param epochs:          - int -         number of epochs to train
+    :param nbr_net:         - str -         number to identify the trained network
+    :param plot:            - bool -        if True, losses will be plotted while training the network
+    :param inf_print:       - bool -        should some information be printed out
     """
 
     # check if CUDA is available
@@ -85,7 +81,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     if not train_on_gpu:
         print('CUDA is not available.  Training on CPU ...')
     else:
-        print('CUDA is available!  Training on GPU ...')# check if CUDA is available
+        print('CUDA is available!  Training on GPU ...')  # check if CUDA is available
         model.cuda()
 
     # the minimal validation loss at the beginning of the training
@@ -108,7 +104,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
     # Prepare plot
     if plot:
-        #print("backend: "+plt.get_backend())
+        # print("backend: "+plt.get_backend())
         xdata = []
         plt.show()
         ax = plt.gca()
@@ -183,8 +179,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
             torch.save(model.state_dict(), 'model.pt')
             valid_loss_min = valid_loss/len(valid_loader)
 
-        outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
-        loss_log.set_description_str("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format(epoch, train_losses[epoch], validation_losses[epoch]))
+        outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format
+                    (epoch, train_losses[epoch], validation_losses[epoch]))
+        loss_log.set_description_str("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format
+                                     (epoch, train_losses[epoch], validation_losses[epoch]))
         best_log.set_description_str("Best validation loss {}".format(valid_loss_min))
 
     inner.close()
@@ -193,6 +191,16 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     # save losses
     path = Path(__file__).resolve()
     path_loss = path.parents[2] / 'data/00001-MLP-temperature/{}_losses.csv'.format(nbr_net)
+
+    # check if directory exists
+    try:
+        os.makedirs(path_loss)
+    except OSError:
+        if inf_print is True:
+            print('Directories already exist')
+    else:
+        if inf_print is True:
+            print('Necessary directories created')
 
     train_losses = np.asarray(train_losses)
     validation_losses = np.asarray(validation_losses)
@@ -215,23 +223,38 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
 # save latest models in checkpoint files ##############################################################################
 def save_model(model, n_input, n_output, optimizer, criterion, number_net, features, labels, x_scaler,
-               y_scaler, number_train_run):
+               y_scaler, number_train_run, inf_print):
     """Save model together with important parameters
 
     :parameter
     -----------
-    :param model: Simple MLP model
-    :param n_input: number of input features
-    :param n_output: number of output features
-    :param optimizer: pytorch optimizer function, including the learning rate
-    :param criterion: pytorch loss function
-    :param number_net: number to identify the network
-    :param features: input features of the network
-    :param labels: output features of the network
-    :param x_scaler: MinMaxScaler of the samples
-    :param y_scaler: MinMasxScaler of the labels
-    :param number_train_run: number to identify the train run used for training
+    :param model:                                   Simple MLP model
+    :param n_input:             - int -             number of input features
+    :param n_output:            - int -             number of output features
+    :param optimizer:                               pytorch optimizer function, including the learning rate
+    :param criterion:                               pytorch loss function
+    :param number_net:          - str -             number to identify the network
+    :param features:            - list of str -     input features of the network
+    :param labels:              - list of str -     output features of the network
+    :param x_scaler:                                MinMaxScaler of the samples
+    :param y_scaler:                                MinMasxScaler of the labels
+    :param number_train_run:    - str -             number to identify the train run used for training
+    :param inf_print:           - bool -            should information be printed out
     """
+
+    # create path for the model
+    path = Path(__file__).resolve()
+    path = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(number_net)
+
+    # check if directory already exists
+    try:
+        os.makedirs(path)
+    except OSError:
+        if inf_print is True:
+            print('Directories already exist')
+    else:
+        if inf_print is True:
+            print('Necessary directories created')
 
     try:
         model.load_state_dict(torch.load('model.pt'))
@@ -249,9 +272,7 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
                       'y_scaler': y_scaler,
                       'number_train_run': number_train_run}
 
-        path = Path(__file__).resolve()
-        path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(number_net)
-        torch.save(checkpoint, path_pth)
+        torch.save(checkpoint, path)
         print('Model saved ...')
 
         # Delete the model pt files

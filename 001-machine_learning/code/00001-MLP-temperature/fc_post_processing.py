@@ -19,7 +19,7 @@ def load_checkpoint(nbr_net):
     """Load Checkpoint of a saved model
 
     :parameter
-    :param nbr_net: - int - number to identify the saved MLP
+    :param nbr_net: - int -     number to identify the saved MLP
     """
 
     path = Path(__file__).resolve()
@@ -53,10 +53,11 @@ def load_checkpoint(nbr_net):
 def calc_acc(model, test_loader, scaler):
     """ Calculate the percentage of MLP outputs which are in a range of 5% of the reactor output
 
-    :param model:       MLP-model
-    :param test_loader: data loader which includes data and target of the test samples
-    :param scaler:      MinMaxScaler which has been to used to normalize the samples
-    :return:            return the accuracy of the model
+    :param model:                           MLP-model
+    :param test_loader: - pd dataframe -    data loader which includes data and target of the test samples
+    :param scaler:                          MinMaxScaler which has been to used to normalize the samples
+
+    :return acc_mean:   - float -           return the accuracy of the model
     """
 
     model.eval()  # prep model for evaluation
@@ -94,6 +95,7 @@ def calc_acc(model, test_loader, scaler):
 def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, number_net, plt_nbrs, features):
     """ Plot the MLP output next to the output of the reactor to see how good the network interpolates
 
+    :parameter
     :param model:                           pytorch MLP model
     :param x_train:     - pd dataframe -    data of the training samples
     :param y_train:     - pd dataframe -    target of the training samples
@@ -104,7 +106,6 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
     :param number_net:  - int -             Number to identify the MLPNumber to identify the MLP
     :param plt_nbrs:    - boolean -         plot the the two parameter settings between them the network interpolated
     :param features:    - list of str -     list of features which has been used for training
-    :return:
     """
 
     # rename the 3 features which identify the initial parameter setting

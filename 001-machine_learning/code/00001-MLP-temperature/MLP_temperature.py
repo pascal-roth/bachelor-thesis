@@ -98,8 +98,9 @@ y_samples = None
 print('Data loaded, start training ...')
 
 # %% number of epochs to train the model
-fc_model.train(model, train_loader, valid_loader, criterion, optimizer, args.n_epochs, args.number_net, plot=True)
+fc_model.train(model, train_loader, valid_loader, criterion, optimizer, args.n_epochs, args.number_net, plot=True,
+               inf_print=args.information_print)
 
 # %% save best models depending the validation loss
 fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, features, labels, x_scaler,
-                    y_scaler, args.number_train_run)
+                    y_scaler, args.number_train_run, args.information_print)
