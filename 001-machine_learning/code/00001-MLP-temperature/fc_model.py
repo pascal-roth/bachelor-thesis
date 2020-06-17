@@ -96,6 +96,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         loss = criterion(output, target)
         # update running validation loss
         valid_loss_min += loss.item() * data.size(0)
+
     valid_loss_min = valid_loss_min / len(valid_loader)
     print("\nInitial validation loss is: {:6.5e}\n".format(valid_loss_min))
 
@@ -170,7 +171,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
                 # update running validation loss
                 valid_loss += loss.item() * data.size(0)
 
-            validation_losses.append(valid_loss / len(valid_loader))
+            valid_loss = valid_loss / len(valid_loader)
+            validation_losses.append(valid_loss)
 
         if plot:
             updateLines(ax, train_losses, validation_losses)
