@@ -16,10 +16,10 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("-nbr_run", "--number_train_run", type=str, default='000',
+parser.add_argument("-nbr_run", "--number_train_run", type=str, default='001',
                     help="define which training data should be used")
 
-parser.add_argument("--feature_set", type=int, choices=[1, 2, 3],
+parser.add_argument("--feature_set", type=int, choices=[1, 2, 3], default=3,
                     help="chose set of features")
 
 parser.add_argument("--hidden", nargs='+', type=int, default=[64, 64, 64],
@@ -28,10 +28,10 @@ parser.add_argument("--hidden", nargs='+', type=int, default=[64, 64, 64],
 parser.add_argument("--labels", nargs='+', type=str, default=['T'],
                     help="chose output parameters for the NN")
 
-parser.add_argument("--n_epochs", type=int, default=50,
+parser.add_argument("--n_epochs", type=int, default=2,
                     help="chose number of epochs for training")
 
-parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
+parser.add_argument("-nbr_net", "--number_net", type=str, default='005',
                     help="chose number of the network")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],

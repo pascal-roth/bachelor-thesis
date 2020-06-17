@@ -190,11 +190,12 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
     # save losses
     path = Path(__file__).resolve()
+    path_dir = path.parents[2] / 'data/00001-MLP-temperature'
     path_loss = path.parents[2] / 'data/00001-MLP-temperature/{}_losses.csv'.format(nbr_net)
 
     # check if directory exists
     try:
-        os.makedirs(path_loss)
+        os.makedirs(path_dir)
     except OSError:
         if inf_print is True:
             print('Directories already exist')
@@ -209,6 +210,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     validation_losses = validation_losses.reshape((len(validation_losses), 1))
 
     losses = np.concatenate((train_losses, validation_losses), axis=1)
+
     try:
         losses_pre = pd.read_csv(path_loss)
         losses_pre = losses_pre.values
@@ -244,11 +246,12 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
 
     # create path for the model
     path = Path(__file__).resolve()
-    path = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(number_net)
+    path_dir = path.parents[2] / 'data/00001-MLP-temperature'
+    path_mlp = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(number_net)
 
     # check if directory already exists
     try:
-        os.makedirs(path)
+        os.makedirs(path_dir)
     except OSError:
         if inf_print is True:
             print('Directories already exist')
@@ -272,7 +275,7 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
                       'y_scaler': y_scaler,
                       'number_train_run': number_train_run}
 
-        torch.save(checkpoint, path)
+        torch.save(checkpoint, path_mlp)
         print('Model saved ...')
 
         # Delete the model pt files
