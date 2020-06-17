@@ -179,7 +179,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
         if valid_loss <= valid_loss_min:
             torch.save(model.state_dict(), 'model.pt')
-            valid_loss_min = valid_loss/len(valid_loader)
+            valid_loss_min = valid_loss
 
         outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format
                     (epoch, train_losses[epoch], validation_losses[epoch]))

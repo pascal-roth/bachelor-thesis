@@ -16,7 +16,7 @@ import numpy as np
 #%% get arguments
 parser = argparse.ArgumentParser(description="Run post processing of NN")
 
-parser.add_argument("--post", type=str, choices=['loss', 'test', 'plt_train'], default='loss',
+parser.add_argument("--post", type=str, choices=['loss', 'test', 'plt_train'], default='test',
                     help="chose which post processing method should be performed")
 
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
@@ -107,7 +107,7 @@ elif args.post == 'test':     # PLot interpolation capability of Network
     print('Data loaded!')
 
     # calculate accuracy
-    acc_mean = fc_post_processing.calc_acc(model, test_loader, y_scaler)
+    acc_mean = fc_post_processing.calc_acc(model, test_loader, y_scaler, labels)
     print('The mean accuracy with a 5% tolerance is {}'. format(acc_mean))
 
     # normalize the data
@@ -120,5 +120,5 @@ elif args.post == 'test':     # PLot interpolation capability of Network
     # plot the output of NN and reactor together with the closest parameter in the training set (data between the
     # interpolation took place)
     fc_post_processing.plot_data(model, x_train, y_train, x_test, y_test, x_scaler,
-                                 y_scaler, args.number_net, plt_nbrs=False, features=features)
+                                 y_scaler, args.number_net, plt_nbrs=False, features=features, labels=labels)
 

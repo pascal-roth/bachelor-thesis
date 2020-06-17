@@ -50,24 +50,25 @@ def load_checkpoint(nbr_net):
 
 
 # calculate mean accuracy over test data ###############################################################################
-def calc_acc(model, test_loader, scaler):
+def calc_acc(model, test_loader, scaler, labels):
     """ Calculate the percentage of MLP outputs which are in a range of 5% of the reactor output
 
     :param model:                           MLP-model
     :param test_loader: - pd dataframe -    data loader which includes data and target of the test samples
     :param scaler:                          MinMaxScaler which has been to used to normalize the samples
+    :param labels:      - list of str -     List of labels of the MLP
 
     :return acc_mean:   - float -           return the accuracy of the model
     """
 
-    model.eval()  # prep model for evaluation
-    acc = []      # create empty object
-
+    model.eval()                                            # prep model for evaluation
+    acc = np.zeros((len(test_loader), len(labels)))         # create acc array
+    n = 0                                                   # tracking parameter of test_loader length
     for data, target in test_loader:
         # forward pass: compute predicted outputs by passing inputs to the model
         output = model(data)
         # compare predictions to true label
-        correct = np.zeros((len(output)))
+        correct = np.zeros((len(output), len(labels)))
         # convert tensors to numpy arrays
         output = output.detach().numpy()
         target = target.detach().numpy()
@@ -77,22 +78,27 @@ def calc_acc(model, test_loader, scaler):
         target = scaler.inverse_transform(target)
 
         # check if samples are in 5% range
-        for i in range(len(output)):
-            if target[i] * 0.95 < output[i] < target[i] * 1.05:
-                correct[i] = 1
-            else:
-                correct[i] = 0
+        for ii in range(len(labels)):
+            target_run = np.squeeze(target[:, ii])
+            output_run = np.squeeze(output[:, ii])
 
-        acc = np.append(acc, np.sum(correct) / len(output))
+            for i in range(len(output)):
+                if target_run[i] * 0.95 < output_run[i] < target_run[i] * 1.05:
+                    correct[i, ii] = 1
+                else:
+                    correct[i, ii] = 0
+
+            acc[n, ii] = np.sum(correct[:, ii]) / len(output)
 
     # calculate mean accuracy
     acc_mean = np.mean(acc)
+    print(acc_mean)
 
     return acc_mean
 
 
 # plot output of the reactor next to the output of the NN #############################################################
-def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, number_net, plt_nbrs, features):
+def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, number_net, plt_nbrs, features, labels):
     """ Plot the MLP output next to the output of the reactor to see how good the network interpolates
 
     :parameter
@@ -106,6 +112,7 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
     :param number_net:  - int -             Number to identify the MLPNumber to identify the MLP
     :param plt_nbrs:    - boolean -         plot the the two parameter settings between them the network interpolated
     :param features:    - list of str -     list of features which has been used for training
+    :param labels:      - list of str -     list of labels of the MLP
     """
 
     # rename the 3 features which identify the initial parameter setting
@@ -158,30 +165,32 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
                 output = y_scaler.inverse_transform(output)
                 y_test_run = y_scaler.inverse_transform(y_test_run)
 
-                # plot the MLP and reactor output
-                plt.plot(samples_feature_3_run[['PV']], y_test_run, 'b-', label='Reactor output')
-                plt.plot(samples_feature_3_run[['PV']], output, 'r-', label='NN Output')
+                for iiii in range(len(labels)):
 
-                samples_feature_3_run = samples_feature_3_run.to_numpy()
-                samples_feature_3_run = x_scaler.inverse_transform(samples_feature_3_run)
+                    # plot the MLP and reactor output
+                    plt.plot(samples_feature_3_run[['PV']], y_test_run, 'b-', label='Reactor output')
+                    plt.plot(samples_feature_3_run[['PV']], output, 'r-', label='NN Output')
 
-                plt.title('PODE{} {}={:.2f} {}={}bar {}={:.0f}'.format(samples_feature_3_run[0, 0],
-                                                                       features[1],
-                                                                       samples_feature_3_run[0, 1],
-                                                                       features[2],
-                                                                       samples_feature_3_run[0, 2] / ct.one_atm,
-                                                                       features[3],
-                                                                       samples_feature_3_run[0, 3]))
+                    samples_feature_3_run = samples_feature_3_run.to_numpy()
+                    samples_feature_3_run = x_scaler.inverse_transform(samples_feature_3_run)
 
-                plt.legend()
-                plt.xlabel('PV')
-                plt.ylabel('T [K]')
+                    plt.title('PODE{} {}={:.2f} {}={}bar {}={:.0f}'.format(samples_feature_3_run[0, 0],
+                                                                           features[1],
+                                                                           samples_feature_3_run[0, 1],
+                                                                           features[2],
+                                                                           samples_feature_3_run[0, 2] / ct.one_atm,
+                                                                           features[3],
+                                                                           samples_feature_3_run[0, 3]))
 
-                path = Path(__file__).resolve()
-                path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
-                    (number_net, samples_feature_3_run[0, 0], samples_feature_3_run[0, 1],
-                     samples_feature_3_run[0, 2] / ct.one_atm, samples_feature_3_run[0, 3])
-                plt.savefig(path_plt)
+                    plt.legend()
+                    plt.xlabel('PV')
+                    plt.ylabel('T [K]')
+
+                    path = Path(__file__).resolve()
+                    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
+                        (number_net, samples_feature_3_run[0, 0], samples_feature_3_run[0, 1],
+                         samples_feature_3_run[0, 2] / ct.one_atm, samples_feature_3_run[0, 3])
+                    plt.savefig(path_plt)
 
                 plt.show()
 
