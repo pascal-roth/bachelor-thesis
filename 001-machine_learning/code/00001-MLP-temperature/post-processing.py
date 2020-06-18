@@ -107,8 +107,7 @@ elif args.post == 'test':     # PLot interpolation capability of Network
     print('Data loaded!')
 
     # calculate accuracy
-    acc_mean = fc_post_processing.calc_acc(model, test_loader, y_scaler, labels)
-    print('The mean accuracy with a 5% tolerance is {}'. format(acc_mean))
+    fc_post_processing.calc_acc(model, test_loader, y_scaler, labels)
 
     # normalize the data
     x_train, _ = fc_pre_processing_load.normalize_df(x_train, scaler=x_scaler)

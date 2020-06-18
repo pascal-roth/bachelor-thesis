@@ -57,8 +57,6 @@ def calc_acc(model, test_loader, scaler, labels):
     :param test_loader: - pd dataframe -    data loader which includes data and target of the test samples
     :param scaler:                          MinMaxScaler which has been to used to normalize the samples
     :param labels:      - list of str -     List of labels of the MLP
-
-    :return acc_mean:   - float -           return the accuracy of the model
     """
 
     model.eval()                                            # prep model for evaluation
@@ -91,13 +89,12 @@ def calc_acc(model, test_loader, scaler, labels):
             acc[n, ii] = np.sum(correct[:, ii]) / len(output)
 
     # calculate mean accuracy
-    acc_mean = np.mean(acc)
-    print(acc_mean)
+    for i in range(len(labels)):
+        acc_mean = np.mean(acc[:, i])
+        print('Mean accuracy for {} is: {:6.5e}'.format(labels[i], acc_mean))
 
-    return acc_mean
 
-
-# plot output of the reactor next to the output of the NN #############################################################
+# separate initial states, calc output of reactor and call function to plot ###########################################
 def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, number_net, plt_nbrs, features, labels):
     """ Plot the MLP output next to the output of the reactor to see how good the network interpolates
 
@@ -109,7 +106,7 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
     :param y_test:      - pd dataframe -    target of the test data
     :param x_scaler:                        MinMaxScaler of the data
     :param y_scaler:                        MinMaxScaler of the targets
-    :param number_net:  - int -             Number to identify the MLPNumber to identify the MLP
+    :param number_net:  - int -             Number to identify the MLP
     :param plt_nbrs:    - boolean -         plot the the two parameter settings between them the network interpolated
     :param features:    - list of str -     list of features which has been used for training
     :param labels:      - list of str -     list of labels of the MLP
@@ -117,11 +114,12 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
 
     # rename the 3 features which identify the initial parameter setting
     x_test = x_test.rename(columns={'{}'.format(features[1]): 'feature_1',
-                                    '{}'.format(features[2]): 'feature_2',
-                                    '{}'.format(features[3]): 'feature_3'})
+                                    '{}'.format(features[2]): 'feature_2'})
 
-    # round the third feature
-    x_test[['feature_3']] = x_test[['feature_3']].round(decimals=1)
+    # if three features to identify state
+    if len(features) == 5:
+        x_test = x_test.rename(columns={'{}'.format(features[3]): 'feature_3'})
+        x_test[['feature_3']] = x_test[['feature_3']].round(decimals=1)
 
     # separate the different initial conditions and iterate over them
     values_feature_1 = x_test.drop_duplicates(['feature_1'])
@@ -134,29 +132,60 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
 
         for ii, feature_2_run in enumerate(values_feature_2):
             samples_feature_2_run = samples_feature_1_run[samples_feature_1_run.feature_2 == feature_2_run[0]]
-            values_feature_3 = samples_feature_2_run.drop_duplicates(['feature_3'])
-            values_feature_3 = values_feature_3[['feature_3']].to_numpy()
 
-            for iii, feature_3_run in enumerate(values_feature_3):
-                samples_feature_3_run = samples_feature_2_run[samples_feature_2_run.feature_3 == feature_3_run[0]]
+            if len(features) == 5:
+                values_feature_3 = samples_feature_2_run.drop_duplicates(['feature_3'])
+                values_feature_3 = values_feature_3[['feature_3']].to_numpy()
 
-                # decide if the neighbors (nbrs) should be plotted
+                for iii, feature_3_run in enumerate(values_feature_3):
+                    samples_feature_3_run = samples_feature_2_run[samples_feature_2_run.feature_3 == feature_3_run[0]]
+
+                    # decide if the neighbors (nbrs) should be plotted
+                    if plt_nbrs:
+                        nbr1_sample, nbr1_label, nbr2_sample, nbr2_label = find_neighbors(feature_1_run, feature_2_run,
+                                                                                          feature_3_run, x_train,
+                                                                                          y_train, features)
+                        nbr1_label = y_scaler.inverse_transform(nbr1_label)
+                        nbr2_label = y_scaler.inverse_transform(nbr2_label)
+                        plt.plot(nbr1_sample[['PV']], nbr1_label, 'g-', label='Nbr1')
+                        plt.plot(nbr2_sample[['PV']], nbr2_label, 'y-', label='Nbr2')
+
+                    # for the selected initial parameter setting select the corresponding labels
+                    indexes = samples_feature_3_run.index
+                    y_test_run = y_test.iloc[indexes, :]
+                    y_test_run = y_test_run.to_numpy()
+
+                    # transform data to tensor and compute output of MLP
+                    samples_tensor = torch.tensor(samples_feature_3_run.values).float()
+                    model.eval()
+                    output = model(samples_tensor)
+
+                    # denormalize output for plotting
+                    output = output.detach().numpy()
+                    output = y_scaler.inverse_transform(output)
+                    y_test_run = y_scaler.inverse_transform(y_test_run)
+
+                    plot_outputs(output, y_test_run, samples_feature_3_run, features, labels, x_scaler, number_net)
+
+            else:
+
                 if plt_nbrs:
+                    feature_3_run = None
                     nbr1_sample, nbr1_label, nbr2_sample, nbr2_label = find_neighbors(feature_1_run, feature_2_run,
-                                                                                      feature_3_run, x_train, y_train,
-                                                                                      features)
+                                                                                      feature_3_run, x_train,
+                                                                                      y_train, features)
                     nbr1_label = y_scaler.inverse_transform(nbr1_label)
                     nbr2_label = y_scaler.inverse_transform(nbr2_label)
                     plt.plot(nbr1_sample[['PV']], nbr1_label, 'g-', label='Nbr1')
                     plt.plot(nbr2_sample[['PV']], nbr2_label, 'y-', label='Nbr2')
 
                 # for the selected initial parameter setting select the corresponding labels
-                indexes = samples_feature_3_run.index
+                indexes = samples_feature_2_run.index
                 y_test_run = y_test.iloc[indexes, :]
                 y_test_run = y_test_run.to_numpy()
 
                 # transform data to tensor and compute output of MLP
-                samples_tensor = torch.tensor(samples_feature_3_run.values).float()
+                samples_tensor = torch.tensor(samples_feature_2_run.values).float()
                 model.eval()
                 output = model(samples_tensor)
 
@@ -165,34 +194,7 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
                 output = y_scaler.inverse_transform(output)
                 y_test_run = y_scaler.inverse_transform(y_test_run)
 
-                for iiii in range(len(labels)):
-
-                    # plot the MLP and reactor output
-                    plt.plot(samples_feature_3_run[['PV']], y_test_run, 'b-', label='Reactor output')
-                    plt.plot(samples_feature_3_run[['PV']], output, 'r-', label='NN Output')
-
-                    samples_feature_3_run = samples_feature_3_run.to_numpy()
-                    samples_feature_3_run = x_scaler.inverse_transform(samples_feature_3_run)
-
-                    plt.title('PODE{} {}={:.2f} {}={}bar {}={:.0f}'.format(samples_feature_3_run[0, 0],
-                                                                           features[1],
-                                                                           samples_feature_3_run[0, 1],
-                                                                           features[2],
-                                                                           samples_feature_3_run[0, 2] / ct.one_atm,
-                                                                           features[3],
-                                                                           samples_feature_3_run[0, 3]))
-
-                    plt.legend()
-                    plt.xlabel('PV')
-                    plt.ylabel('T [K]')
-
-                    path = Path(__file__).resolve()
-                    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.format \
-                        (number_net, samples_feature_3_run[0, 0], samples_feature_3_run[0, 1],
-                         samples_feature_3_run[0, 2] / ct.one_atm, samples_feature_3_run[0, 3])
-                    plt.savefig(path_plt)
-
-                plt.show()
+                plot_outputs(output, y_test_run, samples_feature_2_run, features, labels, x_scaler, number_net)
 
 
 # find closest runs between test and train samples ####################################################################
@@ -251,7 +253,7 @@ def find_neighbors(feature_1_test, feature_2_test, feature_3_test, x_train, y_tr
 
     # find the two closest settings of the test run
     sample = [[feature_1_test[0], feature_2_test[0], feature_3_test[0]]]
-    nbrs = neigh.kneighbors(sample, n_neighbors=2, return_distance=False) #, return_distance=False)
+    nbrs = neigh.kneighbors(sample, n_neighbors=2, return_distance=False)
     print(nbrs)
 
     # identify the data and targets of the closest run
@@ -271,6 +273,65 @@ def find_neighbors(feature_1_test, feature_2_test, feature_3_test, x_train, y_tr
     nbr2_label = y_train.iloc[indexes, :]
 
     return nbr1_sample, nbr1_label, nbr2_sample, nbr2_label
+
+
+# function to plot MLP output next to reactor output ##################################################################
+def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler, number_net):
+    """
+    Function to plot MLP output next to reactor output
+
+    :param output:              - np array -        Output of the MLP
+    :param y_test:              - np array -        corresponding output of the reactor
+    :param samples_feature_run: - pd dataframe -    test samples which were given to MLP
+    :param features:            - list of str -     list of features
+    :param labels:              - list of str -     list of labels
+    :param x_scaler:                                MinMaxScaler of samples
+    :param number_net:          - str -             Number to identify the MLP
+    """
+
+    for i in range(len(labels)):
+        y_test_run = np.squeeze(y_test[:, i])
+        output_run = np.squeeze(output[:, i])
+
+        # plot the MLP and reactor output
+        plt.plot(samples_feature_run[['PV']], y_test_run, 'b-', label='Reactor output')
+        plt.plot(samples_feature_run[['PV']], output_run, 'r-', label='NN Output')
+
+        samples_feature_run = samples_feature_run.to_numpy()
+        samples_feature_run = x_scaler.inverse_transform(samples_feature_run)
+
+        if len(features) == 5:
+            plt.title('PODE{} {}={:.2f} {}={:.0f} {}={}bar '.format(samples_feature_run[0, 0],
+                                                                    features[1],
+                                                                    samples_feature_run[0, 1],
+                                                                    features[2],
+                                                                    samples_feature_run[0, 2] / ct.one_atm,
+                                                                    features[3],
+                                                                    samples_feature_run[0, 3]))
+
+            path = Path(__file__).resolve()
+            path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}_{:.0f}.pdf'.\
+                format(number_net, labels[i],samples_feature_run[0, 0], samples_feature_run[0, 1],
+                       samples_feature_run[0, 2] / ct.one_atm, samples_feature_run[0, 3])
+
+        else:
+            plt.title('PODE{} {}={:.2f} {}={:.0f}'.format(samples_feature_run[0, 0],
+                                                          features[1],
+                                                          samples_feature_run[0, 1],
+                                                          features[2],
+                                                          samples_feature_run[0, 2]))
+
+            path = Path(__file__).resolve()
+            path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}.pdf'.format\
+                (number_net, labels[i], samples_feature_run[0, 0], samples_feature_run[0, 1], samples_feature_run[0, 2])
+
+        plt.legend()
+        plt.xlabel('PV')
+        plt.ylabel('{}'.format(labels[i]))
+
+        plt.savefig(path_plt)
+
+        plt.show()
 
 
 # function to plot the fitting to the training data ###################################################################
@@ -303,12 +364,12 @@ def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, feat
     plt.plot(x_samples[['PV']], output, 'r-', label='NN Output')
 
     plt.title('PODE{} {}={:.1f} {}={}bar {}={:.0f}K'.format(x_samples.iloc[0, 0],
-                                                             features[1],
-                                                             x_samples.iloc[0, 1],
-                                                             features[2],
-                                                             x_samples.iloc[0, 2] / ct.one_atm,
-                                                             features[3],
-                                                             x_samples.iloc[0, 3]))
+                                                            features[1],
+                                                            x_samples.iloc[0, 1],
+                                                            features[2],
+                                                            x_samples.iloc[0, 2] / ct.one_atm,
+                                                            features[3],
+                                                            x_samples.iloc[0, 3]))
 
     plt.legend()
     plt.xlabel('PV')

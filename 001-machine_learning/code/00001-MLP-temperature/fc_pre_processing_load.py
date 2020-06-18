@@ -193,8 +193,8 @@ def load_dataloader(x_samples, y_samples, split, x_scaler, y_scaler, features):
         y_samples, _ = normalize_df(y_samples, y_scaler)
 
     if split:  # split into training and validation
-        x_samples, x_validation, y_samples, y_validation = train_test_split(x_samples, y_samples, test_size=0.15)
-#       x_samples, x_validation, y_samples, y_validation = train_valid_split_self(x_samples, y_samples, features)
+#        x_samples, x_validation, y_samples, y_validation = train_test_split(x_samples, y_samples, test_size=0.15)
+        x_samples, x_validation, y_samples, y_validation = train_valid_split_self(x_samples, y_samples, features)
         x_validation = torch.tensor(x_validation.values).float()
         y_validation = torch.tensor(y_validation.values).float()
         tensor_validation = data.TensorDataset(x_validation, y_validation)
