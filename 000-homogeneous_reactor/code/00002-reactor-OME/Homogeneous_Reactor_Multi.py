@@ -26,6 +26,18 @@ pode_multi = {}
 
 #%% functions to calculate the mixture fraction variable
 def beta(gas, components, weights):
+    """
+    calculate the coupling function
+
+    :parameter
+    :param gas:                             cantera solution object
+    :param components:  - list of str -     list of element str
+    :param weights:     - array-            array with weights for each element
+
+    :returns
+    :return beta:       - float -           value of coupling function
+    """
+
     for i in range(len(components)):
         if i == 0:
             beta = weights[i] * gas.elemental_mole_fraction(components[i])
@@ -36,6 +48,21 @@ def beta(gas, components, weights):
 
 
 def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature):     # create the mixture fraction variable for the run
+    """
+    calc the mixture fraction variable
+
+    :parameter
+    :param pode:                            cantera solution object
+    :param mechanism:           - array -   mechanism name and fuel species
+    :param O2:                  - float -   O2 percentage in air mixture
+    :param N2:                  - float -   N2 percentage in air mixture
+    :param equivalence_ratio:   - float -   equivalence_ratio of mixture
+    :param reactorPressure:     - int -     initial pressure of reactor
+    :param reactorTemperature:  - int -     initial temperature of reactor
+
+    :returns
+    :return Z:                  - float -   mixture fraction variable
+    """
 
     Z_components = ['C', 'O', 'H']
     Z_weights = [2, -1, 0.5]
@@ -56,6 +83,12 @@ def mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, re
 
 
 def init_process(mechanism):
+    """
+    function to initialize a cantera solution object as global variable so that in can be used in multiprocessinhg
+
+    :parameter
+    :param mechanism:               - array -           mechanism name and fuel species
+    """
     mech = mechanism[0]
     pode_multi[mech] = ct.Solution(mech)
     pode_multi[mech].transport_model = 'Multi'
@@ -63,13 +96,37 @@ def init_process(mechanism):
 
 # %% Homogeneous reactor simulation
 def homogeneous_reactor(args_reactor):
+    """
+    Constant volume and fixed mass homogeneous reactor model to solve the detailed mechanism in time and extract
+    combustion properties
 
-    mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode_nbr, O2, N2 = args_reactor
-#    pode = ct.Solution(mechanism[0])
+    :parameter (all included in args_reactor)
+    :param mechanism:               - array -           mechanism name and fuel species
+    :param equivalence_ratio:       - float -           equivalence_ratio of mixture
+    :param reactorPressure:         - int -             initial pressure of reactor
+    :param reactorTemperature:      - int -             initial temperature of reactor
+    :param t_end:                   - float -           time until the combustion process should be solved
+    :param t_step:                  - float -           time step to discretize samples
+    :param pode_nbr:                - int -             degree of ploymerization of used fuel
+    :param O2:                      - float -           O2 percentage in air mixture
+    :param N2:                      - float -           N2 percentage in air mixture
+    :param h0_mass:                 - pd dataframe -    enthalpy of formation of used fuel
+
+    :returns:
+    :return values:                 - np array -        array with initial conditions, thermodynamic properties and
+                                                        species development
+    :return first_ignition_delay:   - float -           first ignition delay of combustion
+    :return main_ignition_delay:    - float -           main ignition delay of combustion
+    """
+    # get arguments
+    mechanism, equivalence_ratio, reactorPressure, reactorTemperature, t_end, t_step, pode_nbr, O2, N2, h0_mass = \
+        args_reactor
+
     pode = pode_multi[mechanism[0]]
+
     # calculate mixture fraction
     Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
-#    Z = 0
+
     # Create Reactor
     pode.TP = reactorTemperature, reactorPressure
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
@@ -91,6 +148,9 @@ def homogeneous_reactor(args_reactor):
     stop_criterion = False
 
     values = np.zeros((n_samples, 19))
+
+    # calculation of abs enthalpy not fixed --> assume enthatly at t_0 as constant
+    H = r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y))
 
     while time < t_end:
         # calculate grad to define step size and stop_criterion
@@ -124,9 +184,12 @@ def homogeneous_reactor(args_reactor):
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
+        # Calculate the absolute enthalpy of the system as the addition of enthalpy of formation and sensible enthalpy
+        # H = r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y))
+
         # Summarize all values to be saved in an array
-        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, r1.thermo.enthalpy_mass, Z,
-                     time, PV, Q, r1.thermo.T, r1.thermo.P, r1.volume, r1.Y[pode.species_index(mechanism[1])],
+        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, H, Z, time, PV, Q, r1.thermo.T,
+                     r1.thermo.P, r1.volume, r1.Y[pode.species_index(mechanism[1])],
                      r1.Y[pode.species_index('CO2')], r1.Y[pode.species_index('O2')],
                      r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
                      r1.Y[pode.species_index('H2')], r1.Y[pode.species_index('CH2O')])

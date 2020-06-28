@@ -10,14 +10,14 @@ from pathlib import Path
 
 ct.suppress_thermo_warnings()
 
-pome = ct.Solution('cai_ome14_2019.xml')
-species = pome.species_names
+pode = ct.Solution('cai_ome14_2019.xml')
+species = pode.species_names
 enthalpies = np.zeros((len(species), 2))
 
 for i in range(len(species)):
-    pome.TPY = 298.15, ct.one_atm, '{}:1.0'.format(species[i])
-    enthalpies[i, 0] = pome.enthalpy_mole
-    enthalpies[i, 1] = pome.enthalpy_mass
+    pode.TPY = 298.15, ct.one_atm, '{}:1.0'.format(species[i])
+    enthalpies[i, 0] = pode.enthalpy_mole
+    enthalpies[i, 1] = pode.enthalpy_mass
 
 
 path = Path(__file__).resolve()

@@ -7,7 +7,7 @@ import argparse
 import numpy as np
 import cantera as ct
 import pandas as pd
-import multiprocessing
+from pathlib import Path
 from Homogeneous_Reactor import homogeneous_reactor
 from pre_process_fc import save_df
 from pre_process_fc import create_path
@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("--phi_0", type=float, default=0.5,
+parser.add_argument("--phi_0", type=float, default=1.0,
                     help="chose staring phi of simulation")
 
 parser.add_argument("--phi_end", type=float, default=1.5,
@@ -29,22 +29,22 @@ parser.add_argument("--phi_end", type=float, default=1.5,
 parser.add_argument("--phi_step",  type=float, default=0.5,
                     help="chose step size of phi of simulation")
 
-parser.add_argument("--p_0", type=int, default=10,
+parser.add_argument("--p_0", type=int, default=20,
                     help="chose staring pressure of simulation")
 
-parser.add_argument("--p_end",  type=int, default=40,
+parser.add_argument("--p_end",  type=int, default=20,
                     help="chose end pressure of simulation")
 
 parser.add_argument("--p_step", type=int, default=10,
                     help="chose step size of pressure of simulation")
 
-parser.add_argument("--pode", type=int, nargs='+', default=3,
+parser.add_argument("--pode", type=int, nargs='+', default=[3],
                     help="chose degree of polymerization")
 
-parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
+parser.add_argument("-t_0", "--temperature_start", type=int, default=750,
                     help="chose staring temperature of simulation")
 
-parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
+parser.add_argument("-t_end", "--temperature_end", type=int, default=750,
                     help="chose end temperature of simulation")
 
 parser.add_argument("-t_step", "--temperature_step", type=int, default=30,
@@ -100,6 +100,13 @@ if save_delays:
                         args.p_end, args.p_0, args.p_step, args.pode, size=6)
 
 
+# %% Load enthalpy of formation
+path = Path(__file__).resolve()
+path_h = path.parents[2] / 'data/00002-reactor-OME/enthalpies_of_formation.csv'
+h0 = pd.read_csv(path_h)
+h0_mass = h0[['h0_mass']]
+h0_mass = h0_mass.to_numpy()
+
 # %% Iterate between the parameter settings
 for iii, pode_run in enumerate(args.pode):
 
@@ -139,7 +146,7 @@ for iii, pode_run in enumerate(args.pode):
                 # 'CH2O']
                 values, first_ignition_delay, main_ignition_delay = homogeneous_reactor\
                     (mechanism, equivalence_ratio_run, reactorPressure_run, reactorTemperature, t_end, t_step, pode_run,
-                     args.O2, args.N2)
+                     args.O2, args.N2, h0_mass)
 
 
                 # saving ignition delays for the parameter setting

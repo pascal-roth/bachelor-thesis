@@ -9,6 +9,7 @@ import numpy as np
 import cantera as ct
 import pandas as pd
 import multiprocessing as mp
+from pathlib import Path
 from Homogeneous_Reactor_Multi import homogeneous_reactor, init_process
 from pre_process_fc import save_df
 from pre_process_fc import create_path
@@ -50,7 +51,7 @@ parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
 parser.add_argument("-t_step", "--temperature_step", type=int, default=30,
                     help="chose step size temperature of simulation")
 
-parser.add_argument("-nbr_run", "--number_run", type=str, default='002',
+parser.add_argument("-nbr_run", "--number_run", type=str, default='000',
                     help="define a nbr to identify the started iterator run")
 
 parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',
@@ -65,7 +66,7 @@ parser.add_argument("--O2", type=float, default=0.21,
 parser.add_argument("--N2", type=float, default=0.79,
                     help="chose N2 ratio in air")
 
-parser.add_argument("--NCPU", type=int, default=4,
+parser.add_argument("--NCPU", type=int, default=6,
                     help="chose nbr of available CPU cores")
 
 args = parser.parse_args()
@@ -85,6 +86,13 @@ else:
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = True
     save_delays = True
+
+# %% Load enthalpy of formation
+path = Path(__file__).resolve()
+path_h = path.parents[2] / 'data/00002-reactor-OME/enthalpies_of_formation.csv'
+h0 = pd.read_csv(path_h)
+h0_mass = h0[['h0_mass']]
+h0_mass = h0_mass.to_numpy()
 
 # %% Create to save files
 if not ((save_delays is False) and (save_samples is False)):
@@ -147,7 +155,7 @@ for iii, pode_run in enumerate(args.pode):
                                                        args.temperature_step, args.temperature_step),
                                                        itertools.repeat(t_end), itertools.repeat(t_step),
                                                        itertools.repeat(pode_run), itertools.repeat(args.O2),
-                                                       itertools.repeat(args.N2)))
+                                                       itertools.repeat(args.N2), itertools.repeat(h0_mass)))
 
             for i in range(len(values)):
                 # separate the list of all temperatures into the single ones

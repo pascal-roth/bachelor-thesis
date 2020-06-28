@@ -114,6 +114,9 @@ def select_samples(df, feature_select, select_data):
     """
 
     for feature, value in feature_select.items():
+        if feature == 'P_0':
+            value = np.array(value) * ct.one_atm
+
         if value is not None and select_data == 'include':
 
             # rename the column in df to feature in order to call it later
@@ -193,8 +196,12 @@ def load_dataloader(x_samples, y_samples, split, x_scaler, y_scaler, features):
         y_samples, _ = normalize_df(y_samples, y_scaler)
 
     if split:  # split into training and validation
-#        x_samples, x_validation, y_samples, y_validation = train_test_split(x_samples, y_samples, test_size=0.15)
-        x_samples, x_validation, y_samples, y_validation = train_valid_split_self(x_samples, y_samples, features)
+
+        if len(x_samples.drop_duplicates([features[1]])) < 10:
+            x_samples, x_validation, y_samples, y_validation = train_test_split(x_samples, y_samples, test_size=0.15)
+        else:
+            x_samples, x_validation, y_samples, y_validation = train_valid_split_self(x_samples, y_samples, features)
+
         x_validation = torch.tensor(x_validation.values).float()
         y_validation = torch.tensor(y_validation.values).float()
         tensor_validation = data.TensorDataset(x_validation, y_validation)

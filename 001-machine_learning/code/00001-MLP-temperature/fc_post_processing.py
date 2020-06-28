@@ -221,8 +221,7 @@ def find_neighbors(feature_1_test, feature_2_test, feature_3_test, x_train, y_tr
 
     # rename the 3 features which identify the initial parameter setting
     x_train = x_train.rename(columns={'{}'.format(features[1]): 'feature_1',
-                                      '{}'.format(features[2]): 'feature_2',
-                                      '{}'.format(features[3]): 'feature_3'})
+                                      '{}'.format(features[2]): 'feature_2'})
 
     # separate the different initial conditions and create an array with all combinations
     values_feature_1 = x_train.drop_duplicates(subset='feature_1')
@@ -233,13 +232,25 @@ def find_neighbors(feature_1_test, feature_2_test, feature_3_test, x_train, y_tr
         values_feature_2 = samples_feature_1_run.drop_duplicates(subset='feature_2')
         values_feature_2 = values_feature_2[['feature_2']].to_numpy()
 
-        for ii, feature_2_run in enumerate(values_feature_2):
-            samples_feature_2_run = samples_feature_1_run[samples_feature_1_run.feature_2 == feature_2_run[0]]
-            values_feature_3 = samples_feature_2_run.drop_duplicates(subset=['feature_3'])
-            values_feature_3 = values_feature_3[['feature_3']].to_numpy()
+        if len(features) == 5:
+            x_train = x_train.rename(columns={'{}'.format(features[3]): 'feature_3'})
 
-            combination = np.concatenate((feature_1_run * np.ones((len(values_feature_3), 1)), feature_2_run *
-                                          np.ones((len(values_feature_3), 1)), values_feature_3), axis=1)
+            for ii, feature_2_run in enumerate(values_feature_2):
+                samples_feature_2_run = samples_feature_1_run[samples_feature_1_run.feature_2 == feature_2_run[0]]
+                values_feature_3 = samples_feature_2_run.drop_duplicates(subset=['feature_3'])
+                values_feature_3 = values_feature_3[['feature_3']].to_numpy()
+
+                combination = np.concatenate((feature_1_run * np.ones((len(values_feature_3), 1)), feature_2_run *
+                                              np.ones((len(values_feature_3), 1)), values_feature_3), axis=1)
+
+                if ii == 0 and i == 0:
+                    combinations = combination
+                else:
+                    combinations = np.append(combinations, combination, axis=0)
+
+        else:
+
+            combination = np.concatenate((feature_1_run * np.ones((len(values_feature_2), 1)), values_feature_2), axis=1)
 
             if ii == 0 and i == 0:
                 combinations = combination
@@ -297,33 +308,33 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
         plt.plot(samples_feature_run[['PV']], y_test_run, 'b-', label='Reactor output')
         plt.plot(samples_feature_run[['PV']], output_run, 'r-', label='NN Output')
 
-        samples_feature_run = samples_feature_run.to_numpy()
-        samples_feature_run = x_scaler.inverse_transform(samples_feature_run)
+        samples_feature_index = samples_feature_run.to_numpy()
+        samples_feature_index = x_scaler.inverse_transform(samples_feature_index)
 
         if len(features) == 5:
-            plt.title('PODE{} {}={:.2f} {}={:.0f} {}={}bar '.format(samples_feature_run[0, 0],
+            plt.title('PODE{} {}={:.2f} {}={:.0f} {}={}bar '.format(samples_feature_index[0, 0],
                                                                     features[1],
-                                                                    samples_feature_run[0, 1],
+                                                                    samples_feature_index[0, 1],
                                                                     features[2],
-                                                                    samples_feature_run[0, 2] / ct.one_atm,
+                                                                    samples_feature_index[0, 2] / ct.one_atm,
                                                                     features[3],
-                                                                    samples_feature_run[0, 3]))
+                                                                    samples_feature_index[0, 3]))
 
             path = Path(__file__).resolve()
             path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}_{:.0f}.pdf'.\
-                format(number_net, labels[i],samples_feature_run[0, 0], samples_feature_run[0, 1],
-                       samples_feature_run[0, 2] / ct.one_atm, samples_feature_run[0, 3])
+                format(number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1],
+                       samples_feature_index[0, 2] / ct.one_atm, samples_feature_index[0, 3])
 
         else:
-            plt.title('PODE{} {}={:.2f} {}={:.0f}'.format(samples_feature_run[0, 0],
+            plt.title('PODE{} {}={:.2f} {}={:.0f}'.format(samples_feature_index[0, 0],
                                                           features[1],
-                                                          samples_feature_run[0, 1],
+                                                          samples_feature_index[0, 1],
                                                           features[2],
-                                                          samples_feature_run[0, 2]))
+                                                          samples_feature_index[0, 2]))
 
             path = Path(__file__).resolve()
             path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}.pdf'.format\
-                (number_net, labels[i], samples_feature_run[0, 0], samples_feature_run[0, 1], samples_feature_run[0, 2])
+                (number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1], samples_feature_index[0, 2])
 
         plt.legend()
         plt.xlabel('PV')
@@ -335,7 +346,7 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
 
 
 # function to plot the fitting to the training data ###################################################################
-def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, features):
+def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, features, labels):
     """Plot a training run to see how good model is already fitted to training data
 
     :param model:                           pytorch MLP model
@@ -345,6 +356,7 @@ def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, feat
     :param y_scaler:                        MinMaxScaler of the targets
     :param number_net:  - int -             Number to identify the MLP
     :param features:    - list of str -     list of features which has been used for training
+    :param labels:      - list of str -     list of labels
     """
 
     # normalize the training data to make it suitable as input for MLP
@@ -358,27 +370,6 @@ def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, feat
     # denormalize output to plot data
     output = output.detach().numpy()
     output = y_scaler.inverse_transform(output)
+    y_samples = y_samples.to_numpy
 
-    # plot the MLP and reactor output for the training run
-    plt.plot(x_samples[['PV']], y_samples[['T']], 'b-', label='Reactor output')
-    plt.plot(x_samples[['PV']], output, 'r-', label='NN Output')
-
-    plt.title('PODE{} {}={:.1f} {}={}bar {}={:.0f}K'.format(x_samples.iloc[0, 0],
-                                                            features[1],
-                                                            x_samples.iloc[0, 1],
-                                                            features[2],
-                                                            x_samples.iloc[0, 2] / ct.one_atm,
-                                                            features[3],
-                                                            x_samples.iloc[0, 3]))
-
-    plt.legend()
-    plt.xlabel('PV')
-    plt.ylabel('T [K]')
-
-    path = Path(__file__).resolve()
-    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_comp_PODE{}_{}_{}_{}.pdf'.\
-        format(number_net, x_samples.iloc[0, 0], x_samples.iloc[0, 1], x_samples.iloc[0, 2] / ct.one_atm,
-               x_samples.iloc[0, 3])
-    plt.savefig(path_plt)
-
-    plt.show()
+    plot_outputs(output, y_samples, x_samples_normalized, features, labels, x_scaler, number_net)

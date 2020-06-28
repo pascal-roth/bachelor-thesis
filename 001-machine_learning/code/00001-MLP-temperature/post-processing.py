@@ -22,7 +22,7 @@ parser.add_argument("--post", type=str, choices=['loss', 'test', 'plt_train'], d
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("-nbr_run", "--number_test_run", type=str, default='000',
+parser.add_argument("-nbr_run", "--number_test_run", type=str, default='001',
                     help="define which test data should be used")
 
 parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
