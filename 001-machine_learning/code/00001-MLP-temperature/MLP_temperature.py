@@ -40,6 +40,9 @@ parser.add_argument("-p", "--pressure", nargs='+', type=int, default=[20],
 parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',
                     help="chose if basic information are displayed")
 
+parser.add_argument("--device", default="cpu", type=str, choices=['cpu', 'gpu', 'gpu_multi'],
+                    help="chose device to train on")
+
 args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
@@ -92,7 +95,7 @@ print('Data loaded, start training ...')
 
 # %% number of epochs to train the model
 fc_model.train(model, train_loader, valid_loader, criterion, optimizer, args.n_epochs, args.number_net, plot=True,
-               inf_print=args.information_print)
+               inf_print=args.information_print, device=args.device)
 
 # %% save best models depending the validation loss
 fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, features, labels, x_scaler,

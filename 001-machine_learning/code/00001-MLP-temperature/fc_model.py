@@ -60,7 +60,7 @@ def updateLines(ax, train_losses, validation_losses):
 
 
 # training function for the model ####################################################################################
-def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, plot, inf_print):
+def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_net, plot, inf_print, device):
     """Optimize the weights of a given MLP.
 
     :parameter
@@ -73,23 +73,24 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     :param nbr_net:         - str -         number to identify the trained network
     :param plot:            - bool -        if True, losses will be plotted while training the network
     :param inf_print:       - bool -        should some information be printed out
+    :param device:          - str -         cpu, single gpu or multi gpu to use for training the model
     """
 
-    # check if CUDA is available
-    train_on_gpu = torch.cuda.is_available()
+    # select device to train on
+    if device == 'cpu':
+        device = "cpu"
+    elif device == 'gpu':
+        device = "cuda:0"
+    elif device == 'gpu_multi':
+        device = "cuda:0"
+        model = nn.DataParallel(model)
 
-    if not train_on_gpu:
-        print('CUDA is not available.  Training on CPU ...')
-    else:
-        print('CUDA is available!  Training on GPU ...')  # check if CUDA is available
-        model.cuda()
+    model = model.to(device)
 
     # the minimal validation loss at the beginning of the training
     valid_loss_min = 0
     for data, target in valid_loader:
-        # move tensors to GPU if CUDA is available
-        if train_on_gpu:
-            data, target = data.cuda(), target.cuda()
+        data, target = data.to(device), target.to(device)
         # forward pass: compute predicted outputs by passing inputs to the model
         output = model.forward(data)
         # calculate the loss
@@ -130,9 +131,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         # Model in training mode, dropout is on
         model.train()
         for data, target in train_loader:
-            # move tensors to GPU if CUDA is available
-            if train_on_gpu:
-                data, target = data.cuda(), target.cuda()
+            data, target = data.to(device), target.to(device)
             # clear the gradients of all optimized variables
             optimizer.zero_grad()
             # forward pass: compute predicted outputs by passing inputs to the model
@@ -162,8 +161,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
             for data, target in valid_loader:
                 # move tensors to GPU if CUDA is available
-                if train_on_gpu:
-                    data, target = data.cuda(), target.cuda()
+                data, target = data.to(device), target.to(device)
                 # forward pass: compute predicted outputs by passing inputs to the model
                 output = model.forward(data)
                 # calculate the loss

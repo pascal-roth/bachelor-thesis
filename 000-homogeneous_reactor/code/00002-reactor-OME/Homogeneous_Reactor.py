@@ -148,7 +148,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_T = np.gradient(values[:(n + 1), 9])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if grad_PV[n - 2] > 1.e-6:
+        if grad_PV[n - 2] > 1.e-3:
             time += t_step / 100
         else:
             time += t_step
@@ -162,9 +162,9 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         sim.advance(time)
 
         # Calculate the PV
-        PV = r1.Y[pode.species_index(PV_p[0])] / pode.molecular_weights[pode.species_index(PV_p[0])] + \
-             r1.Y[pode.species_index(PV_p[1])] / pode.molecular_weights[pode.species_index(PV_p[1])] * 0.15 + \
-             r1.Y[pode.species_index(PV_p[2])] / pode.molecular_weights[pode.species_index(PV_p[2])] * 1.5
+        PV = r1.Y[pode.species_index(PV_p[0])] + \
+             r1.Y[pode.species_index(PV_p[1])] * 0.15 + \
+             r1.Y[pode.species_index(PV_p[2])] * 1.5
 
         Q = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
@@ -183,7 +183,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         n += 1
 
         if n == n_samples and time < t_end:
-            print('WARNING: maximum nbr of samples: {} taken and {} not reached'.format(n_samples, t_end))
+            print('WARNING: maximum nbr of samples: {} taken and only {:.4f}s reached'.format(n_samples, time))
             break
 
     values = values[:n, :]

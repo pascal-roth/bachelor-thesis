@@ -21,7 +21,7 @@ ssh pinkyXX
 
 rsync -azP "data to copy" "username"@"address":"location"
 
-Example: rsync -azP cluster_scripts.txt stud-18@gpu1.gs.ce.tu-darmstadt.de:
+Example: rsync -azP cluster_scripts.txt stud-18@gpu1.gsc.ce.tu-darmstadt.de:
 
 man rsyn for further help/ commands
 ############################################################################################################################################

@@ -119,6 +119,8 @@ title = '{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], po
 #
 # %%
 plt.plot(values[:, 0] * 1.e+3, values[:, 3], label='H abs mass')
+plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
+plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H  mass')
 # plt.title(title)
 plt.xlabel('time [ms]')
 plt.ylabel('H [J/kg]')

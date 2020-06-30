@@ -70,10 +70,19 @@ def make_dir(mechanism_input, nbr_run, inf_print):
         os.makedirs(path_plt)
     except OSError:
         if inf_print is True:
-            print('Directories already exist')
+            print('Samples directory already exist')
     else:
         if inf_print is True:
-            print('Necessary directories created')
+            print('Samples directory created')
+
+    try:
+        os.makedirs(path_plt)
+    except OSError:
+        if inf_print is True:
+            print('Plot directory already exist')
+    else:
+        if inf_print is True:
+            print('Plot directory created')
 
 
 #######################################################################################################################
