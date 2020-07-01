@@ -272,8 +272,9 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
             new_state_dict = OrderedDict()
 
             checkpoint_unchanged = torch.load('model.pt')
-
-            for k, v in checkpoint_unchanged.items():
+            state_dict = checkpoint_unchanged['state_dict']
+            
+            for k, v in state_dict.items():
                 name = k.replace(".module", "") # removing ‘.moldule’ from key
                 new_state_dict[name] = v
 
