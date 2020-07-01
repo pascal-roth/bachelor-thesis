@@ -270,6 +270,10 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
         if device == 'gpu_multi':
             model = nn.DataParallel(model)
 
+            for k, v in model.state_dict.items():
+                name = k[7:]  # remove 'module.' of dataparallel
+                model.state_dict[name] = v
+
         # Save model with structure
         checkpoint = {'input_size': n_input,
                       'output_size': n_output,
