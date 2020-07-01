@@ -267,12 +267,15 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
     try:
         model.load_state_dict(torch.load('model.pt'))
 
-        if device == 'gpu_multi':
-            model = nn.DataParallel(model)
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
 
+        if device == 'gpu_multi':
             for k, v in model.state_dict.items():
-                name = k[7:]  # remove 'module.' of dataparallel
-                model.state_dict[name] = v
+                name = k.replace(".module", "") # removing ‘.moldule’ from key
+                new_state_dict[name] = v
+        else:
+            new_state_dict = model.state_dict
 
         # Save model with structure
         checkpoint = {'input_size': n_input,
@@ -280,7 +283,7 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
                       'hidden_layers': [each.out_features for each in model.hidden_layers],
                       'optimizer': optimizer.state_dict(),
                       'criterion': criterion.state_dict(),
-                      'state_dict': model.state_dict(),
+                      'state_dict': new_state_dict(),
                       'features': features,
                       'labels': labels,
                       'x_scaler': x_scaler,
