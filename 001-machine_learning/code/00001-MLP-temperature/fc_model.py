@@ -177,7 +177,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
             updateLines(ax, train_losses, validation_losses)
 
         if valid_loss <= valid_loss_min:
-            torch.save(model.state_dict(), 'model.pt')
+            if device == 'gpu_multi':
+                torch.save(model.module.state_dict(), 'model.pt')
+            else:
+                torch.save(model.state_dict(), 'model.pt')
             valid_loss_min = valid_loss
 
         outer.write("Epoch: {:05d}, Training loss: {:6.5e}, Validation loss: {:6.5e}".format
@@ -273,7 +276,7 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
                       'hidden_layers': [each.out_features for each in model.hidden_layers],
                       'optimizer': optimizer.state_dict(),
                       'criterion': criterion.state_dict(),
-                      'state_dict': model.module.state_dict(),
+                      'state_dict': model.state_dict(),
                       'features': features,
                       'labels': labels,
                       'x_scaler': x_scaler,
