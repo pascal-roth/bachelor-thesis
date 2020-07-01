@@ -266,14 +266,14 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
 
         if device == 'gpu_multi':
             model = nn.DataParallel(model)
-        
+
         # Save model with structure
         checkpoint = {'input_size': n_input,
                       'output_size': n_output,
                       'hidden_layers': [each.out_features for each in model.hidden_layers],
                       'optimizer': optimizer.state_dict(),
                       'criterion': criterion.state_dict(),
-                      'state_dict': model.state_dict(),
+                      'state_dict': model.module.state_dict(),
                       'features': features,
                       'labels': labels,
                       'x_scaler': x_scaler,
