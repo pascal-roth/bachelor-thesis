@@ -17,7 +17,7 @@ epochs=100
 echo "  Training run:   000 (--> only PODE3)    "
 name_train=000
 echo "  device:         gpu_multi               "
-device=
+device=gpu_multi
 echo "  batch number:   100                     "
 batches=100
 echo ""

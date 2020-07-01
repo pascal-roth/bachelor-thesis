@@ -226,7 +226,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
 # save latest models in checkpoint files ##############################################################################
 def save_model(model, n_input, n_output, optimizer, criterion, number_net, features, labels, x_scaler,
-               y_scaler, number_train_run, inf_print):
+               y_scaler, number_train_run, inf_print, device):
     """Save model together with important parameters
 
     :parameter
@@ -243,6 +243,7 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
     :param y_scaler:                                MinMasxScaler of the labels
     :param number_train_run:    - str -             number to identify the train run used for training
     :param inf_print:           - bool -            should information be printed out
+    :param device:              - str -             cpu, single gpu or multi gpu to use for training the model
     """
 
     # create path for the model
@@ -263,6 +264,9 @@ def save_model(model, n_input, n_output, optimizer, criterion, number_net, featu
     try:
         model.load_state_dict(torch.load('model.pt'))
 
+        if device == 'gpu_multi':
+            model = nn.DataParallel(model)
+        
         # Save model with structure
         checkpoint = {'input_size': n_input,
                       'output_size': n_output,

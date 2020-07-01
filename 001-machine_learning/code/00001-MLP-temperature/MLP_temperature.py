@@ -103,4 +103,4 @@ fc_model.train(model, train_loader, valid_loader, criterion, optimizer, args.n_e
 
 # %% save best models depending the validation loss
 fc_model.save_model(model, n_input, n_output, optimizer, criterion, args.number_net, features, labels, x_scaler,
-                    y_scaler, args.number_train_run, args.information_print)
+                    y_scaler, args.number_train_run, args.information_print, args.device)
