@@ -101,7 +101,7 @@ elif args.post == 'test':     # PLot interpolation capability of Network
                                                          select_data='exclude', category='test')
 
     #  Load  test tensors
-    test_loader = fc_pre_processing_load.load_dataloader(x_test, y_test, split=False,
+    test_loader = fc_pre_processing_load.load_dataloader(x_test, y_test, batch_fraction=100, split=False,
                                                          x_scaler=x_scaler, y_scaler=y_scaler, features=None)
 
     print('Data loaded!')

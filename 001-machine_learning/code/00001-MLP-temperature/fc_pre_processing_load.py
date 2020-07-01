@@ -165,13 +165,14 @@ def chose_mechanism(mechanism_input):
 
 
 # function called by MLP script #######################################################################################
-def load_dataloader(x_samples, y_samples, split, x_scaler, y_scaler, features):
+def load_dataloader(x_samples, y_samples, batch_fraction, split, x_scaler, y_scaler, features):
     """
     Function to normalize, split into training and validation and combine samples and targets in dataloader
 
     :parameter:
     :param x_samples:       - pd dataframe -    samples
     :param y_samples:       - pd dataframe -    targets
+    :param batch_fraction:  - int -             batch_size is defined as len(samples)/batch_fraction
     :param split:           - bool -            if true, samples will be split in train and validation
     :param x_scaler:                            MinMaxScaler of samples
     :param y_scaler:                            MinMaxScaler of targets
@@ -212,7 +213,7 @@ def load_dataloader(x_samples, y_samples, split, x_scaler, y_scaler, features):
     tensor = data.TensorDataset(x_samples, y_samples)
 
     # prepare data loaders
-    batch_size = int(len(tensor) / 1000)
+    batch_size = int(len(tensor) / batch_fraction)
     num_workers = 8
 
     loader = torch.utils.data.DataLoader(tensor, batch_size=batch_size, num_workers=num_workers)

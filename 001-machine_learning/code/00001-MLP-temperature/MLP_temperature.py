@@ -43,6 +43,9 @@ parser.add_argument("-inf_print", "--information_print", default=True, action='s
 parser.add_argument("--device", default="cpu", type=str, choices=['cpu', 'gpu', 'gpu_multi'],
                     help="chose device to train on")
 
+parser.add_argument("-b_frac", "--batch_fraction", type=int, default=100,
+                    help="how many batches should be used")
+
 args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
@@ -84,8 +87,9 @@ feature_select = {'P_0': args.pressure}
 x_samples, y_samples = load_samples(args.mechanism_input, args.number_train_run, feature_select, features, labels,
                                     select_data='include', category='train')
 
-train_loader, valid_loader, x_scaler, y_scaler = load_dataloader(x_samples, y_samples, split=True, x_scaler=x_scaler,
-                                                                 y_scaler=y_scaler, features=features)
+train_loader, valid_loader, x_scaler, y_scaler = load_dataloader(x_samples, y_samples, args.batch_fraction, split=True,
+                                                                 x_scaler=x_scaler, y_scaler=y_scaler,
+                                                                 features=features)
 
 # free space because only dataloaders needed for training
 x_samples = None

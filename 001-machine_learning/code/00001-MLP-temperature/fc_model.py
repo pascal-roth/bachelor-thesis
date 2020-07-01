@@ -86,6 +86,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
         model = nn.DataParallel(model)
 
     model = model.to(device)
+    print('Starting training on device: {}'.format(device))
 
     # the minimal validation loss at the beginning of the training
     valid_loss_min = 0

@@ -21,9 +21,6 @@ information_print = True
 # Change the RPV calculation method
 PV_p = np.array(['H2O', 'CO2', 'CH2O'])
 
-# Create a global variable for pode_mulit
-pode_multi = {}
-
 #%% functions to calculate the mixture fraction variable
 def beta(gas, components, weights):
     """
