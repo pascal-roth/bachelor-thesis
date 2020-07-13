@@ -138,7 +138,7 @@ if __name__ == "__main__":
                                         labels=labels, select_data='include', category='train')
 
     print('DONE!, Create Plot ...')
-    
+
     y_samples_nn, y_samples_diff = get_y_samples(x_samples, x_scaler, y_samples)
 
     for i, label in enumerate(labels):

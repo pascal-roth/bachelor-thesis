@@ -24,7 +24,7 @@ def load_checkpoint(nbr_net):
 
     path = Path(__file__).resolve()
     path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(nbr_net)
-    checkpoint = torch.load(path_pth)
+    checkpoint = torch.load(path_pth, map_location=torch.device('cpu'))
 
     # Create model and load its criterion
     model = fc_model.Net(checkpoint['input_size'],
