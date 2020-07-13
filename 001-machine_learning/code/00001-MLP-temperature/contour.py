@@ -20,10 +20,10 @@ def parseArgs():
     parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                         help="chose reaction mechanism")
 
-    parser.add_argument("-nbr_net", "--number_net", type=str, default='008',
+    parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                         help="chose number of the network")
 
-    parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[1.0],
+    parser.add_argument("-phi", "--equivalence_ratio", type=float, default=[1.0],
                         help="chose equivalence ratio")
 
     parser.add_argument("--pode", type=int, nargs='+', default=[3],

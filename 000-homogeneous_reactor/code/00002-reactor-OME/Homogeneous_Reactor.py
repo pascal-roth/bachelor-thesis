@@ -18,8 +18,6 @@ ct.suppress_thermo_warnings()
 # Define if inforamtion should be printed
 information_print = True
 
-# Change the RPV calculation method
-PV_p = np.array(['H2O', 'CO2', 'CH2O'])
 
 #%% functions to calculate the mixture fraction variable
 def beta(gas, components, weights):
@@ -125,12 +123,16 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
     #  Solution of reaction
     time = 0.0
-    n_samples = 12500
+    n_samples = 13000
     n = 0
     samples_after_ignition = 300
     stop_criterion = False
 
     values = np.zeros((n_samples, 19))
+
+    # Parameters of PV
+    PV_p = np.array(['H2O', 'CH2O', mechanism[1]])
+    OME3_0 = r1.Y[pode.species_index('OME3')]
 
     # calculation of abs enthalpy not fixed --> assume enthatly at t_0 as constant
     H = r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y))
@@ -160,8 +162,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
         # Calculate the PV
         PV = r1.Y[pode.species_index(PV_p[0])] + \
-             r1.Y[pode.species_index(PV_p[1])] * 0.15 + \
-             r1.Y[pode.species_index(PV_p[2])] * 1.5
+             r1.Y[pode.species_index(PV_p[1])] * 1.5 - \
+             r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
 
         Q = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.

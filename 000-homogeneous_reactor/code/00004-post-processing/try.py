@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 from pathlib import Path
 
 mechanism = mechanism = np.array(['cai_ome14_2019.xml', 'OME3'])
-equivalence_ratio = 1.0
-reactorPressure = 20 * ct.one_atm
+equivalence_ratio = 0.5
+reactorPressure = 10 * ct.one_atm
 reactorTemperature = 650
-t_end = 0.010
+t_end = 0.013
 t_step = 1.e-6
 pode_nbr = 3
 O2 = 0.21
@@ -40,7 +40,7 @@ sim.max_err_test_fails = 10
 
 #  Solution of reaction
 time = 0.0
-n_samples = 12500
+n_samples = 13000
 n = 0
 samples_after_ignition = 300
 stop_criterion = False
@@ -76,8 +76,8 @@ while time < t_end:
 
     # Calculate the PV
     PV = r1.Y[pode.species_index(PV_p[0])] + \
-         r1.Y[pode.species_index(PV_p[1])] * 0.15 + \
-         r1.Y[pode.species_index(PV_p[2])] * 1.5 - r1.Y[pode.species_index('OME3')] + OME3_0
+         r1.Y[pode.species_index(PV_p[2])] * 1.5 - \
+         r1.Y[pode.species_index('OME3')] * 0.25 + OME3_0 * 0.25
 
     Q = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
 
@@ -141,6 +141,7 @@ plt.show()
 
 samples[['CO2']] = samples[['CO2']] * 0.15
 samples[['CH2O']] = samples[['CH2O']] * 1.5
+samples[['PODE']] = samples[['PODE']] * 0.25
 samples[['H2O']] = samples[['H2O']]
 
 samples.plot('time', ['CO2', 'H2O', 'CH2O', 'PV', 'PODE'],
@@ -150,6 +151,20 @@ samples.plot('time', ['CO2', 'H2O', 'CH2O', 'PV', 'PODE'],
 plt.legend(loc="upper right")
 plt.xlabel('time in ms')
 plt.ylabel('mass fraction / molecular weight')
+plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode_nbr, equivalence_ratio,
+                                                                  reactorPressure, reactorTemperature))
+
+plt.show()
+
+#%%
+
+samples.plot('time', 'Q',
+             style='r-',
+             label='Q')
+
+plt.legend(loc="upper right")
+plt.xlabel('time in ms')
+plt.ylabel('heat release')
 plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode_nbr, equivalence_ratio,
                                                                   reactorPressure, reactorTemperature))
 

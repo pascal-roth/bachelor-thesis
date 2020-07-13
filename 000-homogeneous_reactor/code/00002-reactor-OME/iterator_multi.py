@@ -81,7 +81,7 @@ if args.category == 'exp':
     save_samples = False
     save_delays = True
 else:
-    t_end = 0.010
+    t_end = 0.013
     t_step = 1.e-6
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = True
@@ -180,7 +180,7 @@ for iii, pode_run in enumerate(args.pode):
                     n_samples_run = len(samples_run)
                     samples[nn:(nn + n_samples_run), :] = samples_run
                     n_samples = len(samples)
-                    samples = samples[:(n_samples - (12500 - n_samples_run)), :]
+                    samples = samples[:(n_samples - (13000 - n_samples_run)), :]
                     nn += n_samples_run
 
             pool.close()

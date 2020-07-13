@@ -72,12 +72,12 @@ if args.information_print is True:
 #%% Define end time and time step
 if args.category == 'exp':
     t_end = 0.100
-    t_step = 3.e-4
+    t_step = 1.e-5
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = False
     save_delays = True
 else:
-    t_end = 0.010
+    t_end = 0.013
     t_step = 1.e-6
     # create an array for the different samples/ the ignition delays and decide if to save them
     save_samples = True
@@ -163,7 +163,7 @@ for iii, pode_run in enumerate(args.pode):
                     n_samples_run = len(values)
                     samples[nn:(nn+n_samples_run), :] = values
                     n_samples = len(samples)
-                    samples = samples[:(n_samples-(12500-n_samples_run)), :]
+                    samples = samples[:(n_samples-(13000-n_samples_run)), :]
                     nn += n_samples_run
 
 # save delays in pd dataframe
