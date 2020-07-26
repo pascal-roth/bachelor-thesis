@@ -23,7 +23,7 @@ def parseArgs():
     parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                         help="chose number of the network")
 
-    parser.add_argument("-phi", "--equivalence_ratio", type=float, default=[1.0],
+    parser.add_argument("-phi", "--equivalence_ratio", type=float, default=1.0,
                         help="chose equivalence ratio")
 
     parser.add_argument("--pode", type=int, nargs='+', default=[3],
@@ -43,7 +43,7 @@ def parseArgs():
 
 
 #%% functions
-def get_y_samples(x_samples, x_scaler, y_samples):
+def get_y_samples(x_samples, x_scaler, y_samples, percentage):
     # output of the MLP
     x_samples_normalized, _ = normalize_df(x_samples, x_scaler)
     x_samples_normalized = torch.tensor(x_samples_normalized.values).float()
@@ -53,7 +53,10 @@ def get_y_samples(x_samples, x_scaler, y_samples):
     y_samples_nn = y_scaler.inverse_transform(y_samples_nn)
 
     # Calculate the difference between reactor and MLP output
-    y_samples_diff = y_samples - y_samples_nn
+    if percentage:
+        y_samples_diff = (y_samples - y_samples_nn) / y_samples
+    else:
+        y_samples_diff = y_samples - y_samples_nn
 
     return y_samples_nn, y_samples_diff
 
@@ -82,11 +85,14 @@ def create_grid(x_samples, y_samples, y_samples_nn, y_samples_diff):
 
 
 def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_net, label, equivalence_ratio,
-            pressure):
+            pressure, percentage):
+
+    from matplotlib.backends.backend_pdf import PdfPages
+
     grid_y = grid_y / 1.e6
     Z = x_samples[['Z']].iloc[0]
 
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5])
+    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5], dpi=300)
 
     img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_heat_r')
     axs[0].set_xlabel('PV')
@@ -104,25 +110,29 @@ def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_
     img = axs[2].contourf(grid_x, grid_y, grid_diff, levels=100, cmap='gist_heat_r')
     axs[2].set_xlabel('PV')
     axs[2].set_ylabel('h [MJ/kg]')
-    fig.colorbar(img, ax=axs[2], label='{}_diff'.format(label))
+    if percentage:
+        fig.colorbar(img, ax=axs[2], label='{}_diff in %'.format(label))
+    else:
+        fig.colorbar(img, ax=axs[2], label='{}_diff'.format(label))
     axs[2].set_title('Z={:.2f}'.format(Z[0]))
 
-    # plt.tight_layout()
+    plt.tight_layout()
 
     path = Path(__file__).resolve()
-    path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_contour_{}_{}.pdf'.format \
-        (number_net, label, equivalence_ratio, pressure)
+    path_plt = PdfPages(path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_contour_{}_{}.pdf'.format \
+        (number_net, label, equivalence_ratio, pressure[0]))
 
-    plt.savefig(path_plt)
+    plt.savefig(path_plt, format='pdf', bbox_inches='tight')
 
     plt.show()
+    path_plt.close()
 
 
 #%%
 if __name__ == "__main__":
 
     args = parseArgs()
-
+    percentage = True
     print('Load model ...')
 
     # Load MLP checkpoint --> get model, Hsed training set and features/labels
@@ -139,7 +149,7 @@ if __name__ == "__main__":
 
     print('DONE!, Create Plot ...')
 
-    y_samples_nn, y_samples_diff = get_y_samples(x_samples, x_scaler, y_samples)
+    y_samples_nn, y_samples_diff = get_y_samples(x_samples, x_scaler, y_samples, percentage)
 
     for i, label in enumerate(labels):
         y_samples_run = y_samples.iloc[:, i]
@@ -150,7 +160,7 @@ if __name__ == "__main__":
                                                                        y_samples_diff_run)
 
         plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, args.number_net, label,
-                args.equivalence_ratio, args.pressure)
+                args.equivalence_ratio, args.pressure, percentage)
 
 
 

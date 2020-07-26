@@ -163,15 +163,15 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
                                            scale, pode, category)
 
-    samples.plot('time', 'PV', style='m-')
+    samples.plot.scatter('time', 'PV', style='m-')
     plt.xlabel('time in ms')
     plt.ylabel('PV')
 
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
-    plt.text(0.2 * np.amax(samples[['time']]) * 1.e+3, 0.05, textstr, fontsize=12)
+    # textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
+    # plt.text(0.2 * np.amax(samples[['time']]) * 1.e+3, 0.05, textstr, fontsize=12)
 
     path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_PODE{}_{}_{:.0f}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
