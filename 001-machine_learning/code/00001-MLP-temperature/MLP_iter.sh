@@ -11,7 +11,6 @@ echo "  Input:          [pode, Z,   H,   PV]    "
 echo "  For pressure    20 bar                  "
 set=3
 pressure=20
-echo "  Size:           [64, 64, 64]            "
 echo "  n_epochs        100                     "
 epochs=100
 echo "  Training run:   000 (--> only PODE3)    "
@@ -73,6 +72,6 @@ echo ""
 
 echo "Network 007: Labels [Q], Size: [64, 128, 64]"
 name_net=007
-python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 64 --labels T P
+python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 64 --labels Q
 
 exit

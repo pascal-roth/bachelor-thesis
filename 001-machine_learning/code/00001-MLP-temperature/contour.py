@@ -20,7 +20,7 @@ def parseArgs():
     parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                         help="chose reaction mechanism")
 
-    parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
+    parser.add_argument("-nbr_net", "--number_net", type=str, default='002',
                         help="chose number of the network")
 
     parser.add_argument("-phi", "--equivalence_ratio", type=float, default=1.0,
@@ -92,29 +92,28 @@ def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_
     grid_y = grid_y / 1.e6
     Z = x_samples[['Z']].iloc[0]
 
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5], dpi=300)
+    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5], dpi=300, sharex=True, sharey=True)
 
     img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_heat_r')
     axs[0].set_xlabel('PV')
     axs[0].set_ylabel('h [MJ/kg]')
-
-    fig.colorbar(img, ax=axs[0], label='{}_reactor'.format(label))
-    axs[0].set_title('Z={:.2f}'.format(Z[0]))
+    fig.colorbar(img, ax=axs[0], label='Y_{}'.format(label))
+    axs[0].set_title('Homogeneous Reactor Z={:.2f}'.format(Z[0]))
 
     img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_heat_r')
     axs[1].set_xlabel('PV')
-    axs[1].set_ylabel('h [MJ/kg]')
-    fig.colorbar(img, ax=axs[1], label='{}_MLP'.format(label))
-    axs[1].set_title('Z={:.2f}'.format(Z[0]))
+#    axs[1].set_ylabel('h [MJ/kg]')
+    fig.colorbar(img, ax=axs[1], label='Y_{}'.format(label))
+    axs[1].set_title('MLP Z={:.2f}'.format(Z[0]))
 
     img = axs[2].contourf(grid_x, grid_y, grid_diff, levels=100, cmap='gist_heat_r')
     axs[2].set_xlabel('PV')
-    axs[2].set_ylabel('h [MJ/kg]')
+#    axs[2].set_ylabel('h [MJ/kg]')
     if percentage:
-        fig.colorbar(img, ax=axs[2], label='{}_diff in %'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} in %'.format(label))
     else:
-        fig.colorbar(img, ax=axs[2], label='{}_diff'.format(label))
-    axs[2].set_title('Z={:.2f}'.format(Z[0]))
+        fig.colorbar(img, ax=axs[2], label='{}'.format(label))
+    axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
 
     plt.tight_layout()
 

@@ -25,7 +25,7 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("-nbr_run", "--number_test_run", type=str, default='001',
                     help="define which test data should be used")
 
-parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
+parser.add_argument("-nbr_net", "--number_net", type=str, default='007',
                     help="chose number of the network")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],
@@ -93,8 +93,7 @@ elif args.post == 'test':     # PLot interpolation capability of Network
                                                            feature_select, features, labels, select_data='exclude',
                                                            category='train')
 
-    pressure = np.array(args.pressure) * ct.one_atm
-    feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': pressure, 'T_0': args.temperature}
+    feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': args.pressure, 'T_0': args.temperature}
 
     x_test, y_test = fc_pre_processing_load.load_samples(args.mechanism_input, args.number_test_run,
                                                          feature_select, features, labels,

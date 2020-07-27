@@ -135,7 +135,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     OME3_0 = r1.Y[pode.species_index('OME3')]
 
     # calculation of abs enthalpy not fixed --> assume enthatly at t_0 as constant
-    H = r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y))
+    H = r1.thermo.enthalpy_mass  # - (np.sum(h0_mass * r1.thermo.Y))
 
     while time < t_end:
         # calculate grad to define step size and stop_criterion

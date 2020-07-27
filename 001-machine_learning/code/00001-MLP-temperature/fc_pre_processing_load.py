@@ -91,8 +91,8 @@ def denormalize_df(df, scaler):
 
     columns = df.columns
     x = df.values  # returns a numpy array
-    x = scaler.inverse_transform(x)
-    df = pd.DataFrame(x)
+    x_scaled = scaler.inverse_transform(x)
+    df = pd.DataFrame(x_scaled)
     df.columns = columns
     return df
 
@@ -118,7 +118,7 @@ def select_samples(df, feature_select, select_data):
             value = np.array(value) * ct.one_atm
         elif feature == 'phi':
             df['phi'] = df['phi'].round(2)
-            value = [value]
+            # value = [value]
 
         if value is not None and select_data == 'include':
 
