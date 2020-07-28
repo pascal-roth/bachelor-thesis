@@ -127,6 +127,8 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     loss_log = tqdm(total=0, position=3, bar_format='{desc}')
     best_log = tqdm(total=0, position=4, bar_format='{desc}')
 
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+
     for epoch in range(epochs):
         running_loss = 0
         # Model in training mode, dropout is on
@@ -143,6 +145,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
             loss.backward()
             # perform a single optimization step (parameter update)
             optimizer.step()
+
             # update running training loss
             running_loss += loss.item() * data.size(0)
             inner.update(1)
@@ -172,6 +175,9 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
             valid_loss = valid_loss / len(valid_loader)
             validation_losses.append(valid_loss)
+
+        # adjust learning rate
+        scheduler.step()
 
         if plot:
             updateLines(ax, train_losses, validation_losses)

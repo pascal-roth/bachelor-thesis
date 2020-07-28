@@ -6,7 +6,7 @@ echo "Welcome to plot iterator"
 echo "------------------------"
 echo ""
 
-read -p "Choose plot         [ign_delay, thermo, species, HR, PV, time_scale]: " plot
+read -p "Choose plot         [ign_delay, thermo, species, HRR, PV, time_scale]: " plot
 echo ""
 
 echo "Decide which data should be used for the $plot plot"

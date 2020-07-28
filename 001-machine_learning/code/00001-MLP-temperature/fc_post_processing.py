@@ -301,8 +301,12 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
     """
 
     for i in range(len(labels)):
-        y_test_run = np.squeeze(y_test[:, i])
-        output_run = np.squeeze(output[:, i])
+        if labels[i] == 'P':
+            y_test_run = np.squeeze(y_test[:, i]) / 1.e+6
+            output_run = np.squeeze(output[:, i]) / 1.e+6
+        else:
+            y_test_run = np.squeeze(y_test[:, i])
+            output_run = np.squeeze(output[:, i])
 
         # plot the MLP and reactor output
         plt.plot(samples_feature_run[['PV']], y_test_run, 'b-', label='Reactor output')
@@ -312,7 +316,7 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
         samples_feature_index = x_scaler.inverse_transform(samples_feature_index)
 
         if len(features) == 5:
-            plt.title('PODE{} {}={:.2f} {}={:.0f} {}={}bar '.format(samples_feature_index[0, 0],
+            plt.title('PODE{:.0f} {}={:.2f} {}={:.0f} {}={}bar '.format(samples_feature_index[0, 0],
                                                                     features[1],
                                                                     samples_feature_index[0, 1],
                                                                     features[2],
@@ -326,11 +330,11 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
                        samples_feature_index[0, 2] / ct.one_atm, samples_feature_index[0, 3])
 
         else:
-            plt.title('PODE{} {}={:.2f} {}={:.0f}'.format(samples_feature_index[0, 0],
-                                                          features[1],
-                                                          samples_feature_index[0, 1],
-                                                          features[2],
-                                                          samples_feature_index[0, 2]))
+            plt.title('PODE{:.0f} {}={:.2f} {}={:.2f} [MJ/kg]'.format(samples_feature_index[0, 0],
+                                                                      features[1],
+                                                                      samples_feature_index[0, 1],
+                                                                      features[2],
+                                                                      samples_feature_index[0, 2] / 1.e+3))
 
             path = Path(__file__).resolve()
             path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}.pdf'.format\
@@ -338,7 +342,8 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
 
         plt.legend()
         plt.xlabel('PV')
-        plt.ylabel('{}'.format(labels[i]))
+        label_unit = unit(labels[i])
+        plt.ylabel('{}'.format(label_unit))
 
         plt.savefig(path_plt)
 
@@ -373,3 +378,25 @@ def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, feat
     y_samples = y_samples.to_numpy
 
     plot_outputs(output, y_samples, x_samples_normalized, features, labels, x_scaler, number_net)
+
+
+def unit(label):
+    """ Corresponding unit for the selected label
+
+    :parameter
+    :param label:       - str -             label
+
+    :returns:
+    :return label_unit: - str -             label with corresponding unit
+    """
+
+    if label == 'P':
+        label_unit = 'P [MPa]'
+    elif label == 'T':
+        label_unit = 'T [K]'
+    elif label == 'HRR':
+        label_unit = "HRR [W/$m^3$]"
+    else:
+        label_unit = 'Y_{}'.format(label)
+
+    return label_unit

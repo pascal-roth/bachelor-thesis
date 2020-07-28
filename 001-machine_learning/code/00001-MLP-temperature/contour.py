@@ -20,7 +20,7 @@ def parseArgs():
     parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                         help="chose reaction mechanism")
 
-    parser.add_argument("-nbr_net", "--number_net", type=str, default='002',
+    parser.add_argument("-nbr_net", "--number_net", type=str, default='001',
                         help="chose number of the network")
 
     parser.add_argument("-phi", "--equivalence_ratio", type=float, default=1.0,
@@ -110,9 +110,9 @@ def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_
     axs[2].set_xlabel('PV')
 #    axs[2].set_ylabel('h [MJ/kg]')
     if percentage:
-        fig.colorbar(img, ax=axs[2], label='{} in %'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label))
     else:
-        fig.colorbar(img, ax=axs[2], label='{}'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} difference'.format(label))
     axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
 
     plt.tight_layout()

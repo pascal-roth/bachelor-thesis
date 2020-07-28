@@ -142,8 +142,8 @@ for iii, pode_run in enumerate(args.pode):
                                             args.temperature_step):
 
                 # start homogeneous reactor model with defined settings
-                # values vector: ['time', 'PV', 'phi', 'Q', 'T', 'P', 'V', 'U', 'PODE', 'CO2', 'O2', 'CO', 'H2O', 'H2',
-                # 'CH2O']
+                # values vector: ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'HRR', 'T', 'P', 'V',  'PODE',
+                # 'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
                 values, first_ignition_delay, main_ignition_delay = homogeneous_reactor\
                     (mechanism, equivalence_ratio_run, reactorPressure_run, reactorTemperature, t_end, t_step, pode_run,
                      args.O2, args.N2, h0_mass)
@@ -181,7 +181,7 @@ if save_samples is True:
 #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
-    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V',  'PODE', 'CO2',
+    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'HRR', 'T', 'P', 'V',  'PODE', 'CO2',
                        'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)

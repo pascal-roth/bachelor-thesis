@@ -13,10 +13,10 @@ import cantera as ct
 # %% Collect arguments
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 
-parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HR', 'PV', 'time_scale'], default='HR',
-                    help="chose which plot to create")
+parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HRR', 'PV', 'time_scale'],
+                    default='PV', help="chose which plot to create")
 
-parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='he',
+parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='cai',
                     help="chose reaction mechanism")
 
 parser.add_argument("--pode", type=int, choices=[1, 2, 3, 4], default=3,
@@ -62,16 +62,21 @@ if args.plot == 'ign_delay':
     plot_delays(mechanism, args.pode, args.equivalence_ratio, args.pressure, args.number_run, args.category)
 elif args.plot == 'thermo':
     from plot_process import plot_thermo
-    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
+    plot_thermo(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode,
+                args.number_run, args.category)
 elif args.plot == 'species':
     from plot_process import plot_species
-    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
-elif args.plot == 'HR':
-    from plot_process import plot_HR
-    plot_HR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode, args.number_run, args.category)
+    plot_species(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode,
+                 args.number_run, args.category)
+elif args.plot == 'HRR':
+    from plot_process import plot_HRR
+    plot_HRR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode,
+             args.number_run, args.category)
 elif args.plot == 'PV':
     from plot_process import plot_PV
-    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run, args.category)
+    plot_PV(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run,
+            args.category)
 elif args.plot == 'time_scale':
     from plot_process import plot_time_scale
-    plot_time_scale(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run, args.category)
+    plot_time_scale(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.pode, args.number_run,
+                    args.category)

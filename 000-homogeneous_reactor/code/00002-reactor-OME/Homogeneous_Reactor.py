@@ -165,7 +165,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
              r1.Y[pode.species_index(PV_p[1])] * 1.5 - \
              r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
 
-        Q = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
+        HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
@@ -173,7 +173,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         # H = r1.thermo.enthalpy_mass - (np.sum(h0_mass * r1.thermo.Y))
 
         # Summarize all values to be saved in an array
-        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, H, Z, time, PV, Q, r1.thermo.T,
+        values[n] = (pode_nbr, equivalence_ratio, reactorPressure, reactorTemperature, H, Z, time, PV, HRR, r1.thermo.T,
                      r1.thermo.P, r1.volume, r1.Y[pode.species_index(mechanism[1])],
                      r1.Y[pode.species_index('CO2')], r1.Y[pode.species_index('O2')],
                      r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
@@ -190,12 +190,12 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     # ignition delay times
     from scipy.signal import find_peaks
 
-    max_Q = np.argmax(values[:, 8])
-    peaks, _ = find_peaks(values[:, 8], prominence=values[max_Q, 8] / 100)  # define minimum height
+    max_HRR = np.argmax(values[:, 8])
+    peaks, _ = find_peaks(values[:, 8], prominence=values[max_HRR, 8] / 100)  # define minimum height
 
-    if peaks.any() and values[max_Q, 9] > (reactorTemperature * 1.15):
+    if peaks.any() and values[max_HRR, 9] > (reactorTemperature * 1.15):
         first_ignition_delay = values[peaks[0], 6] * 1.e+3
-        main_ignition_delay = values[max_Q, 6] * 1.e+3
+        main_ignition_delay = values[max_HRR, 6] * 1.e+3
 
     else:
         first_ignition_delay = 0

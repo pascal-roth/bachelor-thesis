@@ -202,7 +202,7 @@ if save_samples is True:
     #    path_dir = '/media/pascal/TOSHIBA EXT/BA'
     path_sample = '{}/{}_{}_samples.csv'.format(path_dir, args.number_run, args.category)
     samples = pd.DataFrame(samples)
-    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'Q', 'T', 'P', 'V', 'PODE',
+    samples.columns = ['pode', 'phi', 'P_0', 'T_0', 'H', 'Z', 'time', 'PV', 'HRR', 'T', 'P', 'V', 'PODE',
                        'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
     samples = samples.set_index(['pode', 'phi', 'P_0', 'T_0'])
     samples.to_csv(path_sample)

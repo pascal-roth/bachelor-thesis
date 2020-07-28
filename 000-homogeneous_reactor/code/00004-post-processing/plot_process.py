@@ -78,15 +78,15 @@ def plot_thermo(mechanism, equivalence_ratio, reactorPressure, reactorTemperatur
     fig = plt.figure()
     ax1 = samples.plot(scale, 'T', style='b-', ax=fig.add_subplot(221))
     ax1.set_xlabel(scale_name)
-    ax1.set_ylabel('Temperature (K)')
+    ax1.set_ylabel('Temperature [K]')
 
     ax2 = samples.plot(scale, 'P', style='b-', ax=fig.add_subplot(222))
     ax2.set_xlabel(scale_name)
-    ax2.set_ylabel('Pressure (Bar)')
+    ax2.set_ylabel('Pressure [Bar]')
 
     ax3 = samples.plot(scale, 'V', style='b-', ax=fig.add_subplot(223))
     ax3.set_xlabel(scale_name)
-    ax3.set_ylabel('Volume (m$^3$)')
+    ax3.set_ylabel('Volume [m$^3$]')
 
     plt.tight_layout()
     plt.figlegend(['$\Phi$ = {}\np = {}bar\n$T_0$ = {}K'.format(equivalence_ratio, reactorPressure,
@@ -108,11 +108,6 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     # Normalize the PV
     samples[['PV']] = samples[['PV']] / np.amax(samples[['PV']])
 
-    #    samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'OH', 'H2O2', 'CH3', 'CH3O', 'CH2O', 'C2H2'],
-    #                 style=['b-', 'r-', 'g-', 'y-', 'c-', 'm-', 'k-', 'y-', 'r-', 'g-', 'c-'],
-    #                 label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{OH}$', '$Y_{H2O2}$',
-    #                        '$Y_{CH3}$', '$Y_{CH3O}$', '$Y_{CH2O}$', '$Y_{C2H2}$'])
-
     samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'CH2O'],
                  style=['b-', 'r-', 'g-', 'y-', 'k-', 'm-'],
                  label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{CH2O}$'])
@@ -132,7 +127,7 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
 
 
 #######################################################################################################################
-def plot_HR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
+def plot_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
     # get data
     samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
                                            scale, pode, category)
@@ -140,15 +135,15 @@ def plot_HR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, s
     # Normalize the PV
     samples[['PV']] = samples[['PV']] / np.amax(samples[['PV']])
 
-    samples.plot(scale, 'Q', style='b-')
+    samples.plot(scale, 'HRR', style='b-')
     plt.xlabel(scale_name)
     plt.ylabel('Heat release [W/m$^3$]')
 
     textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
-    plt.text(0.05 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
+    plt.text(0.05 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['HRR']), textstr, fontsize=12)
 
-#    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
-#                                                                      reactorPressure, reactorTemperature))
+    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
+                                                                      reactorPressure, reactorTemperature))
 
     path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HR_PODE{}_{}_{:.0f}_{}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
@@ -164,7 +159,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
                                            scale, pode, category)
 
     samples.plot.scatter('time', 'PV', style='m-')
-    plt.xlabel('time in ms')
+    plt.xlabel('time [ms]')
     plt.ylabel('PV')
 
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
@@ -179,17 +174,20 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
 
     plt.show()
 
-    samples[['CO2']] = samples[['CO2']] * 0.15 / 44
-    samples[['CH2O']] = samples[['CH2O']] * 1.5 / 30
-    samples[['H2O']] = samples[['H2O']] / 18
+    # show the species of the PV
+    samples[['CH2O']] = samples[['CH2O']] * 1.5
+    samples[['H2O']] = samples[['H2O']]
+    pode_t0 = samples[['PODE']].iloc[0]
+    pode_t0_series = np.ones((len(samples), 1)) * pode_t0[0]
+    samples[['PODE']] = (pode_t0_series - samples[['PODE']].to_numpy()) * 0.25
 
-    samples.plot('time', ['CO2', 'H2O', 'CH2O', 'PV'],
+    samples.plot('time', ['PODE', 'H2O', 'CH2O', 'PV'],
                  style=['r-', 'b-', 'k-', 'm-'],
-                 label=['$Y_{CO2}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'])
+                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'])
 
     plt.legend(loc="upper right")
-    plt.xlabel('time in ms')
-    plt.ylabel('mass fraction / molecular weight')
+    plt.xlabel('time [ms]')
+    plt.ylabel('Y')
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
@@ -200,7 +198,8 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.show()
 
 #######################################################################################################################
-def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, nbr_run, category, scale='time'):
+def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, pode, nbr_run, category,
+                    scale='time'):
     # get data
     samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
                                            scale, pode, category)

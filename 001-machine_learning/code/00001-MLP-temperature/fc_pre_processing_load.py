@@ -118,7 +118,8 @@ def select_samples(df, feature_select, select_data):
             value = np.array(value) * ct.one_atm
         elif feature == 'phi':
             df['phi'] = df['phi'].round(2)
-            # value = [value]
+            if select_data == 'include':
+                value = [value]
 
         if value is not None and select_data == 'include':
 
