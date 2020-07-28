@@ -32,6 +32,9 @@ def parseArgs():
     parser.add_argument("-p", "--pressure", nargs='+', type=int, default=[20],
                         help="chose reactor pressure")
 
+    parser.add_argument("-diff", "--abs_rel_difference", type=str, choices=['abs', 'rel', 'both'], default='both',
+                        help="chose if absolute and/or relative difference is plotted")
+
     parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',
                         help="chose if basic information are displayed")
 
@@ -43,7 +46,7 @@ def parseArgs():
 
 
 #%% functions
-def get_y_samples(x_samples, x_scaler, y_samples, percentage):
+def get_y_samples(x_samples, x_scaler, y_samples, diff):
     # output of the MLP
     x_samples_normalized, _ = normalize_df(x_samples, x_scaler)
     x_samples_normalized = torch.tensor(x_samples_normalized.values).float()
@@ -53,15 +56,20 @@ def get_y_samples(x_samples, x_scaler, y_samples, percentage):
     y_samples_nn = y_scaler.inverse_transform(y_samples_nn)
 
     # Calculate the difference between reactor and MLP output
-    if percentage:
-        y_samples_diff = (y_samples - y_samples_nn) / y_samples
+    if diff == 'rel':
+        y_samples_diff_rel = (y_samples - y_samples_nn) / y_samples
+        y_samples_diff_abs = None
+    elif diff == 'abs':
+        y_samples_diff_abs = y_samples - y_samples_nn
+        y_samples_diff_rel = None
     else:
-        y_samples_diff = y_samples - y_samples_nn
+        y_samples_diff_abs = y_samples - y_samples_nn
+        y_samples_diff_rel = (y_samples - y_samples_nn) / y_samples
 
-    return y_samples_nn, y_samples_diff
+    return y_samples_nn, y_samples_diff_rel, y_samples_diff_abs
 
 
-def create_grid(x_samples, y_samples, y_samples_nn, y_samples_diff):
+def create_grid(x_samples, y_samples, y_samples_nn, y_samples_diff_rel, y_samples_diff_abs, diff):
     PV_max = np.amax(x_samples[['PV']])
     PV_min = np.amin(x_samples[['PV']])
 
@@ -75,45 +83,79 @@ def create_grid(x_samples, y_samples, y_samples_nn, y_samples_diff):
 
     grid_reactor = griddata(x_samples[['PV', 'H']].values, y_samples.values, (grid_x, grid_y), method='linear')
     grid_nn = griddata(x_samples[['PV', 'H']].values, y_samples_nn, (grid_x, grid_y), method='linear')
-    grid_diff = griddata(x_samples[['PV', 'H']].values, y_samples_diff.values, (grid_x, grid_y), method='linear')
+
+    if diff == 'rel':
+        grid_diff_rel = griddata(x_samples[['PV', 'H']].values, y_samples_diff_rel.values, (grid_x, grid_y),
+                                 method='linear')
+        grid_diff_rel = np.squeeze(grid_diff_rel)
+        grid_diff_abs = None
+    elif diff == 'abs':
+        grid_diff_abs = griddata(x_samples[['PV', 'H']].values, y_samples_diff_abs.values, (grid_x, grid_y),
+                                 method='linear')
+        grid_diff_abs = np.squeeze(grid_diff_abs)
+        grid_diff_rel = None
+    else:
+        grid_diff_rel = griddata(x_samples[['PV', 'H']].values, y_samples_diff_rel.values, (grid_x, grid_y),
+                                 method='linear')
+        grid_diff_rel = np.squeeze(grid_diff_rel)
+        grid_diff_abs = griddata(x_samples[['PV', 'H']].values, y_samples_diff_abs.values, (grid_x, grid_y),
+                                 method='linear')
+        grid_diff_abs = np.squeeze(grid_diff_abs)
 
     grid_reactor = np.squeeze(grid_reactor)
     grid_nn = np.squeeze(grid_nn)
-    grid_diff = np.squeeze(grid_diff)
 
-    return grid_x, grid_y, grid_reactor, grid_nn, grid_diff
+    return grid_x, grid_y, grid_reactor, grid_nn, grid_diff_rel, grid_diff_abs
 
 
-def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_net, label, equivalence_ratio,
-            pressure, percentage):
+def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, grid_diff_rel, grid_diff_abs, number_net,
+            label, equivalence_ratio, pressure, diff):
 
     from matplotlib.backends.backend_pdf import PdfPages
 
     grid_y = grid_y / 1.e6
     Z = x_samples[['Z']].iloc[0]
 
-    fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5], dpi=300, sharex=True, sharey=True)
+    if diff == 'both':
+        fig, axs = plt.subplots(nrows=1, ncols=4, figsize=[20, 5], dpi=300, sharex=True, sharey=True)
+    else:
+        fig, axs = plt.subplots(nrows=1, ncols=3, figsize=[15, 5], dpi=300, sharex=True, sharey=True)
 
-    img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_heat_r')
+    # same scale of the contour plots by defining vmin and vmax
+    vmin = np.amin(y_samples_run)
+    vmax = np.amax(y_samples_run)
+
+    img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
     axs[0].set_xlabel('PV')
     axs[0].set_ylabel('h [MJ/kg]')
     fig.colorbar(img, ax=axs[0], label='Y_{}'.format(label))
     axs[0].set_title('Homogeneous Reactor Z={:.2f}'.format(Z[0]))
 
-    img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_heat_r')
+    img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
     axs[1].set_xlabel('PV')
-#    axs[1].set_ylabel('h [MJ/kg]')
     fig.colorbar(img, ax=axs[1], label='Y_{}'.format(label))
     axs[1].set_title('MLP Z={:.2f}'.format(Z[0]))
 
-    img = axs[2].contourf(grid_x, grid_y, grid_diff, levels=100, cmap='gist_heat_r')
-    axs[2].set_xlabel('PV')
-#    axs[2].set_ylabel('h [MJ/kg]')
-    if percentage:
+    if diff == 'rel':
+        img = axs[2].contourf(grid_x, grid_y, grid_diff_rel, levels=100, cmap='gist_rainbow')
+        axs[2].set_xlabel('PV')
         fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label))
-    else:
+        axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
+    elif diff == 'abs':
+        img = axs[2].contourf(grid_x, grid_y, grid_diff_abs, levels=100, cmap='gist_rainbow')
+        axs[2].set_xlabel('PV')
         fig.colorbar(img, ax=axs[2], label='{} difference'.format(label))
-    axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
+        axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
+    else:
+        img = axs[2].contourf(grid_x, grid_y, grid_diff_rel, levels=100, cmap='gist_rainbow')
+        axs[2].set_xlabel('PV')
+        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label))
+        axs[2].set_title('Relative Difference Z={:.2f}'.format(Z[0]))
+
+        img = axs[3].contourf(grid_x, grid_y, grid_diff_abs, levels=100, cmap='gist_rainbow')
+        axs[3].set_xlabel('PV')
+        fig.colorbar(img, ax=axs[3], label='{} difference'.format(label))
+        axs[3].set_title('Absolute Difference Z={:.2f}'.format(Z[0]))
 
     plt.tight_layout()
 
@@ -131,7 +173,6 @@ def plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, number_
 if __name__ == "__main__":
 
     args = parseArgs()
-    percentage = True
     print('Load model ...')
 
     # Load MLP checkpoint --> get model, Hsed training set and features/labels
@@ -148,39 +189,20 @@ if __name__ == "__main__":
 
     print('DONE!, Create Plot ...')
 
-    y_samples_nn, y_samples_diff = get_y_samples(x_samples, x_scaler, y_samples, percentage)
+    y_samples_nn, y_samples_diff_rel, y_samples_diff_abs = get_y_samples(x_samples, x_scaler, y_samples,
+                                                                         args.abs_rel_difference)
 
     for i, label in enumerate(labels):
         y_samples_run = y_samples.iloc[:, i]
         y_samples_nn_run = y_samples_nn[:, i]
-        y_samples_diff_run = y_samples_diff.iloc[:, i]
+        y_samples_diff_rel_run = y_samples_diff_rel.iloc[:, i]
+        y_samples_diff_abs_run = y_samples_diff_abs.iloc[:, i]
 
-        grid_x, grid_y, grid_reactor, grid_nn, grid_diff = create_grid(x_samples, y_samples_run, y_samples_nn_run,
-                                                                       y_samples_diff_run)
+        grid_x, grid_y, grid_reactor, grid_nn, grid_diff_rel, grid_diff_abs = create_grid(x_samples, y_samples_run,
+                                                                                          y_samples_nn_run,
+                                                                                          y_samples_diff_rel_run,
+                                                                                          y_samples_diff_abs_run,
+                                                                                          args.abs_rel_difference)
 
-        plotter(x_samples, grid_x, grid_y, grid_reactor, grid_nn, grid_diff, args.number_net, label,
-                args.equivalence_ratio, args.pressure, percentage)
-
-
-
-# # %% Scatter plot
-# plt_scatter = False
-#
-# if plt_scatter:
-#     x = x_samples[['PV']]
-#     y = x_samples[['H']] / 1.e+6
-#     z = y_samples
-#
-#     fig, axs = plt.subplots(nrows=1, ncols=2)
-#
-#     axs[0].scatter(x, y) #, s=area, c=colors, alpha=0.5)
-#     axs[0].set_title('Energy over OV')
-#     axs[0].set_xlabel('PV')
-#     axs[0].set_ylabel('H [MJ/kg]')
-#
-#     axs[1].scatter(x, z) #, s=area, c=colors, alpha=0.5)
-#     axs[1].set_title('Temperature over PV')
-#     axs[1].set_xlabel('PV')
-#     axs[1].set_ylabel('T [K]')
-#
-#     plt.show()
+        plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, grid_diff_rel, grid_diff_abs, args.number_net, label,
+                args.equivalence_ratio, args.pressure, args.abs_rel_difference)

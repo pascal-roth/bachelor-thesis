@@ -24,6 +24,8 @@ rsync -av  "data to copy" "username"@"address":"location"
 
 Example: rsync -azP cluster_scripts.txt stud-18@gpu1.gsc.ce.tu-darmstadt.de:
 
+Snowball: 130.83.70.252
+
 man rsyn for further help/ commands
 ############################################################################################################################################
 
