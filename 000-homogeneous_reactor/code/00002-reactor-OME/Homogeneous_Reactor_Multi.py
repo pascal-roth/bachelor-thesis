@@ -187,7 +187,7 @@ def homogeneous_reactor(args_reactor):
              r1.Y[pode.species_index(PV_p[1])] - \
              r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
 
-        HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
+        HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies / r1.mass)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
