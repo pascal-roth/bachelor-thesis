@@ -123,7 +123,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
     #  Solution of reaction
     time = 0.0
-    n_samples = 13000
+    n_samples = 25000
     n = 0
     samples_after_ignition = 300
     stop_criterion = False
@@ -143,15 +143,19 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_PV = np.zeros((3))
             grad_T = np.zeros((3))
         else:
-            grad_PV = np.gradient(values[:(n + 1), 7])
+            grad_PV = np.gradient(values[:(n + 1), 7], values[:(n+1), 6])
             grad_T = np.gradient(values[:(n + 1), 9])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if grad_PV[n - 2] > 1.e-3:
-            time += t_step / 5000
-        elif grad_PV[n-2] > 1.e-4 and grad_PV[n - 2] < 1.e-3:
+        if np.abs(grad_PV[n - 2]) > 20000:
+            time += t_step / 10000
+        elif np.abs(grad_PV[n - 2]) > 10000:
             time += t_step / 1000
-        elif grad_PV[n-2] < 1.e-4:
+        elif np.abs(grad_PV[n - 2]) > 1000:
+            time += t_step / 100
+        elif np.abs(grad_PV[n-2]) > 100:
+            time += t_step / 10
+        else:
             time += t_step
 
         # Initialize a break condition so that after the ignition, samples are not taken for an unnecessary long time

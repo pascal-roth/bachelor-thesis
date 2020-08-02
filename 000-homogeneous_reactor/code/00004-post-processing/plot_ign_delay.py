@@ -68,8 +68,8 @@ def plot_delays(mechanism, pode, equivalence_ratio, reactorPressure, nbr_run, ca
     ax.set_yscale('log')
     ax.legend(loc='lower right')
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\
-        .format(equivalence_ratio, reactorPressure, pode)
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/delays_PODE{}_phi{}_p{}.pdf'\
+        .format(pode, equivalence_ratio, reactorPressure)
     plt.savefig(path)
 
     plt.show()

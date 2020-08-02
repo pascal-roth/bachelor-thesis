@@ -163,7 +163,7 @@ for iii, pode_run in enumerate(args.pode):
                     n_samples_run = len(values)
                     samples[nn:(nn+n_samples_run), :] = values
                     n_samples = len(samples)
-                    samples = samples[:(n_samples-(13000-n_samples_run)), :]
+                    samples = samples[:(n_samples-(25000-n_samples_run)), :]
                     nn += n_samples_run
 
 # save delays in pd dataframe

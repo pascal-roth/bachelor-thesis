@@ -116,8 +116,8 @@ ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow
 plt.tight_layout()
 
 path = Path(__file__).resolve()
-path = path.parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\
-    .format(equivalence_ratio, reactorPressure, pode)
+path = path.parents[2] / 'data/00004-post-processing/delays_PODE{}_phi{}_p{}.pdf'\
+    .format(pode, equivalence_ratio, reactorPressure)
 plt.savefig(path)
 
 plt.show()

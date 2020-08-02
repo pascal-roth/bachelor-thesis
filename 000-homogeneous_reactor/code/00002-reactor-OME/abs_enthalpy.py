@@ -96,7 +96,7 @@ while time < t_end:
                  r1.thermo.enthalpy_mole,
                  r1.thermo.enthalpy_mass,
                  r1.thermo.P,
-                 grad_P[n-2])
+                 grad_P[n-2]) # damit ich es abziehen kann, müsste ich es eig noch umrechnen, (P * V / M), aber dann noch kleiner
 
     h_major_species[n] = (r1.Y[pode.species_index('CO2')] * h0_mass[pode.species_index('CO2')],
                           r1.Y[pode.species_index('O2')] * h0_mass[pode.species_index('O2')],
@@ -105,20 +105,20 @@ while time < t_end:
                           r1.Y[pode.species_index('OME3')] * h0_mass[pode.species_index('OME3')],
                           r1.Y[pode.species_index('N2')] * h0_mass[pode.species_index('N2')])
 
-    abs_energy[n] = r1.thermo.enthalpy_mass - grad_P[n-2]
-
     n += 1
 
 values = values[:n, :]
 h_major_species = h_major_species[:n, :]
 abs_energy = abs_energy[:n, :]
 
+abs_energy = values[:, 7] - np.gradient(values[:, 8])
+
 title = '{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                 reactorPressure / ct.one_atm, reactorTemperature)
 
 # %%
-plt.plot(values[:, 0] * 1.e+3, values[:, 3], label='H abs mass')
-plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
+#plt.plot(values[:, 0] * 1.e+3, values[:, 3], label='H abs mass')
+#plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
 plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H mass')
 # plt.title(title)
 plt.xlabel('time [ms]')
@@ -138,7 +138,7 @@ plt.show()
 plt.plot(values[:, 0] * 1.e+3, abs_energy, label='mass minus pressure')
 
 plt.xlabel('time [ms]')
-plt.ylabel('H [J/kmol]')
+plt.ylabel('H [J/kg]')
 plt.legend()
 plt.show()
 

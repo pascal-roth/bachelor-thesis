@@ -94,8 +94,9 @@ def plot_thermo(mechanism, equivalence_ratio, reactorPressure, reactorTemperatur
     plt.tight_layout()
     plt.figlegend(['$\Phi$ = {}\np = {}bar\n$T_0$ = {}K'.format(equivalence_ratio, reactorPressure,
                                                                 reactorTemperature)], loc='lower right')
+    plt.tight_layout()
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_thermo_PODE{}_{}_{:.0f}_{}_{}.pdf'. \
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_thermo_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 
@@ -123,11 +124,11 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_species_PODE{}_{}_{:.0f}_{}_{}.pdf' \
+    plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_species_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf' \
         .format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
-
-    plt.tight_layout()
 
     plt.show()
 
@@ -151,7 +152,9 @@ def plot_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, 
     plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HR_PODE{}_{}_{:.0f}_{}_{}.pdf'. \
+    plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HR_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 
@@ -172,11 +175,12 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_PODE{}_{}_{:.0f}_{}_scatter.pdf'. \
+    plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_scatter_PODE{}_phi{}_p{:.0f}_T{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
     
-    plt.tight_layout()
     plt.show()
 
     # plot PV as plot
@@ -187,11 +191,12 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_PODE{}_{}_{:.0f}_{}.pdf'. \
+    plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_process_PODE{}_phi{}_p{:.0f}_T{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
     
-    plt.tight_layout()
     plt.show()
 
     # show the species of the PV
@@ -203,7 +208,8 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
 
     samples.plot('time', ['PODE', 'H2O', 'CH2O', 'PV'],
                  style=['r-', 'b-', 'k-', 'm-'],
-                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'])
+                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'],
+                 figsize=(9, 6))
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4, prop={'size': 14})
     plt.xlabel('time [ms]')
@@ -211,11 +217,12 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_species_PODE{}_{}_{:.0f}_{}_{}.pdf' \
-        .format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
-    plt.savefig(path)
-    
     plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_PV_species_PODE{}_phi{}_p{:.0f}_T{}.pdf' \
+        .format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
+    plt.savefig(path)
+
     plt.show()
 
 
@@ -242,9 +249,10 @@ def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemper
     plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_time_scale_PODE{}_{}_{:.0f}_{}.pdf'. \
+    plt.tight_layout()
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_time_scale_PODE{}_phi{}_p{:.0f}_T{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
     
-    plt.tight_layout()
     plt.show()

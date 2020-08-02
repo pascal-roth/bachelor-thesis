@@ -119,7 +119,7 @@ def save_df(typ, category, mechanism_input, nbr_run, reactorTemperature_end, rea
     if typ == 'samples' and not category == 'test':
         n = 0
         data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
-                         int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 13000, size))
+                         int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 25000, size))
 
     elif typ != 'samples' and not category == 'test':
         data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
@@ -141,7 +141,7 @@ def save_df(typ, category, mechanism_input, nbr_run, reactorTemperature_end, rea
             else:
                 n = len(data)
                 data_new = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
-                                    int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 13000, size))
+                                    int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 25000, size))
                 data = np.append(data, data_new, axis=0)
 
         except FileNotFoundError:
@@ -151,7 +151,7 @@ def save_df(typ, category, mechanism_input, nbr_run, reactorTemperature_end, rea
                                 int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode), size))
             else:
                 data = np.zeros((((reactorTemperature_end + reactorTemperature_step - reactorTemperature_start) // reactorTemperature_step) *
-                                 int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 13000, size))
+                                 int((phi_end + phi_step - phi_0) / phi_step) * ((p_end + p_step - p_0) // p_step) * len(pode) * 25000, size))
             n = 0
             print('No pre existing {}_{} array'.format(category, typ))
 

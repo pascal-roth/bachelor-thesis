@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("--phi_0", type=float, default=0.5,
+parser.add_argument("--phi_0", type=float, default=1.0,
                     help="chose staring phi of simulation")
 
 parser.add_argument("--phi_end", type=float, default=1.5,
@@ -30,7 +30,7 @@ parser.add_argument("--phi_end", type=float, default=1.5,
 parser.add_argument("--phi_step", type=float, default=0.5,
                     help="chose step size of phi of simulation")
 
-parser.add_argument("--p_0", type=int, default=10,
+parser.add_argument("--p_0", type=int, default=20,
                     help="chose staring pressure of simulation")
 
 parser.add_argument("--p_end", type=int, default=40,
@@ -42,7 +42,7 @@ parser.add_argument("--p_step", type=int, default=10,
 parser.add_argument("--pode", type=int, nargs='+', default=[3],
                     help="chose degree of polymerization")
 
-parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
+parser.add_argument("-t_0", "--temperature_start", type=int, default=950,
                     help="chose staring temperature of simulation")
 
 parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
@@ -180,7 +180,7 @@ for iii, pode_run in enumerate(args.pode):
                     n_samples_run = len(samples_run)
                     samples[nn:(nn + n_samples_run), :] = samples_run
                     n_samples = len(samples)
-                    samples = samples[:(n_samples - (13000 - n_samples_run)), :]
+                    samples = samples[:(n_samples - (25000 - n_samples_run)), :]
                     nn += n_samples_run
 
             pool.close()

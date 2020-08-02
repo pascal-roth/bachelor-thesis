@@ -139,9 +139,9 @@ def homogeneous_reactor(args_reactor):
 
     #  Solution of reaction
     time = 0.0
-    n_samples = 13000
+    n_samples = 25000
     n = 0
-    samples_after_ignition = 300
+    samples_after_ignition = 50
     stop_criterion = False
 
     values = np.zeros((n_samples, 19))
@@ -159,15 +159,19 @@ def homogeneous_reactor(args_reactor):
             grad_PV = np.zeros((3))
             grad_T = np.zeros((3))
         else:
-            grad_PV = np.gradient(values[:(n + 1), 7])
+            grad_PV = np.gradient(values[:(n + 1), 7], values[:(n+1), 6])
             grad_T = np.gradient(values[:(n + 1), 9])
 
-        #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if grad_PV[n - 2] > 1.e-3:
-            time += t_step / 5000
-        elif grad_PV[n-2] > 1.e-4 and grad_PV[n - 2] < 1.e-3:
+        # gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
+        if np.abs(grad_PV[n - 2]) > 20000:
+            time += t_step / 10000
+        elif np.abs(grad_PV[n - 2]) > 10000:
             time += t_step / 1000
-        elif grad_PV[n-2] < 1.e-4:
+        elif np.abs(grad_PV[n - 2]) > 1000:
+            time += t_step / 100
+        elif np.abs(grad_PV[n-2]) > 100:
+            time += t_step / 10
+        else:
             time += t_step
 
         # Initialize a break condition so that after the ignition, samples are not taken for an unnecessary long time
@@ -180,7 +184,7 @@ def homogeneous_reactor(args_reactor):
 
         # Calculate the PV
         PV = r1.Y[pode.species_index(PV_p[0])] + \
-             r1.Y[pode.species_index(PV_p[1])] * 1.5 - \
+             r1.Y[pode.species_index(PV_p[1])] - \
              r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
 
         HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies)
