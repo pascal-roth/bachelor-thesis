@@ -9,7 +9,7 @@ import cantera as ct
 import pandas as pd
 import argparse
 import matplotlib.pyplot as plt
-plt.style.use('stfs')
+plt.style.use('stfs_2')
 
 
 # %% initialise dataloaders
@@ -63,7 +63,7 @@ nbr_run = args.number_run
 
 # %% plot data
 
-fig = plt.figure()
+fig = plt.figure(figsize=(9, 6))
 ax = fig.add_subplot(111)
 
 if pode <= 3:
@@ -92,7 +92,7 @@ elif pode == 4:
 else:
     print('Entered PODE > 4 and not focus of this work')
 
-ax.set_ylabel('Ignition Delay (ms)')
+ax.set_ylabel('IDT [ms]')
 ax.set_xlabel('1000/T [1/K]')
 
 # Add a second axis on top to plot the temperature for better readability
@@ -101,13 +101,19 @@ ticks = ax.get_xticks()
 ax2.set_xticks(ticks)
 ax2.set_xticklabels((1000 / ticks).round(1))
 ax2.set_xlim(ax.get_xlim())
-ax2.set_xlabel(r'Temperature: $T(K)$')
+ax2.set_xlabel('T [K]')
 
 textstr = '$\\Phi$={:.1f}\np={:.0f}bar\nPODE{}'.format(equivalence_ratio, reactorPressure, pode)
 ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
 
 ax.set_yscale('log')
-ax.legend(loc='lower right')
+# ax.legend(bbox_to_anchor=(1, 0), loc="lower right", bbox_transform=fig.transFigure, ncol=3)
+
+# ax.legend(bbox_to_anchor=(0, 1.07, 1, 0.7), loc="lower left", mode="expand", borderaxespad=0, ncol=3)
+
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4, prop={'size': 14})
+
+plt.tight_layout()
 
 path = Path(__file__).resolve()
 path = path.parents[2] / 'data/00004-post-processing/delays_{}_{}_PODE{}.pdf'\

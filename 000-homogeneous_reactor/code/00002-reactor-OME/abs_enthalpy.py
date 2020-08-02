@@ -41,6 +41,7 @@ n = 0
 
 values = np.zeros((n_samples, 10))
 h_major_species = np.zeros((n_samples, 6))
+abs_energy = np.zeros((n_samples, 1))
 
 # Load enthalpy of formation
 path = Path(__file__).resolve()
@@ -59,8 +60,10 @@ while time < t_end:
     # calculate grad to define step size
     if n <= 1:
         grad_run = np.zeros((3))
+        grad_P = np.zeros((3))
     else:
         grad_run = np.gradient(values[:(n + 1), 1])
+        grad_P = np.gradient(values[:(n+1), 8])
 
     #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
     if grad_run[n - 2] > 1.e-6:
@@ -92,8 +95,8 @@ while time < t_end:
                  h_formation,
                  r1.thermo.enthalpy_mole,
                  r1.thermo.enthalpy_mass,
-                 np.sum(r1.thermo.T * r1.thermo.s + r1.thermo.g - r1.thermo.P * r1.thermo.v) * states[0],
-                 np.sum(r1.thermo.partial_molar_cp * r1.thermo.X * r1.thermo.T))
+                 r1.thermo.P,
+                 grad_P[n-2])
 
     h_major_species[n] = (r1.Y[pode.species_index('CO2')] * h0_mass[pode.species_index('CO2')],
                           r1.Y[pode.species_index('O2')] * h0_mass[pode.species_index('O2')],
@@ -101,58 +104,22 @@ while time < t_end:
                           r1.Y[pode.species_index('H2O')] * h0_mass[pode.species_index('H2O')],
                           r1.Y[pode.species_index('OME3')] * h0_mass[pode.species_index('OME3')],
                           r1.Y[pode.species_index('N2')] * h0_mass[pode.species_index('N2')])
+
+    abs_energy[n] = r1.thermo.enthalpy_mass - grad_P[n-2]
+
     n += 1
 
 values = values[:n, :]
 h_major_species = h_major_species[:n, :]
+abs_energy = abs_energy[:n, :]
 
 title = '{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                 reactorPressure / ct.one_atm, reactorTemperature)
 
-# # %%
-# plt.plot(values[:, 0] * 1.e+3, values[:, 2], label='H abs mole')
-# plt.title(title)
-# plt.xlabel('time [ms]')
-# plt.ylabel('H [J/kmol]')
-# plt.legend()
-# plt.show()
-#
 # %%
 plt.plot(values[:, 0] * 1.e+3, values[:, 3], label='H abs mass')
 plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
-plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H  mass')
-# plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('H [J/kg]')
-plt.legend()
-plt.show()
-
-# # %%
-# plt.plot(values[:, 0] * 1.e+3, values[:, 4], label='H formation mole')
-# # plt.title(title)
-# plt.xlabel('time [ms]')
-# plt.ylabel('H [J/kmol]')
-# plt.legend()
-# plt.show()
-
-# %%
-plt.plot(values[:, 0] * 1.e+3, values[:, 5], label='H formation mass')
-# plt.title(title)
-plt.xlabel('time [ms]')
-plt.ylabel('H [J/kg]')
-plt.legend()
-plt.show()
-
-# # %%
-# plt.plot(values[:, 0] * 1.e+3, values[:, 6], label='H  mole')
-# plt.title(title)
-# plt.xlabel('time [ms]')
-# plt.ylabel('H [J/kmol]')
-# plt.legend()
-# plt.show()
-#
-# %%
-plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H  mass')
+plt.plot(values[:, 0] * 1.e+3, values[:, 7], label='H mass')
 # plt.title(title)
 plt.xlabel('time [ms]')
 plt.ylabel('H [J/kg]')
@@ -160,8 +127,15 @@ plt.legend()
 plt.show()
 
 # %%
-plt.plot(values[:, 0] * 1.e+3, values[:, 9], label='H cp')
-# plt.title(title)
+plt.plot(values[:, 0] * 1.e+3, values[:, 9], label='grad P')
+
+plt.xlabel('time [ms]')
+plt.ylabel('H [J/kmol]')
+plt.legend()
+plt.show()
+
+# %%
+plt.plot(values[:, 0] * 1.e+3, abs_energy, label='mass minus pressure')
 
 plt.xlabel('time [ms]')
 plt.ylabel('H [J/kmol]')

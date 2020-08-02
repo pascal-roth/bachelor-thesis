@@ -10,12 +10,12 @@ read -p "Choose plot         [ign_delay, thermo, species, HRR, PV, time_scale]: 
 echo ""
 
 echo "Decide which data should be used for the $plot plot"
-read -p "category of data  [train, test]:     " category
-read -p "name of run       [XXX]:             " name
+read -p "category of data  [train, test]:      " category
+read -p "name of run       [XXX]:              " name
 echo ""
 
 echo "Decide for which parameters the $plot plot should be performed"
-read -p "PODE_n            [1, 2, 3, 4]:      " pode_n
+read -p "PODE_n            [1, 2, 3, 4]:       " pode_n
 
 case $plot in
 		ign_delay )  read -p "mechanism         [he, sun, cai, all]:" mechanism

@@ -164,8 +164,10 @@ def homogeneous_reactor(args_reactor):
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
         if grad_PV[n - 2] > 1.e-3:
-            time += t_step / 100
-        else:
+            time += t_step / 5000
+        elif grad_PV[n-2] > 1.e-4 and grad_PV[n - 2] < 1.e-3:
+            time += t_step / 1000
+        elif grad_PV[n-2] < 1.e-4:
             time += t_step
 
         # Initialize a break condition so that after the ignition, samples are not taken for an unnecessary long time
