@@ -7,6 +7,7 @@ from torch import nn
 import torch
 import torch.nn.functional as F
 from pathlib import Path
+from fc_HR import normalize_df
 
 
 # model building class ################################################################################################
@@ -42,7 +43,7 @@ def load_checkpoint(nbr_net):
     """
 
     path = Path(__file__).resolve()
-    path_pth = path.parents[2] / 'data/00001-MLP-temperature/{}_checkpoint.pth'.format(nbr_net)
+    path_pth = path.parents[3] / '001-machine_learning/data/00001-MLP-temperature/{}_checkpoint.pth'.format(nbr_net)
     checkpoint = torch.load(path_pth, map_location=torch.device('cpu'))
 
     # Create model and load its criterion
@@ -64,3 +65,15 @@ def load_checkpoint(nbr_net):
 
     return model, criterion, features, labels, x_scaler, y_scaler, n_input, n_output, \
            number_train_run
+
+
+# calculate NN output #################################################################################################
+def NN_output(model, x_samples, x_scaler, y_scaler):
+    x_samples_normalized, _ = normalize_df(x_samples, scaler=x_scaler)
+    x_samples_normalized = torch.tensor(x_samples_normalized.values).float()
+    model.eval()
+    y_samples_nn = model.forward(x_samples_normalized)
+    y_samples_nn = y_samples_nn.detach().numpy()
+    y_samples_nn = y_scaler.inverse_transform(y_samples_nn)
+
+    return y_samples_nn

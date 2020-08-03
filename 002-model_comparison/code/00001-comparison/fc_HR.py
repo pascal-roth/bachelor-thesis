@@ -164,38 +164,3 @@ def chose_mechanism(mechanism_input):
         mechanism = 'sun_2017.xml'
 
     return mechanism
-
-
-# function called by MLP script #######################################################################################
-def load_dataloader(x_samples, y_samples, batch_fraction, x_scaler, y_scaler):
-    """
-    Function to normalize, split into training and validation and combine samples and targets in dataloader
-
-    :parameter:
-    :param x_samples:       - pd dataframe -    samples
-    :param y_samples:       - pd dataframe -    targets
-    :param batch_fraction:  - int -             batch_size is defined as len(samples)/batch_fraction
-    :param x_scaler:                            MinMaxScaler of samples
-    :param y_scaler:                            MinMaxScaler of targets
-
-    :returns:
-    :return loader:         - dataloader -      pytorch dataloader, combination of training samples and targets
-    """
-
-    # Normalize samples and targets
-    x_samples, _ = normalize_df(x_samples, scaler=x_scaler)
-
-    y_samples, _ = normalize_df(y_samples, y_scaler)
-
-    # transform to torch tensor
-    x_samples = torch.tensor(x_samples.values).float()
-    y_samples = torch.tensor(y_samples.values).float()
-    tensor = data.TensorDataset(x_samples, y_samples)
-
-    # prepare data loaders
-    batch_size = int(len(tensor) / batch_fraction)
-    num_workers = 8
-
-    loader = torch.utils.data.DataLoader(tensor, batch_size=batch_size, num_workers=num_workers)
-
-    return loader
