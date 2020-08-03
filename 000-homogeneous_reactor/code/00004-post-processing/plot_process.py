@@ -144,7 +144,7 @@ def plot_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, 
 
     samples.plot(scale, 'HRR', style='b-')
     plt.xlabel(scale_name)
-    plt.ylabel('HRR [W/m$^3$]')
+    plt.ylabel('HRR [W/kg/m$^3$]')
 
     # textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
     # plt.text(0.05 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['HRR']), textstr, fontsize=12)
@@ -154,7 +154,7 @@ def plot_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, 
 
     plt.tight_layout()
 
-    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HR_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_HRR_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 

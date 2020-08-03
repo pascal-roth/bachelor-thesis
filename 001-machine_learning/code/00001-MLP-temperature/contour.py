@@ -160,7 +160,7 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
     plt.tight_layout()
 
     path = Path(__file__).resolve()
-    path_plt = PdfPages(path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_contour_{}_{}.pdf'.format \
+    path_plt = PdfPages(path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_contour_phi{}_p{}.pdf'.format \
         (number_net, label, equivalence_ratio, pressure[0]))
 
     plt.savefig(path_plt, format='pdf', bbox_inches='tight')

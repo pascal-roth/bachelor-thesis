@@ -77,7 +77,7 @@ except FileNotFoundError:
     criterion = nn.MSELoss()
     print('New model created')
 
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 print(model)
 
 # %% Load training, validation and test tensors
