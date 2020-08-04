@@ -128,7 +128,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     best_log = tqdm(total=0, position=4, bar_format='{desc}')
 
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 80], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 100], gamma=0.1)
 
     for epoch in range(epochs):
         running_loss = 0

@@ -147,7 +147,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_T = np.gradient(values[:(n + 1), 9])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if np.abs(grad_PV[n - 2]) > 20000:
+        if np.abs(grad_PV[n - 2]) > 35000:
             time += t_step / 10000
         elif np.abs(grad_PV[n - 2]) > 10000:
             time += t_step / 1000
