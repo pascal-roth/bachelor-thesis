@@ -44,10 +44,10 @@ python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs
 echo ""
 echo ""
 
-echo "Network 003: Labels [Q], Size: [64, 128, 256, 128, 64]"
+echo "Network 003: Labels [HRR], Size: [64, 128, 256, 128, 64]"
 name_net=003
 epochs=150
-python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 256 128 64 --labels Q
+python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 256 128 64 --labels HRR
 
 echo ""
 echo ""
@@ -76,9 +76,9 @@ python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs
 echo ""
 echo ""
 
-echo "Network 007: Labels [Q], Size: [64, 128, 256, 256, 128 64]"
+echo "Network 007: Labels [HRR], Size: [64, 128, 256, 256, 128 64]"
 name_net=007
 epochs=150
-python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 256 256 128 64 --labels Q
+python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 256 256 128 64 --labels HRR
 
 exit

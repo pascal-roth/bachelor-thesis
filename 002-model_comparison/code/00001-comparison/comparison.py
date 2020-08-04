@@ -52,7 +52,7 @@ if __name__ == "__main__":
     # set parameters
     batch_fraction = 100
     nbr_net_HRR = '007'
-    nbr_net_thermo = '004'
+    nbr_net_thermo = '000'
     nbr_net_products = '005'
     nbr_net_educts = '006'
 

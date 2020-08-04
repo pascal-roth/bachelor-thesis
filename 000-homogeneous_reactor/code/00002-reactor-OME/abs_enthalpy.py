@@ -110,8 +110,8 @@ while time < t_end:
 values = values[:n, :]
 h_major_species = h_major_species[:n, :]
 abs_energy = abs_energy[:n, :]
-
-abs_energy = values[:, 7] - np.gradient(values[:, 8])
+r1.thermo.basis = 'mass'
+abs_energy = np.gradient(values[:, 7]) - (np.gradient(values[:, 8]) / np.mean(r1.thermo.density))
 
 title = '{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                 reactorPressure / ct.one_atm, reactorTemperature)
@@ -130,7 +130,7 @@ plt.show()
 plt.plot(values[:, 0] * 1.e+3, values[:, 9], label='grad P')
 
 plt.xlabel('time [ms]')
-plt.ylabel('H [J/kmol]')
+plt.ylabel('P/s [Pa/s]')
 plt.legend()
 plt.show()
 
@@ -138,7 +138,7 @@ plt.show()
 plt.plot(values[:, 0] * 1.e+3, abs_energy, label='mass minus pressure')
 
 plt.xlabel('time [ms]')
-plt.ylabel('H [J/kg]')
+plt.ylabel('DH/Dt [J/kg/s]')
 plt.legend()
 plt.show()
 

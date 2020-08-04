@@ -65,9 +65,15 @@ parser.add_argument("--O2", type=float,  default=0.21,
 parser.add_argument("--N2", type=float,  default=0.79,
                     help="chose N2 ratio in air")
 
+parser.add_argument("-comp", "--comparison", default=False, action='store_true',
+                    help="select PV if normal data or data for comparison with GRM")
+
 args = parser.parse_args()
 if args.information_print is True:
     print('\n{}\n'.format(args))
+
+if args.comparison:
+    print('\nPV special for comparison with GRM of Haspel et al., normal mode contains better PV!\n')
 
 #%% Define end time and time step
 if args.category == 'exp':
@@ -146,7 +152,7 @@ for iii, pode_run in enumerate(args.pode):
                 # 'CO2', 'O2', 'CO', 'H2O', 'H2', 'CH2O']
                 values, first_ignition_delay, main_ignition_delay = homogeneous_reactor\
                     (mechanism, equivalence_ratio_run, reactorPressure_run, reactorTemperature, t_end, t_step, pode_run,
-                     args.O2, args.N2, h0_mass)
+                     args.O2, args.N2, args.comparison)
 
 
                 # saving ignition delays for the parameter setting

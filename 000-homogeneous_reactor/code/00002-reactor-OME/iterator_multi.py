@@ -69,9 +69,15 @@ parser.add_argument("--N2", type=float, default=0.79,
 parser.add_argument("--NCPU", type=int, default=6,
                     help="chose nbr of available CPU cores")
 
+parser.add_argument("-comp", "--comparison", default=False, action='store_true',
+                    help="select PV if normal data or data for comparison with GRM")
+
 args = parser.parse_args()
-if args.information_print is True:
+if args.information_print:
     print('\n{}\n'.format(args))
+
+if args.comparison:
+    print('\nPV special for comparison with GRM of Haspel et al., normal mode contains better PV!\n')
 
 #%% Define end time and time step
 if args.category == 'exp':
@@ -143,19 +149,13 @@ for iii, pode_run in enumerate(args.pode):
 
             pool = mp.Pool(processes=args.NCPU, initializer=init_process, initargs=(mechanism, ))
 
-            # values = [pool.apply(homogeneous_reactor, args=(mechanism, equivalence_ratio_run, reactorPressure_run,
-            #                                                       reactorTemperature, t_end, t_step, pode_run, args.O2,
-            #                                                       args.N2)) for
-            #           reactorTemperature in range(args.temperature_start, args.temperature_end +
-            #                                       args.temperature_step, args.temperature_step)]
-
             values = pool.map(homogeneous_reactor, zip(itertools.repeat(mechanism), itertools.repeat(equivalence_ratio_run),
                                                        itertools.repeat(reactorPressure_run),
                                                        np.arange(args.temperature_start, args.temperature_end +
                                                        args.temperature_step, args.temperature_step),
                                                        itertools.repeat(t_end), itertools.repeat(t_step),
                                                        itertools.repeat(pode_run), itertools.repeat(args.O2),
-                                                       itertools.repeat(args.N2), itertools.repeat(h0_mass)))
+                                                       itertools.repeat(args.N2), itertools.repeat(args.comparison)))
 
             for i in range(len(values)):
                 # separate the list of all temperatures into the single ones

@@ -128,7 +128,10 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
     best_log = tqdm(total=0, position=4, bar_format='{desc}')
 
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 100], gamma=0.1)
+    # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 100], gamma=0.1)
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5,
+                                                           threshold=0.0001, threshold_mode='rel', cooldown=0,
+                                                           min_lr=0, eps=1e-08)
 
     for epoch in range(epochs):
         running_loss = 0
@@ -178,7 +181,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
             validation_losses.append(valid_loss)
 
         # adjust learning rate
-        scheduler.step()
+        scheduler.step(valid_loss)
 
         if plot:
             updateLines(ax, train_losses, validation_losses)
