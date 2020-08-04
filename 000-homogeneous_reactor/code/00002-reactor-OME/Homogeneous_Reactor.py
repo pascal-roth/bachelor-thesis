@@ -131,8 +131,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     values = np.zeros((n_samples, 19))
 
     # Parameters of PV
-    PV_p = np.array(['H2O', 'CH2O', mechanism[1]])
-    OME3_0 = r1.Y[pode.species_index('OME3')]
+    PV_p = np.array(['H2O', 'CH2O', mechanism[1], 'CO2'])
+    OME3_0 = r1.Y[pode.species_index(mechanism[1])]
 
     # calculation of abs enthalpy not fixed --> assume enthatly at t_0 as constant
     H = r1.thermo.enthalpy_mass  # - (np.sum(h0_mass * r1.thermo.Y))
@@ -147,7 +147,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             grad_T = np.gradient(values[:(n + 1), 9])
 
         #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
-        if np.abs(grad_PV[n - 2]) > 35000:
+        if np.abs(grad_PV[n - 2]) > 25000:
             time += t_step / 10000
         elif np.abs(grad_PV[n - 2]) > 10000:
             time += t_step / 1000
@@ -167,8 +167,10 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         sim.advance(time)
 
         # Calculate the PV
-        PV = r1.Y[pode.species_index(PV_p[0])] * 0.25 - r1.Y[pode.species_index(PV_p[2])] + OME3_0
-            # r1.Y[pode.species_index(PV_p[1])] - \
+        PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + \
+             r1.Y[pode.species_index(PV_p[1])] * 0.5 + \
+             (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + \
+             r1.Y[pode.species_index(PV_p[3])] * 0.05
 
 
         HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies /r1.mass)

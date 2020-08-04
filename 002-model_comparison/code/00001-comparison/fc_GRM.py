@@ -22,7 +22,7 @@ def load_GRM(pode, phi, pressure, temperature):
     # calculate the PV as used in the HR and MLP
     PV = np.zeros((len(df), 1))
     for i in range(len(df)):
-        PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.25 + df['H2O'].iloc[i]  # + df[] TODO: add species for CH20
+        PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 1 + df['H2O'].iloc[i] * 0.25
 
     # add PV to df
     PV = pd.DataFrame(PV)
