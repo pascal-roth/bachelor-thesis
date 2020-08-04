@@ -200,15 +200,20 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.show()
 
     # show the species of the PV
-    samples[['CH2O']] = samples[['CH2O']] * 1.5
-    samples[['H2O']] = samples[['H2O']]
+    # samples[['CH2O']] = samples[['CH2O']] * 0
+    samples[['H2O']] = samples[['H2O']] * 0.25
     pode_t0 = samples[['PODE']].iloc[0]
     pode_t0_series = np.ones((len(samples), 1)) * pode_t0[0]
-    samples[['PODE']] = (pode_t0_series - samples[['PODE']].to_numpy()) * 0.25
+    samples[['PODE']] = (pode_t0_series - samples[['PODE']].to_numpy())
 
-    samples.plot('time', ['PODE', 'H2O', 'CH2O', 'PV'],
-                 style=['r-', 'b-', 'k-', 'm-'],
-                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'],
+    # samples.plot('time', ['PODE', 'H2O', 'CH2O', 'PV'],
+    #              style=['r-', 'b-', 'k-', 'm-'],
+    #              label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', 'PV'],
+    #              figsize=(9, 6))
+
+    samples.plot('time', ['PODE', 'H2O', 'PV'],
+                 style=['r-', 'b-', 'm-'],
+                 label=['$Y_{PODE}$', '$Y_{H2O}$', 'PV'],
                  figsize=(9, 6))
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4, prop={'size': 14})

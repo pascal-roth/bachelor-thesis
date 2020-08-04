@@ -22,13 +22,13 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("--pode", type=int, choices=[1, 2, 3, 4], default=3,
                     help="chose degree of polymerization")
 
-parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.0',
+parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.5',
                     help="chose equivalence ratio")
 
-parser.add_argument("-p", "--pressure", type=int, default=20,
+parser.add_argument("-p", "--pressure", type=int, default=40,
                     help="chose reactor pressure")
 
-parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='PV',
+parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='time',
                     help="chose if plotted over time or PV")
 
 parser.add_argument("-t", "--temperature", type=int, default='950',

@@ -75,7 +75,6 @@ name_net=007
 python MLP_temperature.py -mech cai -nbr_run $name_train -p $pressure --n_epochs $epochs -nbr_net $name_net --feature_set $set --device $device -b_frac $batches --hidden 64 128 64 --labels HRR
 
 echo ""
-echo "All MLPs are expanded due to new insights gained from the previous MLPs"
 echo ""
 
 echo "Parameters for all networks:"

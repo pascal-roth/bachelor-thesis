@@ -167,9 +167,9 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
         sim.advance(time)
 
         # Calculate the PV
-        PV = r1.Y[pode.species_index(PV_p[0])] + \
-             r1.Y[pode.species_index(PV_p[1])] * 1.5 - \
-             r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
+        PV = r1.Y[pode.species_index(PV_p[0])] * 0.25 - r1.Y[pode.species_index(PV_p[2])] + OME3_0
+            # r1.Y[pode.species_index(PV_p[1])] - \
+
 
         HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies /r1.mass)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.

@@ -30,27 +30,27 @@ parser.add_argument("--phi_step",  type=float, default=0.5,
                     help="chose step size of phi of simulation")
 
 parser.add_argument("--p_0", type=int, default=20,
-                    help="chose staring pressure of simulation")
+                    help="chose starin* 1.5g pressure of simulation")
 
-parser.add_argument("--p_end",  type=int, default=20,
+parser.add_argument("--p_end",  type=int, default=40,
                     help="chose end pressure of simulation")
 
-parser.add_argument("--p_step", type=int, default=10,
+parser.add_argument("--p_step", type=int, default=20,
                     help="chose step size of pressure of simulation")
 
 parser.add_argument("--pode", type=int, nargs='+', default=[3],
                     help="chose degree of polymerization")
 
-parser.add_argument("-t_0", "--temperature_start", type=int, default=750,
+parser.add_argument("-t_0", "--temperature_start", type=int, default=950,
                     help="chose staring temperature of simulation")
 
-parser.add_argument("-t_end", "--temperature_end", type=int, default=750,
+parser.add_argument("-t_end", "--temperature_end", type=int, default=950,
                     help="chose end temperature of simulation")
 
 parser.add_argument("-t_step", "--temperature_step", type=int, default=30,
                     help="chose step size temperature of simulation")
 
-parser.add_argument("-nbr_run", "--number_run", type=str, default='002',
+parser.add_argument("-nbr_run", "--number_run", type=str, default='000',
                     help="define a nbr to identify the started iterator run")
 
 parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',

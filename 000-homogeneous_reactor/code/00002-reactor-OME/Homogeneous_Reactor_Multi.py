@@ -141,7 +141,7 @@ def homogeneous_reactor(args_reactor):
     time = 0.0
     n_samples = 25000
     n = 0
-    samples_after_ignition = 50
+    samples_after_ignition = 200
     stop_criterion = False
 
     values = np.zeros((n_samples, 19))
@@ -183,9 +183,8 @@ def homogeneous_reactor(args_reactor):
         sim.advance(time)
 
         # Calculate the PV
-        PV = r1.Y[pode.species_index(PV_p[0])] + \
-             r1.Y[pode.species_index(PV_p[1])] - \
-             r1.Y[pode.species_index(PV_p[2])] * 0.25 + OME3_0 * 0.25
+        PV = r1.Y[pode.species_index(PV_p[0])] * 0.25 - r1.Y[pode.species_index(PV_p[2])] + OME3_0
+            # r1.Y[pode.species_index(PV_p[1])] - \
 
         HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies / r1.mass)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
