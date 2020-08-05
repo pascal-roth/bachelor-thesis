@@ -129,7 +129,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
 
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=50, gamma=0.1)
     # scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[3, 100], gamma=0.1)
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5,
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2,
                                                            threshold=0.0001, threshold_mode='rel', cooldown=0,
                                                            min_lr=0, eps=1e-08)
 

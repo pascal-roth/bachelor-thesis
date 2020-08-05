@@ -22,8 +22,9 @@ def load_GRM(pode, phi, pressure, temperature):
     # calculate the PV as used in the HR and MLP
     PV = np.zeros((len(df), 1))
     for i in range(len(df)):
-        PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.05 + \
-                0.5 * df['Y'].iloc[i]
+        # PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.05 + \
+        #         0.5 * df['Y'].iloc[i]
+        PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.25 + df['CO2'].iloc[i] * 0.05
 
     # add PV to df
     PV = pd.DataFrame(PV)
@@ -51,7 +52,7 @@ def load_GRM_data(pode, phi, pressure, temperature):
 
     # insert additional information in df
     df.insert(0, 'T_0', temperature)
-    df.insert(0, 'P_0', pressure * ct.one_atm)
+    df.insert(0, 'P_0', pressure)
     df.insert(0, 'phi', phi)
     df.insert(0, 'pode', pode)
 

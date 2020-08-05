@@ -168,7 +168,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
         # Calculate the PV
         if comparison:
-            PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + \
+            PV = r1.Y[pode.species_index(PV_p[0])] * 0.25 + (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + \
                  r1.Y[pode.species_index(PV_p[3])] * 0.05
         else:
             PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + r1.Y[pode.species_index(PV_p[1])] * 0.5 + \

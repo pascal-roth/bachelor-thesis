@@ -64,6 +64,7 @@ def plot_outputs(y_samples, y_samples_nn, samples_grm, x_samples, features, labe
         if label_run == 'P':
             y_samples_run = np.squeeze(y_samples[[label_run]]) / 1.e+6
             y_samples_nn_run = np.squeeze(y_samples_nn[:, i]) / 1.e+6
+            samples_grm[['P']] = samples_grm[['P']] / 10
         else:
             y_samples_run = np.squeeze(y_samples[[label_run]])
             y_samples_nn_run = np.squeeze(y_samples_nn[:, i])

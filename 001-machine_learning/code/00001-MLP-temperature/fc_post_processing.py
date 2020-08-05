@@ -395,7 +395,7 @@ def unit(label):
     elif label == 'T':
         label_unit = 'T [K]'
     elif label == 'HRR':
-        label_unit = "HRR [W/$m^3$]"
+        label_unit = "HRR [W/$m^3$/kg]"
     else:
         label_unit = 'Y_{}'.format(label)
 
