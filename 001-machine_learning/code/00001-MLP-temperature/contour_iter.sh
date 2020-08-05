@@ -8,7 +8,7 @@ echo ""
 
 pode=3
 equivalence_ratio=1.0
-pressure=20
+pressure=40
 diff=both
 
 #echo "Network 000:"
@@ -47,14 +47,14 @@ python contour.py --pode $pode -nbr_net 010 -phi $equivalence_ratio -p $pressure
 echo "Network 011:"
 python contour.py --pode $pode -nbr_net 011 -phi $equivalence_ratio -p $pressure -diff $diff
 
-echo "Network 012:"
-python contour.py --pode $pode -nbr_net 012 -phi $equivalence_ratio -p $pressure -diff $diff
-
-echo "Network 013:"
-python contour.py --pode $pode -nbr_net 013 -phi $equivalence_ratio -p $pressure -diff $diff
-
-echo "Network 014:"
-python contour.py --pode $pode -nbr_net 014 -phi $equivalence_ratio -p $pressure -diff $diff
-
-echo "Network 015:"
-python contour.py --pode $pode -nbr_net 015 -phi $equivalence_ratio -p $pressure -diff $diff
+#echo "Network 012:"
+#python contour.py --pode $pode -nbr_net 012 -phi $equivalence_ratio -p $pressure -diff $diff
+#
+#echo "Network 013:"
+#python contour.py --pode $pode -nbr_net 013 -phi $equivalence_ratio -p $pressure -diff $diff
+#
+#echo "Network 014:"
+#python contour.py --pode $pode -nbr_net 014 -phi $equivalence_ratio -p $pressure -diff $diff
+#
+#echo "Network 015:"
+#python contour.py --pode $pode -nbr_net 015 -phi $equivalence_ratio -p $pressure -diff $diff
