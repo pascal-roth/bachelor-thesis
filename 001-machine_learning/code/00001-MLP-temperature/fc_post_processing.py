@@ -88,6 +88,8 @@ def calc_acc(model, test_loader, scaler, labels):
 
             acc[n, ii] = np.sum(correct[:, ii]) / len(output)
 
+        n += 1
+
     # calculate mean accuracy
     for i in range(len(labels)):
         acc_mean = np.mean(acc[:, i])

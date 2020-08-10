@@ -12,7 +12,7 @@ import numpy as np
 # function to load output of GRM ######################################################################################
 def load_GRM(pode, phi, pressure, temperature):
     # Path to samples
-    path = Path(__file__).parents[2] / 'data/00000-global-reactor/OME{}_phi{}_p{}_T{}.txt'. \
+    path = Path(__file__).parents[2] / 'data/00000-global-mechanism/OME{}_phi{}_p{}_T{}.txt'. \
         format(pode, phi, pressure, temperature)
     df = pd.read_csv(path, sep=" ", header=None)
 
@@ -24,7 +24,8 @@ def load_GRM(pode, phi, pressure, temperature):
     for i in range(len(df)):
         # PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.05 + \
         #         0.5 * df['Y'].iloc[i]
-        PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.25 + df['CO2'].iloc[i] * 0.05
+        # PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.25 + df['CO2'].iloc[i] * 0.05
+        PV[i] = df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.25
 
     # add PV to df
     PV = pd.DataFrame(PV)

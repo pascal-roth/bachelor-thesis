@@ -22,10 +22,10 @@ parser.add_argument("--post", type=str, choices=['loss', 'test', 'plt_train'], d
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("-nbr_run", "--number_test_run", type=str, default='001',
+parser.add_argument("-nbr_run", "--number_test_run", type=str, default='003',
                     help="define which test data should be used")
 
-parser.add_argument("-nbr_net", "--number_net", type=str, default='012',
+parser.add_argument("-nbr_net", "--number_net", type=str, default='008',
                     help="chose number of the network")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.0],

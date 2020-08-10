@@ -103,11 +103,12 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     :return main_ignition_delay:    - float -           main ignition delay of combustion
     """
 
+    # mechanism = np.array(['PRF_LT.cti', 'NC7H16'])
     pode = ct.Solution(mechanism[0])
 
     # calculate mixture fraction
-    Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
-
+    # Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
+    Z = 0
     # Create Reactor
     pode.TP = reactorTemperature, reactorPressure
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
@@ -119,16 +120,17 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     sim = ct.ReactorNet([r1])
     #    sim.atol = 1.e-14  # standard: 1e-15
     #    sim.rtol = 1.e-10  # standard: 1e-09
-    sim.max_err_test_fails = 10
+    # sim.max_err_test_fails = 10
 
     #  Solution of reaction
     time = 0.0
     n_samples = 25000
     n = 0
-    samples_after_ignition = 300
+    samples_after_ignition = 5
     stop_criterion = False
 
     values = np.zeros((n_samples, 19))
+    creation_rates = np.zeros((n_samples, 2))
 
     # Parameters of PV
     PV_p = np.array(['H2O', 'CH2O', mechanism[1], 'CO2'])
@@ -140,13 +142,13 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     while time < t_end:
         # calculate grad to define step size and stop_criterion
         if n <= 1:
-            grad_PV = np.zeros((3))
-            grad_T = np.zeros((3))
+            grad_PV = np.zeros(3)
+            grad_T = np.zeros(3)
         else:
             grad_PV = np.gradient(values[:(n + 1), 7], values[:(n+1), 6])
             grad_T = np.gradient(values[:(n + 1), 9])
 
-        #  gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
+        # gradient from 2 time steps earlier, because np.gradient would otherwise take zeros into account
         if np.abs(grad_PV[n - 2]) > 25000:
             time += t_step / 10000
         elif np.abs(grad_PV[n - 2]) > 10000:
@@ -174,7 +176,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + r1.Y[pode.species_index(PV_p[1])] * 0.5 + \
                  (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + r1.Y[pode.species_index(PV_p[3])] * 0.05
 
-        HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies /r1.mass)
+        HRR = - np.sum(r1.thermo.net_production_rates * r1.thermo.partial_molar_enthalpies / r1.mass)
         # Net production rates for each species. [kmol/m^3/s] for bulk phases or [kmol/m^2/s] for surface phases.
         # partial_molar_enthalpies: Array of species partial molar enthalpies[J / kmol]
 
@@ -185,6 +187,9 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
                      r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
                      r1.Y[pode.species_index('H2')], r1.Y[pode.species_index('CH2O')])
 
+        creation_rates[n] = (pode.creation_rates[pode.species_index('O2')],
+                               pode.creation_rates[pode.species_index('CO')])
+
         n += 1
 
         if n == n_samples and time < t_end:
@@ -192,6 +197,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
             break
 
     values = values[:n, :]
+    creation_rates = creation_rates[:n, :]
 
     # ignition delay times
     from scipy.signal import find_peaks

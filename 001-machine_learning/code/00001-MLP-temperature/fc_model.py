@@ -151,7 +151,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
             optimizer.step()
 
             # update running training loss
-            running_loss += loss.item() * data.size(0)
+            running_loss += loss.item()  # * data.size(0)
             inner.update(1)
 
         outer.update(1)
@@ -175,7 +175,7 @@ def train(model, train_loader, valid_loader, criterion, optimizer, epochs, nbr_n
                 # calculate the loss
                 loss = criterion(output, target)
                 # update running validation loss
-                valid_loss += loss.item() * data.size(0)
+                valid_loss += loss.item()  # * data.size(0)
 
             valid_loss = valid_loss / len(valid_loader)
             validation_losses.append(valid_loss)

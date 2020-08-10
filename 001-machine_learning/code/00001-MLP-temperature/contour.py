@@ -113,8 +113,15 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
 
     from matplotlib.backends.backend_pdf import PdfPages
 
-    grid_y = grid_y / 1.e6
+    grid_y = grid_y / 1.e6               # scaling to MJ
     Z = x_samples[['Z']].iloc[0]
+
+    if label == 'P':  # scale to MPa
+        grid_reactor = grid_reactor / 1.e+6
+        grid_nn = grid_nn / 1.e+6
+
+        if diff == 'abs' or diff == 'both':
+            grid_diff_abs = grid_diff_abs / 1.e+6
 
     if diff == 'both':
         fig, axs = plt.subplots(nrows=1, ncols=4, figsize=[20, 5], dpi=300, sharex=True, sharey=True)
@@ -125,36 +132,40 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
     vmin = np.amin(y_samples_run)
     vmax = np.amax(y_samples_run)
 
+    label_unit = unit(label)
+
     img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
     axs[0].set_xlabel('PV')
-    axs[0].set_ylabel('h [MJ/kg]')
-    fig.colorbar(img, ax=axs[0], label='Y_{}'.format(label))
-    axs[0].set_title('Homogeneous Reactor Z={:.2f}'.format(Z[0]))
+    axs[0].set_ylabel('H [MJ/kg]')
+    fig.colorbar(img, ax=axs[0], label='{}'.format(label_unit))
+    axs[0].set_title('HR Z={:.2f}'.format(Z[0]))
 
     img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
     axs[1].set_xlabel('PV')
-    fig.colorbar(img, ax=axs[1], label='Y_{}'.format(label))
+    fig.colorbar(img, ax=axs[1], label='{}'.format(label_unit))
     axs[1].set_title('MLP Z={:.2f}'.format(Z[0]))
 
     if diff == 'rel':
+        grid_diff_rel = grid_diff_rel * 100  # scaling to percent
         img = axs[2].contourf(grid_x, grid_y, grid_diff_rel, levels=100, cmap='gist_rainbow')
         axs[2].set_xlabel('PV')
-        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label_unit))
         axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
     elif diff == 'abs':
         img = axs[2].contourf(grid_x, grid_y, grid_diff_abs, levels=100, cmap='gist_rainbow')
         axs[2].set_xlabel('PV')
-        fig.colorbar(img, ax=axs[2], label='{} difference'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} difference'.format(label_unit))
         axs[2].set_title('Difference Z={:.2f}'.format(Z[0]))
     else:
+        grid_diff_rel = grid_diff_rel * 100  # scaling to percent
         img = axs[2].contourf(grid_x, grid_y, grid_diff_rel, levels=100, cmap='gist_rainbow')
         axs[2].set_xlabel('PV')
-        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label))
+        fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label_unit))
         axs[2].set_title('Relative Difference Z={:.2f}'.format(Z[0]))
 
         img = axs[3].contourf(grid_x, grid_y, grid_diff_abs, levels=100, cmap='gist_rainbow')
         axs[3].set_xlabel('PV')
-        fig.colorbar(img, ax=axs[3], label='{} difference'.format(label))
+        fig.colorbar(img, ax=axs[3], label='{} difference'.format(label_unit))
         axs[3].set_title('Absolute Difference Z={:.2f}'.format(Z[0]))
 
     plt.tight_layout()
@@ -167,6 +178,28 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
 
     plt.show()
     path_plt.close()
+
+
+def unit(label):
+    """ Corresponding unit for the selected label
+
+    :parameter
+    :param label:       - str -             label
+
+    :returns:
+    :return label_unit: - str -             label with corresponding unit
+    """
+
+    if label == 'P':
+        label_unit = 'P [MPa]'
+    elif label == 'T':
+        label_unit = 'T [K]'
+    elif label == 'HRR':
+        label_unit = "HRR [W/$m^3$/kg]"
+    else:
+        label_unit = 'Y_{}'.format(label)
+
+    return label_unit
 
 
 #%%
@@ -195,8 +228,16 @@ if __name__ == "__main__":
     for i, label in enumerate(labels):
         y_samples_run = y_samples.iloc[:, i]
         y_samples_nn_run = y_samples_nn[:, i]
-        y_samples_diff_rel_run = y_samples_diff_rel.iloc[:, i]
-        y_samples_diff_abs_run = y_samples_diff_abs.iloc[:, i]
+
+        if y_samples_diff_rel is not None:
+            y_samples_diff_rel_run = y_samples_diff_rel.iloc[:, i]
+        else:
+            y_samples_diff_rel_run = None
+
+        if y_samples_diff_abs is not None:
+            y_samples_diff_abs_run = y_samples_diff_abs.iloc[:, i]
+        else:
+            y_samples_diff_abs_run = None
 
         grid_x, grid_y, grid_reactor, grid_nn, grid_diff_rel, grid_diff_abs = create_grid(x_samples, y_samples_run,
                                                                                           y_samples_nn_run,

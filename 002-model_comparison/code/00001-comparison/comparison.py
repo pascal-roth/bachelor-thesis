@@ -31,7 +31,7 @@ def parseArgs():
     parser.add_argument("-p", "--pressure", type=int, default=40,
                         help="chose reactor pressure")
 
-    parser.add_argument("-T", "--temperature", type=int, default=680,
+    parser.add_argument("-T", "--temperature", type=int, default=720,
                         help="chose reactor pressure")
 
     parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',
@@ -51,10 +51,10 @@ if __name__ == "__main__":
 
     # set parameters
     batch_fraction = 100
-    nbr_net_HRR = '007'
-    nbr_net_thermo = '000'
-    nbr_net_products = '005'
-    nbr_net_educts = '006'
+    nbr_net_thermo = '012'
+    nbr_net_products = '013'
+    nbr_net_educts = '014'
+    nbr_net_HRR = '015'
 
     if args.equivalence_ratio == 1.0:
         phi = int(1)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
         IDT_HR_PV = np.zeros((15, 2))
 
         # iterated through all temperatures given
-        for i, temperature_run in enumerate(np.arange(680, 1240, 40)):
+        for i, temperature_run in enumerate(np.arange(680, 1240 + 40, 40)):
 
             # get samples of HR
             feature_select = {'pode': [args.pode], 'phi': args.equivalence_ratio, 'P_0': [args.pressure],
@@ -122,4 +122,4 @@ if __name__ == "__main__":
         # temperature and pressure values of the GRM
         samples_grm = load_GRM_data(args.pode, phi, args.pressure, args.temperature)
 
-        plot_outputs(y_samples, y_samples_nn, samples_grm, x_samples, features, labels, x_scaler)
+        plot_outputs(y_samples, y_samples_nn, samples_grm, x_samples, features, labels)

@@ -20,7 +20,7 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                     help="chose reaction mechanism")
 
-parser.add_argument("--phi_0", type=float, default=1.5,
+parser.add_argument("--phi_0", type=float, default=1.0,
                     help="chose staring phi of simulation")
 
 parser.add_argument("--phi_end", type=float, default=1.5,
@@ -41,7 +41,7 @@ parser.add_argument("--p_step", type=int, default=20,
 parser.add_argument("--pode", type=int, nargs='+', default=[3],
                     help="chose degree of polymerization")
 
-parser.add_argument("-t_0", "--temperature_start", type=int, default=950,
+parser.add_argument("-t_0", "--temperature_start", type=int, default=650,
                     help="chose staring temperature of simulation")
 
 parser.add_argument("-t_end", "--temperature_end", type=int, default=1250,
@@ -59,10 +59,10 @@ parser.add_argument("-inf_print", "--information_print", default=True, action='s
 parser.add_argument("--category", type=str, choices=['train', 'test', 'exp'], default='train',
                     help="chose if train or test data should be generated")
 
-parser.add_argument("--O2", type=float,  default=0.21,
+parser.add_argument("--O2", type=float,  default=1,
                     help="chose O2 ratio in air")
 
-parser.add_argument("--N2", type=float,  default=0.79,
+parser.add_argument("--N2", type=float,  default=3.76,
                     help="chose N2 ratio in air")
 
 parser.add_argument("-comp", "--comparison", default=False, action='store_true',
@@ -80,7 +80,7 @@ if args.category == 'exp':
     t_end = 0.100
     t_step = 1.e-5
     # create an array for the different samples/ the ignition delays and decide if to save them
-    save_samples = False
+    save_samples = True
     save_delays = True
 else:
     t_end = 0.013
@@ -119,7 +119,7 @@ for iii, pode_run in enumerate(args.pode):
     if args.mechanism_input == 'he':
         mechanism = np.array(['he_2018.xml', 'DMM' + str(pode_run)])
     elif args.mechanism_input == 'cai':
-        mechanism = np.array(['cai_ome14_2019.xml', 'OME' + str(pode_run)])
+        mechanism = np.array(['cai_ome14_2019.cti', 'OME' + str(pode_run)])
     elif args.mechanism_input == 'sun':
         mechanism = np.array(['sun_2017.xml', 'DMM' + str(pode_run)])
 
