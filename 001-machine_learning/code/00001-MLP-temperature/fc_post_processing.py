@@ -62,6 +62,8 @@ def calc_acc(model, test_loader, scaler, labels):
     model.eval()                                            # prep model for evaluation
     acc = np.zeros((len(test_loader), len(labels)))         # create acc array
     n = 0                                                   # tracking parameter of test_loader length
+    percentage_range = 0.01
+
     for data, target in test_loader:
         # forward pass: compute predicted outputs by passing inputs to the model
         output = model(data)
@@ -81,7 +83,7 @@ def calc_acc(model, test_loader, scaler, labels):
             output_run = np.squeeze(output[:, ii])
 
             for i in range(len(output)):
-                if target_run[i] * 0.95 < output_run[i] < target_run[i] * 1.05:
+                if target_run[i] * (1-percentage_range) < output_run[i] < target_run[i] * (1+percentage_range):
                     correct[i, ii] = 1
                 else:
                     correct[i, ii] = 0
@@ -311,7 +313,7 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
             output_run = np.squeeze(output[:, i])
 
         # plot the MLP and reactor output
-        plt.plot(samples_feature_run[['PV']], y_test_run, 'b-', label='Reactor output')
+        plt.plot(samples_feature_run[['PV']], y_test_run, 'b-', label='HR Output')
         plt.plot(samples_feature_run[['PV']], output_run, 'r-', label='NN Output')
 
         samples_feature_index = samples_feature_run.to_numpy()
@@ -366,18 +368,11 @@ def plot_train(model, x_samples, y_samples, x_scaler, y_scaler, number_net, feat
     :param labels:      - list of str -     list of labels
     """
 
-    # normalize the training data to make it suitable as input for MLP
-    x_samples_normalized, _ = normalize_df(x_samples, x_scaler)
+    # calculate output of the NN
+    output = NN_output(model, x_samples, x_scaler, y_scaler)
 
-    # calculate output of MLP
-    x_samples_tensor = torch.tensor(x_samples_normalized.values).float()
-    model.eval()
-    output = model(x_samples_tensor)
-
-    # denormalize output to plot data
-    output = output.detach().numpy()
-    output = y_scaler.inverse_transform(output)
     y_samples = y_samples.to_numpy
+    x_samples_normalized, _ = normalize_df(x_samples, scaler=x_scaler)
 
     plot_outputs(output, y_samples, x_samples_normalized, features, labels, x_scaler, number_net)
 
@@ -402,3 +397,50 @@ def unit(label):
         label_unit = 'Y_{}'.format(label)
 
     return label_unit
+
+
+def plot_IDT(IDT_MLP_PV, IDT_HR_PV, args):
+    fig = plt.figure(figsize=(9, 6))
+    ax = fig.add_subplot(111)
+
+    ax.semilogy(1000 / IDT_MLP_PV[:, 0], IDT_MLP_PV[:, 1], 'r-', label='MLP')
+    ax.semilogy(1000 / IDT_HR_PV[:, 0], IDT_HR_PV[:, 1], 'b-', label='HR')
+
+    ax.set_ylabel('PV at IDT')
+    ax.set_xlabel('1000/T [1/K]')
+
+    # Add a second axis on top to plot the temperature for better readability
+    ax2 = ax.twiny()
+    ticks = ax.get_xticks()
+    ax2.set_xticks(ticks)
+    ax2.set_xticklabels((1000 / ticks).round(1))
+    ax2.set_xlim(ax.get_xlim())
+    ax2.set_xlabel('T [K]')
+
+    textstr = '$\\Phi$={:.2f}\np={:.0f}bar\nPODE{}'.format(args.equivalence_ratio[0], args.pressure[0], args.pode[0])
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
+
+    ax.set_yscale('log')
+
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4,
+              prop={'size': 14})
+
+    plt.tight_layout()
+
+    path = Path(__file__).resolve()
+    path = path.parents[2] / 'data/00001-MLP-temperature/plt_IDT_pode{}_phi{}_p{}.pdf' \
+        .format(args.pode[0], args.equivalence_ratio[0], args.pressure[0])
+    plt.savefig(path)
+
+    plt.show()
+
+
+def NN_output(model, x_samples, x_scaler, y_scaler):
+    x_samples_normalized, _ = normalize_df(x_samples, scaler=x_scaler)
+    x_samples_normalized = torch.tensor(x_samples_normalized.values).float()
+    model.eval()
+    y_samples_nn = model.forward(x_samples_normalized)
+    y_samples_nn = y_samples_nn.detach().numpy()
+    y_samples_nn = y_scaler.inverse_transform(y_samples_nn)
+
+    return y_samples_nn

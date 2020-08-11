@@ -31,7 +31,7 @@ def parseArgs():
     parser.add_argument("-p", "--pressure", type=int, default=40,
                         help="chose reactor pressure")
 
-    parser.add_argument("-T", "--temperature", type=int, default=720,
+    parser.add_argument("-T", "--temperature", type=int, default=800,
                         help="chose reactor pressure")
 
     parser.add_argument("-inf_print", "--information_print", default=True, action='store_false',

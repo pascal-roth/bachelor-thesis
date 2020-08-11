@@ -121,7 +121,7 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), fancybox=True, shadow=False, ncol=6, prop={'size': 14})
     plt.xlabel(scale_name)
     plt.ylabel('Y')
-    plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
+    plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
     plt.tight_layout()
@@ -149,7 +149,7 @@ def plot_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, 
     # textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
     # plt.text(0.05 * np.amax(samples[[scale]]), 0.4 * np.amax(samples['HRR']), textstr, fontsize=12)
 
-    plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
+    plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
     plt.tight_layout()
@@ -172,7 +172,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.xlabel('time [ms]')
     plt.ylabel('PV')
 
-    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
+    plt.title('{} PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
     plt.tight_layout()
@@ -188,7 +188,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.xlabel('time [ms]')
     plt.ylabel('PV')
 
-    plt.title('{} PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
+    plt.title('{} PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
 
     plt.tight_layout()
@@ -220,7 +220,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=5, prop={'size': 14})
     plt.xlabel('time [ms]')
     plt.ylabel('Y')
-    plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
+    plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
     plt.tight_layout()
@@ -252,7 +252,7 @@ def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemper
     # textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
     # plt.text(0.2 * np.amax(samples[['time']]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
 
-    plt.title('PODE{} $\\Phi$={:.1f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
+    plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
     plt.tight_layout()

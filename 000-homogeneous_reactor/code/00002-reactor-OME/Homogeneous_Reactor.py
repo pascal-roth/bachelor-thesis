@@ -107,8 +107,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     pode = ct.Solution(mechanism[0])
 
     # calculate mixture fraction
-    # Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
-    Z = 0
+    Z = mixture_frac(pode, mechanism, O2, N2, equivalence_ratio, reactorPressure, reactorTemperature)
+
     # Create Reactor
     pode.TP = reactorTemperature, reactorPressure
     pode.set_equivalence_ratio(equivalence_ratio, mechanism[1], 'O2:{} N2:{}'.format(O2, N2))
@@ -120,7 +120,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
     sim = ct.ReactorNet([r1])
     #    sim.atol = 1.e-14  # standard: 1e-15
     #    sim.rtol = 1.e-10  # standard: 1e-09
-    # sim.max_err_test_fails = 10
+    sim.max_err_test_fails = 10
 
     #  Solution of reaction
     time = 0.0
@@ -170,8 +170,7 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
 
         # Calculate the PV
         if comparison:
-            PV = r1.Y[pode.species_index(PV_p[0])] * 0.25 + (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + \
-                 r1.Y[pode.species_index(PV_p[3])] * 0.05
+            PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + r1.Y[pode.species_index(PV_p[3])] * 0.25
         else:
             PV = r1.Y[pode.species_index(PV_p[0])] * 0.5 + r1.Y[pode.species_index(PV_p[1])] * 0.5 + \
                  (- r1.Y[pode.species_index(PV_p[2])] + OME3_0) * 0.5 + r1.Y[pode.species_index(PV_p[3])] * 0.05

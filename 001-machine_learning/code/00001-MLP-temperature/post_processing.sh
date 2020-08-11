@@ -7,16 +7,16 @@ echo "--------------------------"
 echo ""
 
 while true; do
-    read -p "Processing method [loss, test, plt_train]:" method
+    read -p "Processing method [loss, output, IDT, plt_train]:" method
     echo ""
     echo "Chose the trained model"
-    read -p "nbr of network:                           " name_net
+    read -p "nbr of network:                                  " name_net
 
 
 
     case $method in
         loss )     python post-processing.py --post $method -nbr_net $name_net; break;;
-        test )     echo "Which test data should be used for the MLP"
+        output )   echo "Which test data should be used for the MLP"
                    read -p "mechanism         [he, sun, cai]:         " mechanism
                    read -p "name of test run  [XXX]:                  " name_test
                    while true; do
@@ -39,6 +39,14 @@ while true; do
                    read -p "pressure          (10, 40, 2)      :       " pressure
                    read -p "temperature       (650, 1250, 30)  :       " temp
                    python post-processing.py --post $method -nbr_net $name_net -phi $equivalence_ratio -p $pressure --pode $pode_n -temp $temp; exit;;
+        IDT )      echo "Which test data should be used for the MLP"
+                   read -p "mechanism         [he, sun, cai]:         " mechanism
+                   read -p "name of test run  [XXX]:                  " name_test
+                   echo "Select initial parameters"
+                   read -p "PODE_n            [1, 2, 3, 4]     :       " pode_n
+                   read -p "equivalence ratio (0.5, 1.5, 0.05) :       " equivalence_ratio
+                   read -p "pressure          (10, 40, 2)      :       " pressure
+                   python post-processing.py --post $method -mech $mechanism -nbr_run $name_test -nbr_net $name_net  -phi $equivalence_ratio -p $pressure --pode $pode_n; exit;;
         * )        echo "chose a valid method"
     esac
 done
