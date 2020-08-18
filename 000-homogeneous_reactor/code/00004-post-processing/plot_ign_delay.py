@@ -62,7 +62,7 @@ def plot_delays(mechanism, pode, equivalence_ratio, reactorPressure, nbr_run, ca
     ax2.set_xlim(ax.get_xlim())
     ax2.set_xlabel(r'Temperature: $T(K)$')
 
-    textstr = '$\\Phi$={:.1f}\np={:.0f}bar'.format(equivalence_ratio, reactorPressure)
+    textstr = '$\\Phi$={:.2f}\np={:.0f}bar'.format(equivalence_ratio, reactorPressure)
     ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top')
 
     ax.set_yscale('log')

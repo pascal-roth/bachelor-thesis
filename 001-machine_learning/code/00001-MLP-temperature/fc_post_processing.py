@@ -59,47 +59,74 @@ def calc_acc(model, test_loader, scaler, labels):
     :param labels:      - list of str -     List of labels of the MLP
     """
 
-    model.eval()                                            # prep model for evaluation
-    acc = np.zeros((len(test_loader), len(labels)))         # create acc array
-    n = 0                                                   # tracking parameter of test_loader length
-    percentage_range = 0.01
+    model.eval()                                                # prep model for evaluation
+    acc_abs = np.zeros((len(test_loader), len(labels)))         # create acc array
+    acc_rel = np.zeros((len(test_loader), len(labels)))         # create acc array
+    acc_abs_rel = np.zeros((len(test_loader), len(labels)))     # create acc array
+    n = 0                                                       # tracking parameter of test_loader length
+    abs_range = 0.05
+    rel_range = 0.02
 
     for data, target in test_loader:
         # forward pass: compute predicted outputs by passing inputs to the model
         output = model(data)
         # compare predictions to true label
-        correct = np.zeros((len(output), len(labels)))
+        correct_abs = np.zeros((len(output), len(labels)))
+        correct_rel = np.zeros((len(output), len(labels)))
+        correct_abs_rel = np.zeros((len(output), len(labels)))
         # convert tensors to numpy arrays
         output = output.detach().numpy()
         target = target.detach().numpy()
         # denormalize target and output, because 5% of the normalized values can mean huge/small differences in the
         # denormalized values
-        output = scaler.inverse_transform(output)
-        target = scaler.inverse_transform(target)
+        output_unnormalized = scaler.inverse_transform(output)
+        target_unnormalized = scaler.inverse_transform(target)
 
         # check if samples are in 5% range
         for ii in range(len(labels)):
-            target_run = np.squeeze(target[:, ii])
-            output_run = np.squeeze(output[:, ii])
+            target_run_abs = np.squeeze(target_unnormalized[:, ii])
+            output_run_abs = np.squeeze(output_unnormalized[:, ii])
+
+            target_run_rel = np.squeeze(target[:, ii])
+            output_run_rel = np.squeeze(output[:, ii])
 
             for i in range(len(output)):
-                if target_run[i] * (1-percentage_range) < output_run[i] < target_run[i] * (1+percentage_range):
-                    correct[i, ii] = 1
+                # check absolute accuracy
+                if target_run_abs[i] * (1-abs_range) < output_run_abs[i] < target_run_abs[i] * (1+abs_range):
+                    correct_abs[i, ii] = 1
                 else:
-                    correct[i, ii] = 0
+                    correct_abs[i, ii] = 0
 
-            acc[n, ii] = np.sum(correct[:, ii]) / len(output)
+                # check relative accuracy
+                if target_run_rel[i] * (1-rel_range) < output_run_rel[i] < target_run_rel[i] * (1+rel_range):
+                    correct_rel[i, ii] = 1
+                else:
+                    correct_rel[i, ii] = 0
+
+                # check absolute accuracy
+                if target_run_abs[i] * (1 - abs_range) < output_run_abs[i] < target_run_abs[i] * (1 + abs_range) and \
+                        target_run_rel[i] * (1-rel_range) < output_run_rel[i] < target_run_rel[i] * (1+rel_range):
+                    correct_abs_rel[i, ii] = 1
+                else:
+                    correct_abs_rel[i, ii] = 0
+
+            acc_abs[n, ii] = np.sum(correct_abs[:, ii]) / len(output)
+            acc_rel[n, ii] = np.sum(correct_rel[:, ii]) / len(output)
+            acc_abs_rel[n, ii] = np.sum(correct_abs_rel[:, ii]) / len(output)
 
         n += 1
 
     # calculate mean accuracy
     for i in range(len(labels)):
-        acc_mean = np.mean(acc[:, i])
-        print('Mean accuracy for {} is: {:6.5e}'.format(labels[i], acc_mean))
+        acc_mean_abs = np.mean(acc_abs[:, i])
+        acc_mean_rel = np.mean(acc_rel[:, i])
+        acc_mean_abs_rel = np.mean(acc_abs_rel[:, i])
+        print('For {} the absolute accuracy is: {:6.5e} \t relative accuracy is: {:6.5e} \t overall accuracy is: '
+              '{:6.5e}'.format(labels[i], acc_mean_abs, acc_mean_rel, acc_mean_abs_rel))
 
 
 # separate initial states, calc output of reactor and call function to plot ###########################################
-def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, number_net, plt_nbrs, features, labels):
+def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, plt_nbrs, features, labels, args):
     """ Plot the MLP output next to the output of the reactor to see how good the network interpolates
 
     :parameter
@@ -169,7 +196,7 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
                     output = y_scaler.inverse_transform(output)
                     y_test_run = y_scaler.inverse_transform(y_test_run)
 
-                    plot_outputs(output, y_test_run, samples_feature_3_run, features, labels, x_scaler, number_net)
+                    plot_outputs(output, y_test_run, samples_feature_3_run, features, labels, x_scaler, args)
 
             else:
 
@@ -198,7 +225,7 @@ def plot_data(model, x_train, y_train, x_test, y_test, x_scaler, y_scaler, numbe
                 output = y_scaler.inverse_transform(output)
                 y_test_run = y_scaler.inverse_transform(y_test_run)
 
-                plot_outputs(output, y_test_run, samples_feature_2_run, features, labels, x_scaler, number_net)
+                plot_outputs(output, y_test_run, samples_feature_2_run, features, labels, x_scaler, args)
 
 
 # find closest runs between test and train samples ####################################################################
@@ -291,7 +318,7 @@ def find_neighbors(feature_1_test, feature_2_test, feature_3_test, x_train, y_tr
 
 
 # function to plot MLP output next to reactor output ##################################################################
-def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler, number_net):
+def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler, args):
     """
     Function to plot MLP output next to reactor output
 
@@ -301,7 +328,7 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
     :param features:            - list of str -     list of features
     :param labels:              - list of str -     list of labels
     :param x_scaler:                                MinMaxScaler of samples
-    :param number_net:          - str -             Number to identify the MLP
+    :param args:                - argparse -        Input parameters given to the script
     """
 
     for i in range(len(labels)):
@@ -330,8 +357,9 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
 
             path = Path(__file__).resolve()
             path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}_{:.0f}.pdf'.\
-                format(number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1],
+                format(args.number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1],
                        samples_feature_index[0, 2] / ct.one_atm, samples_feature_index[0, 3])
+
 
         else:
             plt.title('PODE{:.0f} {}={:.2f} {}={:.2f} [MJ/kg]'.format(samples_feature_index[0, 0],
@@ -341,8 +369,9 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
                                                                       samples_feature_index[0, 2] / 1.e+3))
 
             path = Path(__file__).resolve()
-            path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}.pdf'.format\
-                (number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1], samples_feature_index[0, 2])
+            path_plt = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_{}_comp_PODE{}_{:.2f}_{:.0f}.pdf'.format \
+                (args.number_net, labels[i], samples_feature_index[0, 0], samples_feature_index[0, 1],
+                 samples_feature_index[0, 2])
 
         plt.legend()
         plt.xlabel('PV')
@@ -406,7 +435,7 @@ def plot_IDT(IDT_MLP_PV, IDT_HR_PV, args):
     ax.semilogy(1000 / IDT_MLP_PV[:, 0], IDT_MLP_PV[:, 1], 'r-', label='MLP')
     ax.semilogy(1000 / IDT_HR_PV[:, 0], IDT_HR_PV[:, 1], 'b-', label='HR')
 
-    ax.set_ylabel('PV at IDT')
+    ax.set_ylabel('$Y_c$ at ignition')
     ax.set_xlabel('1000/T [1/K]')
 
     # Add a second axis on top to plot the temperature for better readability
@@ -422,14 +451,15 @@ def plot_IDT(IDT_MLP_PV, IDT_HR_PV, args):
 
     ax.set_yscale('log')
 
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4,
-              prop={'size': 14})
+    ax.legend(loc='lower right')
+    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.15), fancybox=True, shadow=False, ncol=4,
+    #           prop={'size': 14})
 
     plt.tight_layout()
 
     path = Path(__file__).resolve()
-    path = path.parents[2] / 'data/00001-MLP-temperature/plt_IDT_pode{}_phi{}_p{}.pdf' \
-        .format(args.pode[0], args.equivalence_ratio[0], args.pressure[0])
+    path = path.parents[2] / 'data/00001-MLP-temperature/{}_plt_ID_pode{}_phi{}_p{}.pdf' \
+        .format(args.number_net, args.pode[0], args.equivalence_ratio[0], args.pressure[0])
     plt.savefig(path)
 
     plt.show()

@@ -10,10 +10,10 @@ echo ""
 
 while true; do
     echo "Select intended comparison option:"
-    read -p "comparison:        ['IDT', 'thermo', 'educts', 'products']:" comparison
+    read -p "comparison:        ['ID', 'thermo', 'educts', 'products']: " comparison
 
     case $comparison in
-        IDT ) read -p "mechanism          [he, sun, cai]   :                      " mechanism
+        ID )  read -p "mechanism          [he, sun, cai]   :                      " mechanism
               read -p "PODE_n             [1, 2, 3, 4]     :                      " pode_n
               read -p "equivalence ratio  [0.5, 0.67, 1.0] :                      " equivalence_ratio
               read -p "pressure           (10, 40, 2)      :                      " pressure

@@ -186,8 +186,8 @@ def homogeneous_reactor(mechanism, equivalence_ratio, reactorPressure, reactorTe
                      r1.Y[pode.species_index('CO')], r1.Y[pode.species_index('H2O')],
                      r1.Y[pode.species_index('H2')], r1.Y[pode.species_index('CH2O')])
 
-        creation_rates[n] = (pode.creation_rates[pode.species_index('O2')],
-                               pode.creation_rates[pode.species_index('CO')])
+        # creation_rates[n] = (pode.creation_rates[pode.species_index('O2')],
+        #                      pode.creation_rates[pode.species_index('CO')])
 
         n += 1
 

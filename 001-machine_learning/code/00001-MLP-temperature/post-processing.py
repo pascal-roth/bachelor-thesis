@@ -28,13 +28,13 @@ parser.add_argument("-nbr_run", "--number_test_run", type=str, default='004',
 parser.add_argument("-nbr_net", "--number_net", type=str, default='011',
                     help="chose number of the network")
 
-parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0.67],
+parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0],
                     help="chose equivalence ratio")
 
-parser.add_argument("-p", "--pressure", nargs='+', type=int, default=[40],
+parser.add_argument("-p", "--pressure", nargs='+', type=int, default=[0],
                     help="chose reactor pressure")
 
-parser.add_argument("--pode", type=int, nargs='+', default=[3],
+parser.add_argument("--pode", type=int, nargs='+', default=[0],
                     help="chose degree of polymerization")
 
 parser.add_argument("-temp", "--temperature", type=int, nargs='+', default=[0],
@@ -96,7 +96,7 @@ elif args.post == 'output':     # PLot interpolation capability of Network
                                                                feature_select, features, labels, select_data='exclude',
                                                                category='train')
 
-    feature_select = {'pode': args.pode, 'phi': [args.equivalence_ratio], 'P_0': args.pressure, 'T_0': args.temperature}
+    feature_select = {'pode': args.pode, 'phi': args.equivalence_ratio, 'P_0': args.pressure, 'T_0': args.temperature}
 
     x_test, y_test = fc_pre_processing_load.load_samples(args.mechanism_input, args.number_test_run,
                                                          feature_select, features, labels,
@@ -123,12 +123,12 @@ elif args.post == 'output':     # PLot interpolation capability of Network
     # interpolation took place)
     if plt_nbrs:
         fc_post_processing.plot_data(model, x_train, y_train, x_test, y_test, x_scaler,
-                                     y_scaler, args.number_net, plt_nbrs, features=features, labels=labels)
+                                     y_scaler, plt_nbrs, features=features, labels=labels, args=args)
     else:
         x_train = None
         y_train = None
         fc_post_processing.plot_data(model, x_train, y_train, x_test, y_test, x_scaler,
-                                     y_scaler, args.number_net, plt_nbrs, features=features, labels=labels)
+                                     y_scaler, plt_nbrs, features=features, labels=labels, args=args)
 
 elif args.post == 'IDT':     # PLot the IDT for different temperatures from the HR and MLP
     # load model with features=['pode', 'Z', 'H', 'PV'] and labels=[HRR]

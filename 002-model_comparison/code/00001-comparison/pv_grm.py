@@ -36,38 +36,38 @@ def plot_IDT(IDT_GRM_time):
 
 if __name__ == '__main__':
     # load grm samples
-    samples_grm = load_GRM(pode=3, phi=1, pressure=40, temperature=800)
+    samples_grm = load_GRM(pode=3, phi=1, pressure=40, temperature=1080)
 
-    feature_select = {'pode': [3], 'phi': 1.0, 'P_0': [40], 'T_0': [800]}
+    feature_select = {'pode': [3], 'phi': 1.0, 'P_0': [40], 'T_0': [1080]}
     features = ['time']
     labels = ['PV']
     samples_hr_time, samples_hr_pv = load_samples('cai', nbr_run='002', feature_select=feature_select,
                                                   features=features, labels=labels, select_data='include',
                                                   category='test')
 
-    plt.plot(samples_grm['time'], samples_grm['PV'], '-r', label='PV_GRM')
-    plt.plot(samples_hr_time * 1.e+3, samples_hr_pv, '-b', label='PV_HR')
-    plt.xlabel('time [ms]')
-    plt.ylabel('PV')
+    # plt.plot(samples_grm['time'], samples_grm['PV'], '-r', label='PV_GRM')
+    # plt.plot(samples_hr_time * 1.e+3, samples_hr_pv, '-b', label='PV_HR')
+    # plt.xlabel('time [ms]')
+    # plt.ylabel('PV')
+    #
+    # plt.legend()
+    # plt.show()
 
-    plt.legend()
-    plt.show()
-
-    feature_select = {'pode': [3], 'phi': 1.0, 'P_0': [40], 'T_0': [800]}
+    feature_select = {'pode': [3], 'phi': 1.0, 'P_0': [40], 'T_0': [1160]}
     features = ['PV']
     labels = ['T']
     samples_hr_time, samples_hr_pv = load_samples('cai', nbr_run='002', feature_select=feature_select,
                                                   features=features, labels=labels, select_data='include',
                                                   category='test')
 
-    plt.plot(samples_grm['PV'], samples_grm['T'], '-r', label='PV_GRM')
-    plt.plot(samples_hr_time, samples_hr_pv, '-b', label='PV_HR')
-    # plt.xlim(xmin=0, xmax=0.5)
-    plt.xlabel('PV')
-    plt.ylabel('T')
-
-    plt.legend()
-    plt.show()
+    # plt.plot(samples_grm['PV'], samples_grm['T'], '-r', label='PV_GRM')
+    # plt.plot(samples_hr_time, samples_hr_pv, '-b', label='PV_HR')
+    plt.xlim(xmin=0, xmax=0.05)
+    # plt.xlabel('PV')
+    # plt.ylabel('T')
+    #
+    # plt.legend()
+    # plt.show()
 
     # labels = ['O2']
     # samples_hr_time, samples_hr_o2 = load_samples('cai', nbr_run='002', feature_select=feature_select,
@@ -75,7 +75,7 @@ if __name__ == '__main__':
     #                                               category='test')
     #
     # plt.plot(samples_grm['time'], samples_grm['O2'], '-r', label='Y_O2_GRM')
-    # plt.plot(samples_grm['time'], samples_grm['H2O'], '-b', label='Y_H2O_GRM')
+    plt.plot(samples_grm['time'], samples_grm['H2O'], '-b', label='Y_H2O_GRM')
     # plt.plot(samples_grm['time'], samples_grm['CO'], '-g', label='Y_CO_GRM')
     # plt.plot(samples_grm['time'], samples_grm['CO2'], '-y', label='Y_CO2_GRM')
     # plt.plot(samples_grm['time'], samples_grm['I1'], '-m', label='Y_I1_GRM')
@@ -85,20 +85,20 @@ if __name__ == '__main__':
     #
     # plt.plot(samples_hr_time * 1.e+3, samples_hr_o2, '-b', label='Y_O2_HR')
     #
-    # plt.xlabel('time [ms]')
-    # plt.ylabel('Y')
+    plt.xlabel('time [ms]')
+    plt.ylabel('Y')
+
+    plt.legend()
+    plt.show()
+
+    # IDT_GRM_time = np.zeros((15, 2))
     #
-    # plt.legend()
-    # plt.show()
-
-    IDT_GRM_time = np.zeros((15, 2))
-
-    for i, temperature_run in enumerate(np.arange(680, 1240 + 40, 40)):
-        samples_grm = load_GRM(pode=3, phi=1, pressure=40, temperature=temperature_run)
-
-        IDT_location = np.argmax(samples_grm['HRR'])
-        IDT_time = samples_grm['time'].iloc[IDT_location]
-
-        IDT_GRM_time[i, :] = (temperature_run, IDT_time)
-
-    plot_IDT(IDT_GRM_time)
+    # for i, temperature_run in enumerate(np.arange(680, 1240 + 40, 40)):
+    #     samples_grm = load_GRM(pode=3, phi=1, pressure=40, temperature=temperature_run)
+    #
+    #     IDT_location = np.argmax(samples_grm['HRR'])
+    #     IDT_time = samples_grm['time'].iloc[IDT_location]
+    #
+    #     IDT_GRM_time[i, :] = (temperature_run, IDT_time)
+    #
+    # plot_IDT(IDT_GRM_time)

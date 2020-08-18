@@ -19,7 +19,7 @@ def parseArgs():
     parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                         help="chose reaction mechanism")
 
-    parser.add_argument("--comparison", type=str, choices=['IDT', 'thermo', 'educts', 'products'], default='thermo',
+    parser.add_argument("--comparison", type=str, choices=['ID', 'thermo', 'educts', 'products'], default='ID',
                         help="chose what should be compared")
 
     parser.add_argument("--pode", type=int, default=3,
@@ -61,10 +61,10 @@ if __name__ == "__main__":
     else:
         phi = args.equivalence_ratio
 
-    if args.comparison == 'IDT':
+    if args.comparison == 'ID':
         # load model with features=['pode', 'Z', 'H', 'PV'] and labels=[HRR]
         model, criterion, features, labels, x_scaler, y_scaler, n_input, n_output, _ = load_checkpoint(nbr_net_HRR)
-        print('Model loaded, Calculate IDTs of MLP, GRM and HR (as reference)...')
+        print('Model loaded, Calculate IDs of MLP, GRM and HR (as reference)...')
 
         IDT_MLP_PV = np.zeros((15, 2))
         IDT_GRM_PV = np.zeros((15, 2))

@@ -40,7 +40,7 @@ def loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, rea
 
     # define the name of the x_axis
     if scale == 'PV':
-        scale_name = 'PV (normalized)'
+        scale_name = '$Y_c$ (normalized)'
     elif scale == 'time':
         scale_name = 'time in ms'
     else:
@@ -170,7 +170,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     # plot PV as scatter plot
     samples.plot.scatter('time', 'PV', style='m-', figsize=(9, 6))
     plt.xlabel('time [ms]')
-    plt.ylabel('PV')
+    plt.ylabel('$Y_c$')
 
     plt.title('{} PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
@@ -186,7 +186,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     # plot PV as plot
     samples.plot('time', 'PV', style='m-', figsize=(9, 6))
     plt.xlabel('time [ms]')
-    plt.ylabel('PV')
+    plt.ylabel('$Y_c$')
 
     plt.title('{} PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
@@ -209,7 +209,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
 
     samples.plot('time', ['PODE', 'H2O', 'CH2O', 'CO2', 'PV'],
                  style=['r-', 'b-', 'k-', '-y', 'm-'],
-                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', '$Y_{CO2}$', 'PV'],
+                 label=['$Y_{PODE}$', '$Y_{H2O}$', '$Y_{CH2O}$', '$Y_{CO2}$', '$Y_c$'],
                  figsize=(9, 6))
 
     # samples.plot('time', ['PODE', 'H2O', 'PV'],
@@ -245,12 +245,20 @@ def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemper
     for i in range(0, len(time), 1):
         x[i] = i
 
-    plt.plot(time, x)
-    plt.xlabel('Time [ms]')
-    plt.ylabel('Samples taken')
+    fig, ax1 = plt.subplots()
 
-    # textstr = create_text(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)
-    # plt.text(0.2 * np.amax(samples[['time']]), 0.4 * np.amax(samples['Q']), textstr, fontsize=12)
+    color = 'tab:red'
+    ax1.set_xlabel(scale_name)
+    ax1.set_ylabel('$Y_c$', color=color)
+    ax1.plot(time, samples[['PV']], color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('Samples taken', color=color)  # we already handled the x-label with ax1
+    ax2.plot(time, x, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
 
     plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
@@ -261,4 +269,37 @@ def plot_time_scale(mechanism, equivalence_ratio, reactorPressure, reactorTemper
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature)
     plt.savefig(path)
     
+    plt.show()
+
+
+#######################################################################################################################
+def plot_T_and_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
+    # get data
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
+
+    # Normalize the PV
+    samples[['PV']] = samples[['PV']] / np.amax(samples[['PV']])
+
+    fig, ax1 = plt.subplots()
+
+    color = 'tab:red'
+    ax1.set_xlabel(scale_name)
+    ax1.set_ylabel('T [K]', color=color)
+    ax1.plot(samples[[scale]], samples[['T']], color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('HRR [W/kg/m$^3$]', color=color)  # we already handled the x-label with ax1
+    ax2.plot(samples[[scale]], samples[['HRR']], color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
+    path = Path(__file__).parents[2] / 'data/00004-post-processing/{}/{}/plot_T_HRR_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
+    plt.savefig(path)
+
     plt.show()

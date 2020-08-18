@@ -14,11 +14,11 @@ def plot_IDT(IDT_MLP_PV, IDT_GRM_PV, IDT_HR_PV, args):
     fig = plt.figure(figsize=(9, 6))
     ax = fig.add_subplot(111)
 
-    ax.semilogy(1000 / IDT_MLP_PV[:, 0], IDT_MLP_PV[:, 1], 'r-', label='MLP')
+    # ax.semilogy(1000 / IDT_MLP_PV[:, 0], IDT_MLP_PV[:, 1], 'r-', label='MLP')
     ax.semilogy(1000 / IDT_GRM_PV[:, 0], IDT_GRM_PV[:, 1], 'g-', label='GRM')
-    ax.semilogy(1000 / IDT_HR_PV[:, 0], IDT_HR_PV[:, 1], 'b-', label='HR')
+    # ax.semilogy(1000 / IDT_HR_PV[:, 0], IDT_HR_PV[:, 1], 'b-', label='HR')
 
-    ax.set_ylabel('IDT [ms]')
+    ax.set_ylabel('$Y_c$ at ignition')
     ax.set_xlabel('1000/T [1/K]')
 
     # Add a second axis on top to plot the temperature for better readability
@@ -40,7 +40,7 @@ def plot_IDT(IDT_MLP_PV, IDT_GRM_PV, IDT_HR_PV, args):
     plt.tight_layout()
 
     path = Path(__file__).resolve()
-    path = path.parents[2] / 'data/00001-comparison/IDT_pode{}_phi{}_p{}.pdf' \
+    path = path.parents[2] / 'data/00001-comparison/ID_pode{}_phi{}_p{}.pdf' \
         .format(args.pode, args.equivalence_ratio, args.pressure)
     plt.savefig(path)
 

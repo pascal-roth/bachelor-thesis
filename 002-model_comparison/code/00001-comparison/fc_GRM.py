@@ -25,7 +25,7 @@ def load_GRM(pode, phi, pressure, temperature):
         # PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.05 + \
         #         0.5 * df['Y'].iloc[i]
         # PV[i] = (df['PODE'].iloc[0] - df['PODE'].iloc[i]) * 0.5 + df['H2O'].iloc[i] * 0.25 + df['CO2'].iloc[i] * 0.05
-        PV[i] = df['H2O'].iloc[i] * 0.5 + df['CO2'].iloc[i] * 0.25
+        PV[i] = df['H2O'].iloc[i] * 0.5 # + df['CO2'].iloc[i] * 0.25
 
     # add PV to df
     PV = pd.DataFrame(PV)
