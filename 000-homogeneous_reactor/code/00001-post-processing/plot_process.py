@@ -40,7 +40,7 @@ def loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, rea
 
     # define the name of the x_axis
     if scale == 'PV':
-        scale_name = '$Y_c$ (normalized)'
+        scale_name = '$Y_cloaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)$ (normalized)'
     elif scale == 'time':
         scale_name = 'time in ms'
     else:
@@ -116,6 +116,14 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'CH2O'],
                  style=['b-', 'r-', 'g-', 'y-', 'k-', 'm-'],
                  label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{CH2O}$'], figsize=(9, 6))
+
+    # samples.plot(scale, ['PODE', 'O2'],
+    #              style=['b-', 'g-'],
+    #              label=['$Y_{pode_n}$', '$Y_{CO2}$'], figsize=(9, 6))
+
+    # samples.plot(scale, ['CO2', 'CO', 'H2O'],
+    #              style=['r-', 'y-', 'k-'],
+    #              label=['$Y_{CO2}$', '$Y_{CO}$', '$Y_{H2O}$'], figsize=(9, 6))
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), fancybox=True, shadow=False, ncol=6, prop={'size': 14})
     plt.xlabel(scale_name)
@@ -298,6 +306,38 @@ def plot_T_and_HRR(mechanism, equivalence_ratio, reactorPressure, reactorTempera
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
 
     path = Path(__file__).parents[2] / 'data/00001-post-processing/{}/{}/plot_T_HRR_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
+        format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
+    plt.savefig(path)
+
+    plt.show()
+
+#######################################################################################################################
+def plot_T_and_P(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, scale, pode, nbr_run, category):
+    # get data
+    samples, scale_name = loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature,
+                                           scale, pode, category)
+
+    # Normalize the PV
+    samples[['PV']] = samples[['PV']] / np.amax(samples[['PV']])
+
+    fig, ax1 = plt.subplots(figsize=(9, 6))
+
+    color = 'tab:red'
+    ax1.set_xlabel(scale_name)
+    ax1.set_ylabel('T [K]', color=color)
+    ax1.plot(samples[[scale]], samples[['T']], color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+
+    color = 'tab:blue'
+    ax2.set_ylabel('P [bar]', color=color)  # we already handled the x-label with ax1
+    ax2.plot(samples[[scale]], samples[['P']], color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+
+    path = Path(__file__).parents[2] / 'data/00001-post-processing/{}/{}/plot_T_P_PODE{}_phi{}_p{:.0f}_T{}_{}.pdf'. \
         format(mechanism[0], nbr_run, pode, equivalence_ratio, reactorPressure, reactorTemperature, scale)
     plt.savefig(path)
 

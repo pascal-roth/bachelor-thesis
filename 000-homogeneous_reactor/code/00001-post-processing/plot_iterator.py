@@ -14,7 +14,7 @@ import cantera as ct
 parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 
 parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HRR', 'PV', 'time_scale',
-                                                         'T+HRR'],
+                                                         'T+HRR', 'T+P'],
                     default='PV', help="chose which plot to create")
 
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='cai',
@@ -85,3 +85,7 @@ elif args.plot == 'T+HRR':
     from plot_process import plot_T_and_HRR
     plot_T_and_HRR(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode,
                    args.number_run, args.category)
+elif args.plot == 'T+P':
+    from plot_process import plot_T_and_P
+    plot_T_and_P(mechanism, args.equivalence_ratio, args.pressure, args.temperature, args.scale, args.pode,
+                 args.number_run, args.category)
