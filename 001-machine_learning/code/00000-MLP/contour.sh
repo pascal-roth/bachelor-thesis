@@ -10,7 +10,7 @@ echo "Select parameters"
 read -p "number of MLP                        [XXX]:                 " number_net
 read -p "PODE_n                               [1, 2, 3, 4]:          " pode_n
 read -p "equivalence ratio                    (0.5, 1.5, 0.05):      " phi
-read -p "pressure                             ( 10,  20,    2):      " pressure
+read -p "pressure                             ( 10,  40,    2):      " pressure
 
 python contour.py --pode $pode_n -nbr_net $number_net -phi $phi -p $pressure;
 

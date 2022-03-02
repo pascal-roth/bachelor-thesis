@@ -21,7 +21,7 @@ def parseArgs():
     parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai'], default='cai',
                         help="chose reaction mechanism")
 
-    parser.add_argument("-nbr_net", "--number_net", type=str, default='008',
+    parser.add_argument("-nbr_net", "--number_net", type=str, default='000',
                         help="chose number of the network")
 
     parser.add_argument("-phi", "--equivalence_ratio", type=float, default=1.0,
@@ -133,7 +133,7 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
     label_unit = unit(label)
 
     img = axs[0].contourf(grid_x, grid_y, grid_reactor, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
-    axs[0].set_xlabel('PV')
+    axs[0].set_xlabel('PV [-]')
     axs[0].set_ylabel('H [MJ/kg]')
     # fig.colorbar(img, ax=axs[0], label='{}'.format(label_unit))
     cbar_0 = fig.colorbar(img, ax=axs[0], label='{}'.format(label_unit))
@@ -142,7 +142,7 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
     axs[0].set_title('HR Z={:.2f}'.format(Z[0]))
 
     img = axs[1].contourf(grid_x, grid_y, grid_nn, levels=100, cmap='gist_rainbow', vmin=vmin, vmax=vmax)
-    axs[1].set_xlabel('PV')
+    axs[1].set_xlabel('PV [-]')
     cbar_1 = fig.colorbar(img, ax=axs[1], label='{}'.format(label_unit))
     cbar_1.set_ticks(zticks)
     cbar_1.set_ticklabels(zticks)
@@ -152,12 +152,12 @@ def plotter(x_samples, y_samples_run, grid_x, grid_y, grid_reactor, grid_nn, gri
     grid_diff_abs = grid_diff_abs * 100  # scaling to percent
 
     img = axs[2].contourf(grid_x, grid_y, grid_diff_rel, levels=100, cmap='gist_rainbow')
-    axs[2].set_xlabel('PV')
+    axs[2].set_xlabel('PV [-]')
     fig.colorbar(img, ax=axs[2], label='{} difference in %'.format(label_unit))
     axs[2].set_title('Relative Difference Z={:.2f}'.format(Z[0]))
 
     img = axs[3].contourf(grid_x, grid_y, grid_diff_abs, levels=100, cmap='gist_rainbow')
-    axs[3].set_xlabel('PV')
+    axs[3].set_xlabel('PV [-]')
     fig.colorbar(img, ax=axs[3], label='{} difference in %'.format(label_unit))
     axs[3].set_title('Absolute Difference Z={:.2f}'.format(Z[0]))
 

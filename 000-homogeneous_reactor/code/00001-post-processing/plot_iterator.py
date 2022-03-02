@@ -15,7 +15,7 @@ parser = argparse.ArgumentParser(description="Run homogeneous reactor model")
 
 parser.add_argument("-plt", "--plot", type=str, choices=['ign_delay', 'thermo', 'species', 'HRR', 'PV', 'time_scale',
                                                          'T+HRR', 'T+P'],
-                    default='PV', help="chose which plot to create")
+                    default='T+P', help="chose which plot to create")
 
 parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun', 'cai', 'all'], default='cai',
                     help="chose reaction mechanism")
@@ -23,13 +23,13 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("--pode", type=int, choices=[1, 2, 3, 4], default=3,
                     help="chose degree of polymerization")
 
-parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.5',
+parser.add_argument("-phi", "--equivalence_ratio", type=float, default='1.0',
                     help="chose equivalence ratio")
 
-parser.add_argument("-p", "--pressure", type=int, default=40,
+parser.add_argument("-p", "--pressure", type=int, default=20,
                     help="chose reactor pressure")
 
-parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='time',
+parser.add_argument("-x", "--scale", type=str, choices=['PV', 'time'], default='PV',
                     help="chose if plotted over time or PV")
 
 parser.add_argument("-t", "--temperature", type=int, default='950',

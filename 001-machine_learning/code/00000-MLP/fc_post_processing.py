@@ -16,7 +16,7 @@ plt.style.use('stfs_2')
 
 # load trained model ##################################################################################################
 def load_checkpoint(nbr_net):
-    """Load Checkpoint of a saved model
+    """Load Checkpointing of a saved model
 
     :parameter
     :param nbr_net: - int -     number to identify the saved MLP
@@ -375,7 +375,7 @@ def plot_outputs(output, y_test, samples_feature_run, features, labels, x_scaler
                  samples_feature_index[0, 2])
 
         plt.legend()
-        plt.xlabel('PV')
+        plt.xlabel('PV [-]')
         label_unit = unit(labels[i])
         plt.ylabel('{}'.format(label_unit))
 
@@ -426,7 +426,7 @@ def unit(label):
     elif label == 'HRR':
         label_unit = "HRR [W/$m^3$/kg]"
     else:
-        label_unit = 'Y_{}'.format(label)
+        label_unit = 'Y_{} [-]'.format(label)
 
     return label_unit
 

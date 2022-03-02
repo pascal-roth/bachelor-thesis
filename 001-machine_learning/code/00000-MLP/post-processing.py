@@ -25,7 +25,7 @@ parser.add_argument("-mech", "--mechanism_input", type=str, choices=['he', 'sun'
 parser.add_argument("-nbr_run", "--number_test_run", type=str, default='003',
                     help="define which test data should be used")
 
-parser.add_argument("-nbr_net", "--number_net", type=str, default='008',
+parser.add_argument("-nbr_net", "--number_net", type=str, default='001',
                     help="chose number of the network")
 
 parser.add_argument("-phi", "--equivalence_ratio", nargs='+', type=float, default=[0],
@@ -57,8 +57,8 @@ if args.post == 'loss':
     losses = losses.to_numpy()
     plt.plot(losses[:, 0], losses[:, 1], 'b-', label='training_loss')
     plt.plot(losses[:, 0], losses[:, 2], 'r-', label='valid_loss')
-    plt.xlabel('Epochs')
-    plt.ylabel('loss')
+    plt.xlabel('Epochs [-]')
+    plt.ylabel('loss [-]')
     plt.yscale('log')
     plt.legend()
     path_plt_loss = path.parents[2] / 'data/00000-MLP/{}_plt_losses.pdf'.format(args.number_net)

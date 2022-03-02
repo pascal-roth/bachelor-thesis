@@ -60,33 +60,33 @@ index = 0
 for i in range(100):
     index += int(len(samples)/100)
 
-    # fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9, 6))
-    fig, (ax1, ax3) = plt.subplots(ncols=1, nrows=2, figsize=(6, 6))
-    ax1.set_ylabel('Y')
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9, 6))
+    # fig, (ax1, ax3) = plt.subplots(ncols=1, nrows=2, figsize=(6, 6))
+    ax1.set_ylabel('Y [-]')
     ax1.plot(samples[['time']].iloc[:index], samples[['PODE']].iloc[:index], label='Fuel', color='m')
     ax1.plot(samples[['time']].iloc[:index], samples[['O2']].iloc[:index], label='O2', color='g')
     ax1.plot(samples[['time']].iloc[:index], samples[['H2O']].iloc[:index], label='H2O', color='b')
     ax1.plot(samples[['time']].iloc[:index], samples[['CO2']].iloc[:index], label='CO2', color='y')
 
-    # ax2.plot(samples[['PV']].iloc[:index], samples[['PODE']].iloc[:index])
-    # ax2.plot(samples[['PV']].iloc[:index], samples[['O2']].iloc[:index])
-    # ax2.plot(samples[['PV']].iloc[:index], samples[['H2O']].iloc[:index])
-    # ax2.plot(samples[['PV']].iloc[:index], samples[['CO2']].iloc[:index])
+    ax2.plot(samples[['PV']].iloc[:index], samples[['PODE']].iloc[:index], color='m')
+    ax2.plot(samples[['PV']].iloc[:index], samples[['O2']].iloc[:index], color='g')
+    ax2.plot(samples[['PV']].iloc[:index], samples[['H2O']].iloc[:index], color='b')
+    ax2.plot(samples[['PV']].iloc[:index], samples[['CO2']].iloc[:index], color='y')
 
-    ax3.set_ylabel('T')
-    ax3.set_xlabel('time')
+    ax3.set_ylabel('T [K]')
+    ax3.set_xlabel('time [ms]')
     ax3.plot(samples[['time']].iloc[:index], samples[['T']].iloc[:index], label='temperature', color='r')
 
-    # ax4.set_xlabel('PV')
-    # ax4.plot(samples[['PV']].iloc[:index], samples[['T']].iloc[:index], color='r')
+    ax4.set_xlabel('PV [-]')
+    ax4.plot(samples[['PV']].iloc[:index], samples[['T']].iloc[:index], color='r')
 
     ax1.set_xlim(time_min[0], time_max[0])
-    # ax2.set_xlim(PV_min[0], PV_max[0])
+    ax2.set_xlim(PV_min[0], PV_max[0])
     ax3.set_xlim(time_min[0], time_max[0])
-    # ax4.set_xlim(PV_min[0], PV_max[0])
+    ax4.set_xlim(PV_min[0], PV_max[0])
 
     ax3.set_ylim(temp_min[0], temp_max[0])
-    # ax4.set_ylim(temp_min[0], temp_max[0])
+    ax4.set_ylim(temp_min[0], temp_max[0])
 
     # ax1.legend()
 

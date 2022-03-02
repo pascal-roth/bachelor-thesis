@@ -36,7 +36,7 @@ class Net(nn.Module):
 
 # load checkpoint ######################################################################################################
 def load_checkpoint(nbr_net):
-    """Load Checkpoint of a saved model
+    """Load Checkpointing of a saved model
 
     :parameter
     :param nbr_net: - int -     number to identify the saved MLP

@@ -40,7 +40,7 @@ def loaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, rea
 
     # define the name of the x_axis
     if scale == 'PV':
-        scale_name = '$Y_cloaddata_samples(mechanism, nbr_run, equivalence_ratio, reactorPressure, reactorTemperature, pode, category)$ (normalized)'
+        scale_name = '$Y_c$ (normalized) [-]'
     elif scale == 'time':
         scale_name = 'time in ms'
     else:
@@ -113,21 +113,21 @@ def plot_species(mechanism, equivalence_ratio, reactorPressure, reactorTemperatu
     # Normalize the PV
     samples[['PV']] = samples[['PV']] / np.amax(samples[['PV']])
 
-    samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'CH2O'],
-                 style=['b-', 'r-', 'g-', 'y-', 'k-', 'm-'],
-                 label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{CH2O}$'], figsize=(9, 6))
+    # samples.plot(scale, ['PODE', 'CO2', 'O2', 'CO', 'H2O', 'CH2O'],
+    #              style=['b-', 'r-', 'g-', 'y-', 'k-', 'm-'],
+    #              label=['$Y_{pode_n}$', '$Y_{CO2}$', '$Y_{O2}$', '$Y_{CO}$', '$Y_{H2O}$', '$Y_{CH2O}$'], figsize=(9, 6))
 
     # samples.plot(scale, ['PODE', 'O2'],
     #              style=['b-', 'g-'],
     #              label=['$Y_{pode_n}$', '$Y_{CO2}$'], figsize=(9, 6))
 
-    # samples.plot(scale, ['CO2', 'CO', 'H2O'],
-    #              style=['r-', 'y-', 'k-'],
-    #              label=['$Y_{CO2}$', '$Y_{CO}$', '$Y_{H2O}$'], figsize=(9, 6))
+    samples.plot(scale, ['CO2', 'CO', 'H2O'],
+                 style=['r-', 'y-', 'k-'],
+                 label=['$Y_{CO2}$', '$Y_{CO}$', '$Y_{H2O}$'], figsize=(9, 6))
 
     plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.2), fancybox=True, shadow=False, ncol=6, prop={'size': 14})
     plt.xlabel(scale_name)
-    plt.ylabel('Y')
+    plt.ylabel('Y [-]')
     plt.title('PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(pode, equivalence_ratio,
                                                                    reactorPressure, reactorTemperature))
 
@@ -193,7 +193,7 @@ def plot_PV(mechanism, equivalence_ratio, reactorPressure, reactorTemperature, p
     # plot PV as plot
     samples.plot('time', 'PV', style='m-', figsize=(9, 6))
     plt.xlabel('time [ms]')
-    plt.ylabel('$Y_c$')
+    plt.ylabel('$Y_c$ [-]')
 
     plt.title('{} PODE{} $\\Phi$={:.2f} p={}bar $T_0$={:.0f}K'.format(mechanism[0], pode, equivalence_ratio,
                                                                       reactorPressure, reactorTemperature))
